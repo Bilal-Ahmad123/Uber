@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:title="Home"
+        android:id="@+id/homeFragment"
+        android:icon="@drawable/baseline_home_24"/>
+
+    <item
+        android:title="Services"
+        android:id="@+id/servicesFragment"
+        android:icon="@drawable/baseline_services_24"/>
+
+    <item
+        android:title="Activity"
+        android:id="@+id/activityFragment"
+        android:icon="@drawable/baseline_local_activity_24"/>
+
+    <item
+        android:title="Account"
+        android:id="@+id/accountFragment"
+        android:icon="@drawable/baseline_account_circle_24"/>
+
+</menu>

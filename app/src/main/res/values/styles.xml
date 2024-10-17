@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.MaterialComponents.BottomSheet.DragHandle.LightMode" parent="Widget.Material3.BottomSheet.DragHandle">
+        <item name="tint">@color/white</item>
+    </style>
+
+    <!-- Dark mode handle style -->
+    <style name="Widget.MaterialComponents.BottomSheet.DragHandle.DarkMode" parent="Widget.Material3.BottomSheet.DragHandle">
+        <item name="tint">@color/gothicNoir</item>
+    </style>
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+    <style name="Widget.Theme.Uber.ActionBar.Fullscreen" parent="Widget.AppCompat.ActionBar">
+        <item name="android:background">@color/black_overlay</item>
+    </style>
+
+    <style name="Widget.Theme.Uber.ButtonBar.Fullscreen" parent="">
+        <item name="android:background">@color/black_overlay</item>
+        <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
+    </style>
+
+
+
+</resources>

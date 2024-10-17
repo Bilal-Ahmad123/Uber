@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingHorizontal="@dimen/_10sdp"
+    tools:context=".presentation.home.HomeFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+<LinearLayout
+
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:id="@+id/ll_where_to"
+        android:background="@drawable/where_to_btn"
+        android:padding="@dimen/_13sdp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_search_24"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="Search icon"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Where To?"
+            android:textSize="16sp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="@dimen/_20sdp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_120sdp"
+        android:weightSum="3"
+        android:orientation="horizontal"
+        android:background="@drawable/ready_shape"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:layout_marginLeft="@dimen/_10sdp"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:textColor="@color/black"
+            android:text="Ready? Then let's roll."
+            android:textSize="@dimen/_15ssp"/>
+
+        <ImageView
+            android:layout_width="@dimen/_150sdp"
+
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/_10sdp"
+            android:layout_weight="1"
+            android:contentDescription="TODO"
+            android:scaleType="fitXY"
+            android:src="@drawable/drive" />
+    </LinearLayout>
+
+
+</LinearLayout>
+
+</FrameLayout>

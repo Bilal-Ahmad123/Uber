@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/grey"/>
+            <size
+                android:width="@dimen/_565sdp"
+                android:height="@dimen/_565sdp"
+                />
+        </shape>
+    </item>
+
+    <!-- Vector icon resized using scale -->
+    <item
+        android:drawable="@drawable/set_location_on_map"
+        android:gravity="center"/>
+</layer-list>
