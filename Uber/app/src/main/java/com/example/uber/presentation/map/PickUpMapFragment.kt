@@ -328,12 +328,14 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             runCatching {
                 try {
                     if (isPickupEtInFocus) {
-                        pickUpLocationViewModel.geoCodeLocation(
-                            map.cameraPosition.target.latitude, map.cameraPosition.target.longitude
+                        pickUpLocationViewModel.setPickUpLocationName(
+                            map.cameraPosition.target.latitude,
+                            map.cameraPosition.target.longitude
                         )
                     } else if (isDropOffEtInFocus) {
-                        dropOffLocationViewModel.geoCodeLocation(
-                            map.cameraPosition.target.latitude, map.cameraPosition.target.longitude
+                        dropOffLocationViewModel.setPickUpLocationName(
+                            map.cameraPosition.target.latitude,
+                            map.cameraPosition.target.longitude
                         )
                     }
                 } finally {
@@ -362,13 +364,17 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
 
     private fun getInitialPickUpLocation() {
         checkLocationPermission(null) {
-            FetchLocation.getCurrentLocation(this@PickUpMapFragment, requireContext()) { location ->
+            FetchLocation.getCurrentLocation(
+                this@PickUpMapFragment,
+                requireContext()
+            ) { location ->
                 runCatching {
-                    pickUpLocationViewModel.geoCodeLocation(
+                    pickUpLocationViewModel.setPickUpLocationName(
                         location!!.latitude, location.longitude
                     )
                 }
             }
+
         }
 
 

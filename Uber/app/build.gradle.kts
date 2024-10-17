@@ -22,13 +22,17 @@ android {
     buildTypes {
 
         debug {
-            buildConfigField("String","MAPBOX_TOKEN","\"your_key\"")
-            buildConfigField("String","GOOGLE_API_KEY","\"you_key\"")
+            val MAPBOX_DOWNLOADS_TOKEN = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
+            val GOOGLE_API_KEY = providers.gradleProperty("GOOGLE_API_KEY").get()
+            buildConfigField("String","MAPBOX_TOKEN","\"${MAPBOX_DOWNLOADS_TOKEN}\"")
+            buildConfigField("String","GOOGLE_API_KEY","\"${GOOGLE_API_KEY}\"")
 
         }
         release {
-            buildConfigField("String","MAPBOX_TOKEN","\"you_key\"")
-            buildConfigField("String","GOOGLE_API_KEY","\"you_key\"")
+            val MAPBOX_DOWNLOADS_TOKEN = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
+            val GOOGLE_API_KEY = providers.gradleProperty("GOOGLE_API_KEY").get()
+            buildConfigField("String","MAPBOX_TOKEN","\"${MAPBOX_DOWNLOADS_TOKEN}\"")
+            buildConfigField("String","GOOGLE_API_KEY","\"${GOOGLE_API_KEY}\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

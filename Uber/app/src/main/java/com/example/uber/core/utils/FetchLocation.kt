@@ -27,7 +27,6 @@ object FetchLocation {
     private var permissionManager: PermissionManager? = null;
     suspend fun getLocation(latitude: Double, longitude: Double, context: Context): String {
         var addresses: List<Address> = emptyList()
-        mCoroutineScope.launch(Dispatchers.IO) {
             val geocoder = Geocoder(context, Locale.getDefault())
 
                 try {
@@ -40,9 +39,7 @@ object FetchLocation {
                 } catch (e: Exception) {
                     Log.e("getLocation", e.message.toString())
                 }
-
-        }
-        return if (addresses.isNotEmpty()) addresses[0].getAddressLine(0).split(",")[0] else ""
+        return if (addresses.isNotEmpty()) addresses[0].getAddressLine(0).split(",")[1] else ""
 
     }
 

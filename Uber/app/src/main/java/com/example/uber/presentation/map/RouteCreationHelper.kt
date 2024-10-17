@@ -34,8 +34,8 @@ class RouteCreationHelper(private val mapView: MapView,private val map:MapboxMap
                  .origin(originPoint)
                  .destination(destinationPoint)
                  .overview(DirectionsCriteria.OVERVIEW_FULL)
-                 .profile(DirectionsCriteria.PROFILE_DRIVING) // You can choose other profiles like walking or cycling
-                 .accessToken(BuildConfig.MAPBOX_TOKEN) // Replace with your access token
+                 .profile(DirectionsCriteria.PROFILE_DRIVING)
+                 .accessToken(BuildConfig.MAPBOX_TOKEN)
                  .build()
 
              directionsCall.enqueueCall(object : Callback<DirectionsResponse> {

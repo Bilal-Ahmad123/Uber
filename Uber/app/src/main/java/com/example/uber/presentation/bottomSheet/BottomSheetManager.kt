@@ -96,6 +96,7 @@ class BottomSheetManager(
                         bottomSheetHeading.text = "Set your pickup spot"
                         btn_confirm_destination.text = "Confirm pickup"
                     }
+
                     isDropOffEtInFocus -> {
                         bottomSheetHeading.text =
                             context.getString(R.string.set_your_destination)
@@ -140,55 +141,24 @@ class BottomSheetManager(
     private fun observePickUpLocationChanges() {
         checkInternetConnection {
             with(pickUpLocationViewModel) {
-                locationName.observe(viewLifecycleOwner) { it ->
-                    when (it) {
-                        is Resource.Success -> {
-                            if (it.data != null && it.data.results.isNotEmpty() && it.data.results.size >= 2 && it.data.results[1].address_components.isNotEmpty() && it.data.results[1].address_components.size >= 2) {
-                                et_pickup.text = it.data.results[1].address_components[1].long_name
-                                updateLocationText(it.data.results[1].address_components[1].long_name)
-                            }
-                        }
+                locationName.observe(viewLifecycleOwner) {
+                    et_pickup.text = it
+                    updateLocationText(it)
 
-                        is Resource.Error -> Log.e(
-                            "Error",
-                            it.message!!
-                        )
-
-                        is Resource.Loading -> Log.e(
-                            "PickUp",
-                            "Loading....."
-                        )
-
-                    }
                 }
             }
         }
 
     }
 
-    private fun observeDropOffLocationChanges(){
+    private fun observeDropOffLocationChanges() {
         checkInternetConnection {
             with(dropOffLocationViewModel) {
-                locationName.observe(viewLifecycleOwner) { it ->
-                    when (it) {
-                        is Resource.Success -> {
-                            if (it.data != null && it.data.results.isNotEmpty() && it.data.results.size >= 2 && it.data.results[1].address_components.isNotEmpty() && it.data.results[1].address_components.size >= 2) {
-                                et_drop_off.text = it.data.results[1].address_components[1].long_name
-                                updateLocationText(it.data.results[1].address_components[1].long_name)
-                            }
-                        }
+                locationName.observe(viewLifecycleOwner) {
 
-                        is Resource.Error -> Log.e(
-                            "Error",
-                            it.message!!
-                        )
-
-                        is Resource.Loading -> Log.e(
-                            "Drop Off",
-                            "Loading....."
-                        )
-
-                    }
+                    et_drop_off.text =
+                        it
+                    updateLocationText(it)
                 }
             }
         }
@@ -216,7 +186,7 @@ class BottomSheetManager(
         }
     }
 
-    private fun setEditTextDropOffInFocus(){
+    private fun setEditTextDropOffInFocus() {
         et_drop_off.requestFocus()
     }
 }
