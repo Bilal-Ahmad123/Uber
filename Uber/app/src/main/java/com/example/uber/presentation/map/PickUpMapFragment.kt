@@ -166,7 +166,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         if (map != null) {
             val userLatLng = lastKnownLocation?.let { LatLng(it.latitude, it.longitude) }
             userLatLng?.let { CameraUpdateFactory.newLatLngZoom(it, 13.0) }
-                ?.let { map.animateCamera(it) }
+                ?.let { map.moveCamera(it) }
         }
     }
 
