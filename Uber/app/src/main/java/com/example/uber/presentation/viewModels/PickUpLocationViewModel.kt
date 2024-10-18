@@ -32,8 +32,6 @@ class PickUpLocationViewModel @Inject constructor(
     val longitude get() = _longitude
 
     fun geoCodeLocation(latitude: Double, longitude: Double) {
-        this._latitude = latitude
-        this._longitude = longitude
         launchOnBack {
 //            _locationName.postValue(Resource.Loading())
 //            val response = pickUpLocationUseCase.getGeoCodeLocation(latitude, longitude)
