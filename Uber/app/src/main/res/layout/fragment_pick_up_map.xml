@@ -9,7 +9,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.mapbox.mapboxsdk.maps.MapView
+    <com.mapbox.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -17,6 +17,8 @@
         app:mapbox_cameraTargetLng="-98.0"
         app:mapbox_cameraZoom="2.0"
         app:mapbox_cameraBearing="0.0"
+        app:mapbox_locationComponentEnabled="true"
+        app:mapbox_locationComponentPuckBearing="heading"
         />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/back_fbn"

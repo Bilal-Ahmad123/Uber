@@ -6,7 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.uber.app.common.Resource
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
-import com.example.uber.core.utils.FetchLocation
+//import com.example.uber.core.utils.FetchLocation
 import com.example.uber.data.remote.GeoCode.GoogleMaps.GeoCodingGoogleMapsResponse
 import com.example.uber.domain.model.DropOffLocation
 import com.example.uber.domain.model.PickUpLocation
@@ -49,12 +49,13 @@ class DropOffLocationViewModel @Inject constructor(
     }
 
     fun setPickUpLocationName(latitude: Double, longitude: Double) {
-        launchOnBack {
-            val res = FetchLocation.getLocation(latitude, longitude, context)
-            _locationName.postValue(res)
-        }
         this._latitude = latitude
         this._longitude = longitude
+        launchOnBack {
+//            val res = FetchLocation.getLocation(latitude, longitude, context)
+//            _locationName.postValue(res)
+        }
+
 
     }
 }
