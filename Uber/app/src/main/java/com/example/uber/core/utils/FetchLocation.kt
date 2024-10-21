@@ -1,47 +1,77 @@
-//package com.example.uber.core.utils
-//
-//import android.content.Context
-//import android.location.Address
-//import android.location.Geocoder
-//import android.location.Location
-//import android.util.Log
-//import android.widget.Toast
-//import androidx.fragment.app.Fragment
-//import com.example.uber.core.interfaces.utils.permissions.Permission
-//import com.example.uber.core.interfaces.utils.permissions.PermissionManager
-//import com.mapbox.android.core.location.LocationEngine
-//import com.mapbox.android.core.location.LocationEngineCallback
-//import com.mapbox.android.core.location.LocationEngineProvider
-//import com.mapbox.android.core.location.LocationEngineResult
-//import kotlinx.coroutines.CoroutineExceptionHandler
-//import kotlinx.coroutines.CoroutineScope
-//import kotlinx.coroutines.Dispatchers
-//import kotlinx.coroutines.launch
-//import kotlinx.coroutines.withContext
-//import java.lang.ref.WeakReference
-//import java.util.Locale
-//
-//object FetchLocation {
-//    private val mCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
-//    private var locationEngine: LocationEngine? = null;
-//    private var permissionManager: PermissionManager? = null;
-//    suspend fun getLocation(latitude: Double, longitude: Double, context: Context): String {
-//        var addresses: List<Address> = emptyList()
-//            val geocoder = Geocoder(context, Locale.getDefault())
-//
-//                try {
-//                    addresses = geocoder.getFromLocation(
-//                        latitude,
-//                        longitude,
-//                        1
-//                    )!!
-//
-//                } catch (e: Exception) {
-//                    Log.e("getLocation", e.message.toString())
-//                }
-//        return if (addresses.isNotEmpty()) addresses[0].getAddressLine(0).split(",")[1] else ""
-//
-//    }
+package com.example.uber.core.utils
+
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
+import android.util.Log
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import com.example.uber.BuildConfig
+import com.example.uber.core.interfaces.utils.permissions.Permission
+import com.example.uber.core.interfaces.utils.permissions.PermissionManager
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
+import com.mapbox.navigation.base.options.NavigationOptions
+import com.mapbox.navigation.core.MapboxNavigation
+import com.mapbox.navigation.core.MapboxNavigationProvider
+import com.mapbox.navigation.core.trip.session.LocationObserver
+import com.mapbox.navigation.core.trip.session.LocationMatcherResult
+import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.lang.ref.WeakReference
+import java.util.Locale
+
+
+object FetchLocation {
+    private val mCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
+    private val navigationLocationProvider = NavigationLocationProvider()
+    private var permissionManager: PermissionManager? = null;
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+     fun getCurrentLocation(context: Context) {
+         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+         fusedLocationClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+                    Log.d("Location", "Current location: Latitude = $latitude, Longitude = $longitude")
+                } else {
+                    Log.e("Location", "Location not available")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Location", "Failed to get location: ${e.message}")
+            }
+    }
+
+
+    suspend fun getLocation(latitude: Double, longitude: Double, context: Context): String {
+        var addresses: List<Address> = emptyList()
+            val geocoder = Geocoder(context, Locale.getDefault())
+
+                try {
+                    addresses = geocoder.getFromLocation(
+                        latitude,
+                        longitude,
+                        1
+                    )!!
+
+                } catch (e: Exception) {
+                    Log.e("getLocation", e.message.toString())
+                }
+        return if (addresses.isNotEmpty()) addresses[0].getAddressLine(0).split(",")[1] else ""
+
+    }
 //
 //    fun getCurrentLocation(
 //        fragmentContext: Fragment,
@@ -98,4 +128,4 @@
 //        }
 //        return locationMapper
 //    }
-//}
+}

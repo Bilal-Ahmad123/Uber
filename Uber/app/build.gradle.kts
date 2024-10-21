@@ -89,6 +89,8 @@ dependencies {
     implementation ("com.mapbox.maps:android:11.7.1")
     implementation ("com.mapbox.navigationcore:navigation:3.4.1")
     implementation ("com.mapbox.navigationcore:ui-components:3.4.1")
+    implementation ("com.mapbox.plugin:maps-locationcomponent:11.7.1")
+
 
     implementation ("com.google.android.gms:play-services-location:17.0.0")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")

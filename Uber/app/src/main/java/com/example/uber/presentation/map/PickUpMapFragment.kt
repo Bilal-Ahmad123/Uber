@@ -1,10 +1,10 @@
 package com.example.uber.presentation.map
 
-
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +20,7 @@ import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.interfaces.utils.permissions.Permission
 import com.example.uber.core.interfaces.utils.permissions.PermissionManager
+import com.example.uber.core.utils.FetchLocation
 //import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
@@ -35,6 +36,7 @@ import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.Style
+import com.mapbox.maps.extension.style.expressions.dsl.generated.pitch
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import com.mapbox.maps.plugin.animation.camera
@@ -48,7 +50,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.abs
-
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
 
 class PickUpMapFragment : Fragment(), IBottomSheetListener {
     private var _map: MapboxMap? = null
@@ -67,7 +71,9 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     private val dropOffLocationViewModel: DropOffLocationViewModel by activityViewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
-//    private var routeHelper: RouteCreationHelper? = null
+
+
+    //    private var routeHelper: RouteCreationHelper? = null
     private val navigationLocationProvider = NavigationLocationProvider()
     private lateinit var mapView: MapView
 
@@ -112,11 +118,11 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
             .setOnClickListener {
 //                createRoute()
             }
-         mapView = MapView(requireContext())
+        mapView = binding.mapView
         // Add the map view to the activity (you can also add it to other views as a child)
         mapView.mapboxMap.loadStyleUri(getCurrentMapStyle())
 //        setupLocationComponent()
-        enablePuckBearing()
+        initializaMapBox()
 
 
         if (isAdded) {
@@ -128,15 +134,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     }
 
     private fun showUserLocation(loadedMapStyle: Style) {
-//        val locationComponentActivationOptions =
-//            LocationComponentActivationOptions.builder(requireContext(), loadedMapStyle)
-//                .useDefaultLocationEngine(true)
-//                .build()
-//        checkLocationPermission(null) {
-//            FetchLocation.getCurrentLocation(this@PickUpMapFragment, requireContext()) { location ->
-//                animateCameraToCurrentLocation(location)
-//            }
-//        }
+
 //        showUserCurrentLocation(locationComponentActivationOptions)
 
 
@@ -226,7 +224,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //
 //    }
 
-//    private val moveListener: MapboxMap.OnMoveListener = object : MapboxMap.OnMoveListener {
+    //    private val moveListener: MapboxMap.OnMoveListener = object : MapboxMap.OnMoveListener {
 //        override fun onMoveBegin(detector: MoveGestureDetector) {
 //            if (binding.currLocationBtn.visibility != View.VISIBLE) {
 //                fadeInUserLocationButton()
@@ -279,7 +277,8 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //
     private fun getCurrentMapStyle(): String =
         if (CheckMode.isDarkMode(requireContext())) Style.DARK else Style.LIGHT
-//
+
+    //
 ////    private fun showUserCurrentLocation(locationComponentActivationOptions: LocationComponentActivationOptions) {
 ////        checkLocationPermission(null) {
 ////            map.locationComponent.apply {
@@ -326,7 +325,8 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 
     override fun onBottomSheetStateChanged(newState: Int) {
     }
-//
+
+    //
 //
 //    private fun fetchLocation() {
 //        if (SystemInfo.CheckInternetConnection(requireContext())) {
@@ -444,36 +444,25 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //        }
 //    }
 //
-//    private fun updateCamera(location: com.mapbox.common.location.Location) {
-//        val mapAnimationOptions = MapAnimationOptions.Builder().duration(1500L).build()
-//        binding.mapView.camera.easeTo(
-//            CameraOptions.Builder()
-//                // Centers the camera to the lng/lat specified.
-//                .center(Point.fromLngLat(location.longitude, location.latitude))
-//                // specifies the zoom value. Increase or decrease to zoom in or zoom out
-//                .zoom(12.0)
-//                // specify frame of reference from the center.
-//                .padding(EdgeInsets(500.0, 0.0, 0.0, 0.0))
-//                .build(),
-//            mapAnimationOptions
-//        )
-//    }
 
-    private fun enablePuckBearing() {
-//        with(mapView) {
-//            location.locationPuck = createDefault2DPuck(withBearing = true)
-//            location.enabled = true
-//            location.puckBearing = PuckBearing.COURSE
-//            location.puckBearingEnabled = true
-//            viewport.transitionTo(
-//                targetState = viewport.makeFollowPuckViewportState(),
-//                transition = viewport.makeImmediateViewportTransition()
-//            )
-//
-//        }
+    private fun initializaMapBox() {
+        with(mapView) {
+            location.enabled = true
+            location.puckBearing = PuckBearing.COURSE
+            location.puckBearingEnabled = true
+        }
+        mapView.mapboxMap
+            .apply {
+                setCamera(
+                    CameraOptions.Builder()
+                        .center(Point.fromLngLat(73.124630, 33.593670))
+                        .zoom(12.0)
+                        .build()
+                )
+            }
+        FetchLocation.getCurrentLocation(requireContext())
 
     }
-
 
 
 }
