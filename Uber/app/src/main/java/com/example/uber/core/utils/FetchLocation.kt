@@ -16,6 +16,7 @@ import com.example.uber.core.interfaces.utils.permissions.PermissionManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.OnSuccessListener
+import com.mapbox.geojson.Point
 import com.mapbox.navigation.base.options.NavigationOptions
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.MapboxNavigationProvider
@@ -34,17 +35,20 @@ import java.util.Locale
 object FetchLocation {
     private val mCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private val navigationLocationProvider = NavigationLocationProvider()
-    private var permissionManager: PermissionManager? = null;
+    private var permissionManager: PermissionManager? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-     fun getCurrentLocation(context: Context) {
+     fun getCurrentLocation(context: Context, onLocationFetched: (Point?) -> Unit) {
+         var latitude = 0.00
+         var longitude = 0.0
          fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
          fusedLocationClient.lastLocation
             .addOnSuccessListener { location: Location? ->
                 if (location != null) {
-                    val latitude = location.latitude
-                    val longitude = location.longitude
-                    Log.d("Location", "Current location: Latitude = $latitude, Longitude = $longitude")
+                     latitude = location.latitude
+                     longitude = location.longitude
+                    onLocationFetched.invoke(Point.fromLngLat(longitude,latitude))
+                    Log.e("Location", latitude.toString())
                 } else {
                     Log.e("Location", "Location not available")
                 }
@@ -112,20 +116,20 @@ object FetchLocation {
 //        }
 //    }
 //
-//    val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-//        throwable.printStackTrace()
-//    }
+    val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        throwable.printStackTrace()
+    }
 //
 //    fun cleanResources() {
 //        locationEngine = null;
 //        permissionManager = null;
 //    }
 //
-//    fun customLocationMapper(latitude: Double, longitude: Double): Location {
-//        val locationMapper = Location("").apply {
-//            this.latitude = latitude
-//            this.longitude = longitude
-//        }
-//        return locationMapper
-//    }
+    fun customLocationMapper(latitude: Double, longitude: Double): Location {
+        val locationMapper = Location("").apply {
+            this.latitude = latitude
+            this.longitude = longitude
+        }
+        return locationMapper
+    }
 }

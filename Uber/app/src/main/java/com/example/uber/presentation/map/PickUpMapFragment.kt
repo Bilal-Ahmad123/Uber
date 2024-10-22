@@ -53,6 +53,10 @@ import kotlin.math.abs
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.OnSuccessListener
+import com.mapbox.maps.plugin.animation.MapAnimationOptions.Companion.mapAnimationOptions
+import com.mapbox.maps.plugin.delegates.listeners.OnMapIdleListener
+import com.mapbox.maps.plugin.gestures.OnMoveListener
+import com.mapbox.maps.plugin.gestures.gestures
 
 class PickUpMapFragment : Fragment(), IBottomSheetListener {
     private var _map: MapboxMap? = null
@@ -71,6 +75,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     private val dropOffLocationViewModel: DropOffLocationViewModel by activityViewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
+    private lateinit var currentLocation: Point
 
 
     //    private var routeHelper: RouteCreationHelper? = null
@@ -81,10 +86,6 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MapboxOptions.accessToken = BuildConfig.MAPBOX_TOKEN
-//        Mapbox.getInstance(
-//            requireContext(),
-//            BuildConfig.MAPBOX_TOKEN
-//        );
     }
 
     override fun onCreateView(
@@ -103,8 +104,8 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
         dropOffTextView = binding.root.findViewById<EditText>(R.id.ti_drop_off)
         confirmDestinationBtn =
             binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
-//        setBackButtonOnClickListener()
-//        editTextFocusChangeListener()
+        setBackButtonOnClickListener()
+        editTextFocusChangeListener()
         bottomSheetManager =
             BottomSheetManager(
                 view,
@@ -122,55 +123,57 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
         // Add the map view to the activity (you can also add it to other views as a child)
         mapView.mapboxMap.loadStyleUri(getCurrentMapStyle())
 //        setupLocationComponent()
-        initializaMapBox()
+        initializeMapBox()
+        setupMoveListener()
+        cameraIdleListener
+
 
 
         if (isAdded) {
-//            setUpCurrentLocationButton()
+            setUpCurrentLocationButton()
 //            requestLocationPermission()
 //            getInitialPickUpLocation()
         }
 
     }
 
-    private fun showUserLocation(loadedMapStyle: Style) {
-
-//        showUserCurrentLocation(locationComponentActivationOptions)
-
-
+    private fun showUserLocation() {
+        checkLocationPermission(null) {
+            FetchLocation.getCurrentLocation(requireContext()) { location ->
+                animateCameraToCurrentLocation(FetchLocation.customLocationMapper(
+                    location!!.latitude(), location.longitude()
+                ))
+            }
+        }
     }
 
-//    private fun requestLocationPermission() {
-//        checkLocationPermission("Need Access to Location") {
-//            _map = binding.mapView.getMapboxMap()
-//            _map!!.loadStyleUri(getCurrentMapStyle())
-//            loadedMapStyle = _map!!.style
-//            binding.mapView.getMapAsync { mapboxMap ->
-//                this@PickUpMapFragment._map = mapboxMap
-//                mapboxMap.setStyle(getCurrentMapStyle()) {
-//                    loadedMapStyle = it
-//                    showUserLocation(it)
-//                }
-//            }
-//
-//        }
-//
-//    }
+    private fun requestLocationPermission() {
+        checkLocationPermission("Need Access to Location") {
+            _map = binding.mapView.getMapboxMap()
+            _map!!.loadStyleUri(getCurrentMapStyle())
+        }
+
+    }
 
     fun onMapReady(mapboxMap: MapboxMap) {
         _map = mapboxMap
 //        mapboxMap.setStyle(getCurrentMapStyle())
-//        mapboxMap.addOnMoveListener(moveListener)
 //        mapboxMap.addOnCameraIdleListener(cameraPositionChangeListener)
 //        routeHelper = RouteCreationHelper(WeakReference(binding.mapView), WeakReference(mapboxMap),requireContext())
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
-//        if (map != null) {
-//            val userLatLng = lastKnownLocation?.let { LatLng(it.latitude, it.longitude) }
-//            userLatLng?.let { CameraUpdateFactory.newLatLngZoom(it, 13.0) }
-//                ?.let { map.moveCamera(it) }
-//        }
+        if (lastKnownLocation != null) {
+            val cameraPosition = CameraOptions.Builder()
+                .center(Point.fromLngLat(lastKnownLocation.longitude, lastKnownLocation.latitude))
+                .zoom(13.0)
+                .build()
+            mapView.camera.easeTo(cameraPosition, mapAnimationOptions {
+                duration(2000)
+            })
+        } else {
+            Log.e("Map", "Last known location is null")
+        }
     }
 
     override fun onStart() {
@@ -204,12 +207,12 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //        binding.mapView.onLowMemory()
     }
 
-//    private fun setUpCurrentLocationButton() {
-//        binding.currLocationBtn.setOnClickListener {
-//            showUserLocation(loadedMapStyle!!)
-//            hideUserLocationButton()
-//        }
-//    }
+    private fun setUpCurrentLocationButton() {
+        binding.currLocationBtn.setOnClickListener {
+            showUserLocation()
+            hideUserLocationButton()
+        }
+    }
 //
 //    private fun cleanUpResources() {
 //        _binding = null
@@ -248,70 +251,59 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //        }
 //    }
 //
-//    private fun hideUserLocationButton() {
-//        floatingButtonFadeOutAnimation()
-//    }
+    private fun hideUserLocationButton() {
+        floatingButtonFadeOutAnimation()
+    }
 //
 //
-//    private fun floatingButtonFadeOutAnimation() {
-//        binding.currLocationBtn.animate()
-//            .alpha(0f)
-//            .setDuration(300)
-//            .setListener(object : AnimatorListenerAdapter() {
-//                override fun onAnimationEnd(animation: Animator) {
-//                    binding.currLocationBtn.visibility = View.GONE
-//                }
-//            })
-//    }
+
+    private fun floatingButtonFadeOutAnimation() {
+        binding.currLocationBtn.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    binding.currLocationBtn.visibility = View.GONE
+                }
+            })
+    }
 //
-//    private fun fadeInUserLocationButton() {
-//        binding.currLocationBtn.apply {
-//            visibility = View.VISIBLE
-//            alpha = 0f
-//            animate()
-//                .alpha(1f)
-//                .setDuration(300)
-//                .setListener(null)
-//        }
-//    }
+    private fun fadeInUserLocationButton() {
+        binding.currLocationBtn.apply {
+            visibility = View.VISIBLE
+            alpha = 0f
+            animate()
+                .alpha(1f)
+                .setDuration(300)
+                .setListener(null)
+        }
+    }
 //
     private fun getCurrentMapStyle(): String =
         if (CheckMode.isDarkMode(requireContext())) Style.DARK else Style.LIGHT
 
-    //
-////    private fun showUserCurrentLocation(locationComponentActivationOptions: LocationComponentActivationOptions) {
-////        checkLocationPermission(null) {
-////            map.locationComponent.apply {
-////                activateLocationComponent(locationComponentActivationOptions)
-////                isLocationComponentEnabled = true
-////                cameraMode = CameraMode.TRACKING
-////                renderMode = RenderMode.COMPASS
-////
-////            }
-////        }
-////    }
-//
-//    private fun checkLocationPermission(rationale: String?, onGranted: () -> Unit) {
-//        val request = permissionManager.request(Permission.Location)
-//        if (rationale != null) {
-//            request.rationale(rationale)
-//        }
-//        request.checkPermission { granted ->
-//            if (granted) {
-//                onGranted.invoke()
-//            }
-//
-//        }
-//    }
-//
-//    private fun setBackButtonOnClickListener() {
-//        binding.backFbn.setOnClickListener {
-//            if (bottomSheetManager?.bottomSheetBehavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
-//                bottomSheetManager?.bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-//            }
-//        }
-//    }
-//
+
+    private fun checkLocationPermission(rationale: String?, onGranted: () -> Unit) {
+        val request = permissionManager.request(Permission.Location)
+        if (rationale != null) {
+            request.rationale(rationale)
+        }
+        request.checkPermission { granted ->
+            if (granted) {
+                onGranted.invoke()
+            }
+
+        }
+    }
+
+    private fun setBackButtonOnClickListener() {
+        binding.backFbn.setOnClickListener {
+            if (bottomSheetManager?.bottomSheetBehavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                bottomSheetManager?.bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
+    }
+
     override fun onBottomSheetSlide(slideOffset: Float) {
         binding.backFbn.apply {
             if (slideOffset == 1.0f) {
@@ -326,47 +318,47 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     override fun onBottomSheetStateChanged(newState: Int) {
     }
 
+
+    private fun fetchLocation() {
+        if (SystemInfo.CheckInternetConnection(requireContext())) {
+            runCatching {
+                try {
+                    if (isPickupEtInFocus) {
+                        pickUpLocationViewModel.setPickUpLocationName(
+                            map.cameraState.center.latitude(),
+                            map.cameraState.center.longitude()
+                        )
+                    } else if (isDropOffEtInFocus) {
+                        dropOffLocationViewModel.setPickUpLocationName(
+                            map.cameraState.center.latitude(),
+                            map.cameraState.center.longitude()
+                        )
+                    }
+                } finally {
+                    isPopulatingLocation = false
+                }
+            }
+        }
+    }
+
+    private fun editTextFocusChangeListener() {
+        pickupTextView.setOnFocusChangeListener { view, b ->
+            if (b) {
+                isPickupEtInFocus = true
+                isDropOffEtInFocus = false
+                animateToPickUpLocation()
+            }
+        }
+        dropOffTextView.setOnFocusChangeListener { view, b ->
+            if (b) {
+                isPickupEtInFocus = false
+                isDropOffEtInFocus = true
+                animateToDropOffLocation()
+            }
+        }
+    }
+
     //
-//
-//    private fun fetchLocation() {
-//        if (SystemInfo.CheckInternetConnection(requireContext())) {
-//            runCatching {
-//                try {
-//                    if (isPickupEtInFocus) {
-//                        pickUpLocationViewModel.setPickUpLocationName(
-//                            map.cameraPosition.target.latitude,
-//                            map.cameraPosition.target.longitude
-//                        )
-//                    } else if (isDropOffEtInFocus) {
-//                        dropOffLocationViewModel.setPickUpLocationName(
-//                            map.cameraPosition.target.latitude,
-//                            map.cameraPosition.target.longitude
-//                        )
-//                    }
-//                } finally {
-//                    isPopulatingLocation = false
-//                }
-//            }
-//        }
-//    }
-//
-//    private fun editTextFocusChangeListener() {
-//        pickupTextView.setOnFocusChangeListener { view, b ->
-//            if (b) {
-//                isPickupEtInFocus = true
-//                isDropOffEtInFocus = false
-//                animateToPickUpLocation()
-//            }
-//        }
-//        dropOffTextView.setOnFocusChangeListener { view, b ->
-//            if (b) {
-//                isPickupEtInFocus = false
-//                isDropOffEtInFocus = true
-//                animateToDropOffLocation()
-//            }
-//        }
-//    }
-//
 //    private fun getInitialPickUpLocation() {
 //        checkLocationPermission(null) {
 //            FetchLocation.getCurrentLocation(
@@ -385,24 +377,22 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //
 //    }
 //
-//    private fun animateToPickUpLocation() {
-//        val locationMapper = FetchLocation.customLocationMapper(
-//            pickUpLocationViewModel.latitude, pickUpLocationViewModel.longitude
-//        )
-//        runCatching { animateCameraToCurrentLocation(locationMapper) }
-//
-//    }
-//
-//    private fun animateToDropOffLocation() {
-//        val locationMapper = FetchLocation.customLocationMapper(
-//            dropOffLocationViewModel.latitude,
-//            dropOffLocationViewModel.longitude
-//        )
-//
-//
-//        runCatching { animateCameraToCurrentLocation(locationMapper) }
-//
-//    }
+    private fun animateToPickUpLocation() {
+        val locationMapper = FetchLocation.customLocationMapper(
+            pickUpLocationViewModel.latitude, pickUpLocationViewModel.longitude
+        )
+        runCatching { animateCameraToCurrentLocation(locationMapper) }
+
+    }
+
+    private fun animateToDropOffLocation() {
+        val locationMapper = FetchLocation.customLocationMapper(
+            dropOffLocationViewModel.latitude,
+            dropOffLocationViewModel.longitude
+        )
+        runCatching { animateCameraToCurrentLocation(locationMapper) }
+
+    }
 //
 //    private fun createRoute() {
 //        lifecycleScope.launch(Dispatchers.IO) {
@@ -418,50 +408,62 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //            )
 //        }
 //    }
-//
-//    private fun setupLocationComponent() {
-//
-//         val locationObserver = object : LocationObserver {
-//
-//            override fun onNewRawLocation(rawLocation: com.mapbox.common.location.Location) {
-//                // Not implemented in this example. However, if you want you can also
-//                // use this callback to get location updates, but as the name suggests
-//                // these are raw location updates which are usually noisy.
-//            }
-//
-//            /**
-//             * Provides the best possible location update, snapped to the route or
-//             * map-matched to the road if possible.
-//             */
-//            override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
-//                val enhancedLocation = locationMatcherResult.enhancedLocation
-//                navigationLocationProvider.changePosition(
-//                    enhancedLocation,
-//                    locationMatcherResult.keyPoints,
-//                )
-//                updateCamera(enhancedLocation)
-//            }
-//        }
-//    }
-//
 
-    private fun initializaMapBox() {
+
+    private fun initializeMapBox() {
         with(mapView) {
             location.enabled = true
             location.puckBearing = PuckBearing.COURSE
             location.puckBearingEnabled = true
         }
-        mapView.mapboxMap
-            .apply {
-                setCamera(
-                    CameraOptions.Builder()
-                        .center(Point.fromLngLat(73.124630, 33.593670))
-                        .zoom(12.0)
-                        .build()
-                )
-            }
-        FetchLocation.getCurrentLocation(requireContext())
+        getCurrentLocation()
 
+    }
+
+    private fun getCurrentLocation() {
+        checkLocationPermission(null) {
+            FetchLocation.getCurrentLocation(requireContext()) { point ->
+                mapView.mapboxMap
+                    .apply {
+                        setCamera(
+                            CameraOptions.Builder()
+                                .center(point)
+                                .zoom(13.0)
+                                .build()
+                        )
+                    }
+            }
+        }
+    }
+
+    private fun setupMoveListener() {
+        val gesturesPlugin = mapView.gestures
+
+        gesturesPlugin.addOnMoveListener(object : OnMoveListener {
+            override fun onMoveBegin(detector: MoveGestureDetector) {
+                Log.d("onMoveBegin", "onMoveBegin")
+                // Similar to SDK 9: Handle the start of a move gesture
+                if (binding.currLocationBtn.visibility != View.VISIBLE) {
+                    fadeInUserLocationButton()  // Show user location button
+                }
+            }
+
+            override fun onMove(detector: MoveGestureDetector): Boolean {
+                // Handle ongoing move gestures (if needed)
+                return false
+            }
+
+            override fun onMoveEnd(detector: MoveGestureDetector) {
+                // Handle the end of the move gesture (if needed)
+            }
+        })
+    }
+
+    private val  cameraIdleListener= OnMapIdleListener{
+        if (!isPopulatingLocation) {
+            fetchLocation() 
+            hideUserLocationButton()
+        }
     }
 
 
