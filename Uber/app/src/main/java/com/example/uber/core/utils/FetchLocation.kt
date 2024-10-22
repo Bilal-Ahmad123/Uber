@@ -48,7 +48,6 @@ object FetchLocation {
                      latitude = location.latitude
                      longitude = location.longitude
                     onLocationFetched.invoke(Point.fromLngLat(longitude,latitude))
-                    Log.e("Location", latitude.toString())
                 } else {
                     Log.e("Location", "Location not available")
                 }

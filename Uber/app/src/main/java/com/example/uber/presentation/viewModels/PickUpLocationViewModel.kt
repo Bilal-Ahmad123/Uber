@@ -7,10 +7,12 @@ import androidx.lifecycle.MutableLiveData
 import com.example.uber.app.common.Resource
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
+import com.example.uber.core.utils.FetchLocation
 //import com.example.uber.core.utils.FetchLocation
 import com.example.uber.data.remote.GeoCode.GoogleMaps.GeoCodingGoogleMapsResponse
 import com.example.uber.domain.model.PickUpLocation
 import com.example.uber.domain.use_case.locations.PickUpLocationUseCase
+import com.mapbox.geojson.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Response
@@ -58,6 +60,13 @@ class PickUpLocationViewModel @Inject constructor(
         }
 
 
+    }
+
+    private fun giveInitialLocationValueToLatLng(){
+        FetchLocation.getCurrentLocation(context){ point: Point? ->
+            this._latitude = point!!.latitude()
+            this._longitude = point.longitude()
+        }
     }
 
 }

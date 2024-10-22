@@ -53,6 +53,8 @@ import kotlin.math.abs
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.OnSuccessListener
+import com.mapbox.maps.MapIdle
+import com.mapbox.maps.MapIdleCallback
 import com.mapbox.maps.plugin.animation.MapAnimationOptions.Companion.mapAnimationOptions
 import com.mapbox.maps.plugin.delegates.listeners.OnMapIdleListener
 import com.mapbox.maps.plugin.gestures.OnMoveListener
@@ -104,8 +106,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
         dropOffTextView = binding.root.findViewById<EditText>(R.id.ti_drop_off)
         confirmDestinationBtn =
             binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
-        setBackButtonOnClickListener()
-        editTextFocusChangeListener()
+
         bottomSheetManager =
             BottomSheetManager(
                 view,
@@ -125,14 +126,21 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 //        setupLocationComponent()
         initializeMapBox()
         setupMoveListener()
-        cameraIdleListener
+        requestLocationPermission()
+            map.addOnMapIdleListener(cameraIdleListener)
+        map.addOnMapLoadedListener{
+            editTextFocusChangeListener()
+        }
+
+            setBackButtonOnClickListener()
+
 
 
 
         if (isAdded) {
             setUpCurrentLocationButton()
 //            requestLocationPermission()
-//            getInitialPickUpLocation()
+            getInitialPickUpLocation()
         }
 
     }
@@ -168,8 +176,9 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
                 .center(Point.fromLngLat(lastKnownLocation.longitude, lastKnownLocation.latitude))
                 .zoom(13.0)
                 .build()
+
             mapView.camera.easeTo(cameraPosition, mapAnimationOptions {
-                duration(2000)
+                duration(1)
             })
         } else {
             Log.e("Map", "Last known location is null")
@@ -208,6 +217,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     }
 
     private fun setUpCurrentLocationButton() {
+        hideUserLocationButton()
         binding.currLocationBtn.setOnClickListener {
             showUserLocation()
             hideUserLocationButton()
@@ -333,6 +343,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
                             map.cameraState.center.latitude(),
                             map.cameraState.center.longitude()
                         )
+
                     }
                 } finally {
                     isPopulatingLocation = false
@@ -350,6 +361,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
             }
         }
         dropOffTextView.setOnFocusChangeListener { view, b ->
+            Log.d("PickUpMapFragment", "editTextFocusChangeListener: $b")
             if (b) {
                 isPickupEtInFocus = false
                 isDropOffEtInFocus = true
@@ -358,25 +370,24 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
         }
     }
 
-    //
-//    private fun getInitialPickUpLocation() {
-//        checkLocationPermission(null) {
-//            FetchLocation.getCurrentLocation(
-//                this@PickUpMapFragment,
-//                requireContext()
-//            ) { location ->
-//                runCatching {
-//                    pickUpLocationViewModel.setPickUpLocationName(
-//                        location!!.latitude, location.longitude
-//                    )
-//                }
-//            }
-//
-//        }
-//
-//
-//    }
-//
+
+    private fun getInitialPickUpLocation() {
+        checkLocationPermission(null) {
+            FetchLocation.getCurrentLocation(
+                requireContext()
+            ) { location ->
+                runCatching {
+                    pickUpLocationViewModel.setPickUpLocationName(
+                        location!!.latitude(), location.longitude()
+                    )
+                }
+            }
+
+        }
+
+
+    }
+
     private fun animateToPickUpLocation() {
         val locationMapper = FetchLocation.customLocationMapper(
             pickUpLocationViewModel.latitude, pickUpLocationViewModel.longitude
@@ -413,8 +424,6 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     private fun initializeMapBox() {
         with(mapView) {
             location.enabled = true
-            location.puckBearing = PuckBearing.COURSE
-            location.puckBearingEnabled = true
         }
         getCurrentLocation()
 
@@ -454,15 +463,30 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
             }
 
             override fun onMoveEnd(detector: MoveGestureDetector) {
-                // Handle the end of the move gesture (if needed)
+                Log.d("onMoveEnd", "onMoveEnd")
+                if (!isPopulatingLocation) {
+                    fetchLocation()
+                }
             }
         })
     }
 
-    private val  cameraIdleListener= OnMapIdleListener{
-        if (!isPopulatingLocation) {
-            fetchLocation() 
-            hideUserLocationButton()
+    private fun cameraIdleListener() {
+        {
+//        Log.d("onMapIdle", "onMapIdle ${map.cameraState.center.latitude()} ${map.cameraState.center.longitude()}")
+        }
+        map.subscribeMapIdle(mapIdleCallback())
+
+    }
+
+    private val mapIdleCallback = object : MapIdleCallback {
+        override fun onMapIdle(latitude: Double, longitude: Double) {
+            Log.d("MapIdleCallback", "Map idle at: $latitude, $longitude")
+            fetchLocation() // Call your fetch location function here
+        }
+
+        override fun run(mapIdle: MapIdle) {
+//            TODO("Not yet implemented")
         }
     }
 
