@@ -1,9 +1,13 @@
 package com.example.uber.presentation.map
 
+//import com.example.uber.core.utils.FetchLocation
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.location.Location
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +17,6 @@ import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import com.example.uber.BuildConfig
 import com.example.uber.R
 import com.example.uber.core.interfaces.IBottomSheetListener
@@ -21,7 +24,6 @@ import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.interfaces.utils.permissions.Permission
 import com.example.uber.core.interfaces.utils.permissions.PermissionManager
 import com.example.uber.core.utils.FetchLocation
-//import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
@@ -31,34 +33,23 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.common.MapboxOptions
 import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraChangedCallback
 import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.EdgeInsets
 import com.mapbox.maps.MapView
 import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.Style
-import com.mapbox.maps.extension.style.expressions.dsl.generated.pitch
-import com.mapbox.maps.plugin.PuckBearing
-import com.mapbox.maps.plugin.animation.MapAnimationOptions
-import com.mapbox.maps.plugin.animation.camera
-import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
-import com.mapbox.maps.plugin.locationcomponent.location
-import com.mapbox.maps.plugin.viewport.viewport
-import com.mapbox.navigation.core.trip.session.LocationMatcherResult
-import com.mapbox.navigation.core.trip.session.LocationObserver
-import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.lang.ref.WeakReference
-import kotlin.math.abs
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.OnSuccessListener
-import com.mapbox.maps.MapIdle
-import com.mapbox.maps.MapIdleCallback
+import com.mapbox.maps.extension.observable.eventdata.MapIdleEventData
+import com.mapbox.maps.plugin.animation.CameraAnimationsLifecycleListener
+import com.mapbox.maps.plugin.animation.CameraAnimatorType
 import com.mapbox.maps.plugin.animation.MapAnimationOptions.Companion.mapAnimationOptions
+import com.mapbox.maps.plugin.animation.animator.CameraAnimator
+import com.mapbox.maps.plugin.animation.camera
 import com.mapbox.maps.plugin.delegates.listeners.OnMapIdleListener
 import com.mapbox.maps.plugin.gestures.OnMoveListener
 import com.mapbox.maps.plugin.gestures.gestures
+import com.mapbox.maps.plugin.locationcomponent.location
+import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
+import kotlin.math.abs
 
 class PickUpMapFragment : Fragment(), IBottomSheetListener {
     private var _map: MapboxMap? = null
@@ -83,6 +74,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     //    private var routeHelper: RouteCreationHelper? = null
     private val navigationLocationProvider = NavigationLocationProvider()
     private lateinit var mapView: MapView
+    private var hasCameraChanged = true
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,14 +117,14 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
         mapView.mapboxMap.loadStyleUri(getCurrentMapStyle())
 //        setupLocationComponent()
         initializeMapBox()
-        setupMoveListener()
+        mapMoveListener()
         requestLocationPermission()
-            map.addOnMapIdleListener(cameraIdleListener)
-        map.addOnMapLoadedListener{
+        setupListeners()
+        map.addOnMapLoadedListener {
             editTextFocusChangeListener()
         }
 
-            setBackButtonOnClickListener()
+        setBackButtonOnClickListener()
 
 
 
@@ -148,9 +140,11 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     private fun showUserLocation() {
         checkLocationPermission(null) {
             FetchLocation.getCurrentLocation(requireContext()) { location ->
-                animateCameraToCurrentLocation(FetchLocation.customLocationMapper(
-                    location!!.latitude(), location.longitude()
-                ))
+                animateCameraToCurrentLocation(
+                    FetchLocation.customLocationMapper(
+                        location!!.latitude(), location.longitude()
+                    )
+                )
             }
         }
     }
@@ -171,6 +165,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
+        hasCameraChanged = true
         if (lastKnownLocation != null) {
             val cameraPosition = CameraOptions.Builder()
                 .center(Point.fromLngLat(lastKnownLocation.longitude, lastKnownLocation.latitude))
@@ -277,7 +272,8 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
                 }
             })
     }
-//
+
+    //
     private fun fadeInUserLocationButton() {
         binding.currLocationBtn.apply {
             visibility = View.VISIBLE
@@ -288,7 +284,8 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
                 .setListener(null)
         }
     }
-//
+
+    //
     private fun getCurrentMapStyle(): String =
         if (CheckMode.isDarkMode(requireContext())) Style.DARK else Style.LIGHT
 
@@ -339,6 +336,7 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
                             map.cameraState.center.longitude()
                         )
                     } else if (isDropOffEtInFocus) {
+                        Log.d("DropOffLocation", "${map.cameraState.center.latitude()}, ${map.cameraState.center.longitude()}")
                         dropOffLocationViewModel.setPickUpLocationName(
                             map.cameraState.center.latitude(),
                             map.cameraState.center.longitude()
@@ -349,10 +347,12 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
                     isPopulatingLocation = false
                 }
             }
+            hasCameraChanged = false
         }
     }
 
     private fun editTextFocusChangeListener() {
+
         pickupTextView.setOnFocusChangeListener { view, b ->
             if (b) {
                 isPickupEtInFocus = true
@@ -361,7 +361,6 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
             }
         }
         dropOffTextView.setOnFocusChangeListener { view, b ->
-            Log.d("PickUpMapFragment", "editTextFocusChangeListener: $b")
             if (b) {
                 isPickupEtInFocus = false
                 isDropOffEtInFocus = true
@@ -445,52 +444,81 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
         }
     }
 
-    private fun setupMoveListener() {
-        val gesturesPlugin = mapView.gestures
 
-        gesturesPlugin.addOnMoveListener(object : OnMoveListener {
+    private val debounceDuration = 300L
+    private val handler = Handler(Looper.getMainLooper())
+    private val activeAnimators = mutableSetOf<CameraAnimatorType>()
+
+
+    private val idleRunnable = Runnable {
+        Log.d("CameraIdle", "Camera is idle.")
+        fetchLocation()
+    }
+
+    private fun setupListeners() {
+        // Set up animation lifecycle listener
+        mapView.camera.addCameraAnimationsLifecycleListener(object :
+            CameraAnimationsLifecycleListener {
+            override fun onAnimatorStarting(
+                type: CameraAnimatorType,
+                animator: ValueAnimator,
+                owner: String?
+            ) {
+                activeAnimators.add(type)
+                handler.removeCallbacks(idleRunnable)
+            }
+
+            override fun onAnimatorEnding(
+                type: CameraAnimatorType,
+                animator: ValueAnimator,
+                owner: String?
+            ) {
+                activeAnimators.remove(type)
+                checkIdleState()
+            }
+
+            override fun onAnimatorCancelling(
+                type: CameraAnimatorType,
+                animator: ValueAnimator,
+                owner: String?
+            ) {
+                activeAnimators.remove(type)
+                checkIdleState()
+            }
+
+            override fun onAnimatorInterrupting(
+                type: CameraAnimatorType,
+                runningAnimator: ValueAnimator,
+                runningAnimatorOwner: String?,
+                newAnimator: ValueAnimator,
+                newAnimatorOwner: String?
+            ) {
+                activeAnimators.remove(type)
+                checkIdleState()
+            }
+        })
+
+    }
+
+    private fun mapMoveListener(){
+        mapView.gestures.addOnMoveListener(object : OnMoveListener {
             override fun onMoveBegin(detector: MoveGestureDetector) {
-                Log.d("onMoveBegin", "onMoveBegin")
-                // Similar to SDK 9: Handle the start of a move gesture
-                if (binding.currLocationBtn.visibility != View.VISIBLE) {
-                    fadeInUserLocationButton()  // Show user location button
-                }
+                handler.removeCallbacks(idleRunnable)
+                fadeInUserLocationButton()
             }
 
-            override fun onMove(detector: MoveGestureDetector): Boolean {
-                // Handle ongoing move gestures (if needed)
-                return false
-            }
+            override fun onMove(detector: MoveGestureDetector): Boolean = false
 
             override fun onMoveEnd(detector: MoveGestureDetector) {
-                Log.d("onMoveEnd", "onMoveEnd")
-                if (!isPopulatingLocation) {
-                    fetchLocation()
-                }
             }
         })
     }
 
-    private fun cameraIdleListener() {
-        {
-//        Log.d("onMapIdle", "onMapIdle ${map.cameraState.center.latitude()} ${map.cameraState.center.longitude()}")
-        }
-        map.subscribeMapIdle(mapIdleCallback())
-
-    }
-
-    private val mapIdleCallback = object : MapIdleCallback {
-        override fun onMapIdle(latitude: Double, longitude: Double) {
-            Log.d("MapIdleCallback", "Map idle at: $latitude, $longitude")
-            fetchLocation() // Call your fetch location function here
-        }
-
-        override fun run(mapIdle: MapIdle) {
-//            TODO("Not yet implemented")
+    private fun checkIdleState() {
+        if (activeAnimators.isEmpty()) {
+            handler.postDelayed(idleRunnable, debounceDuration)
         }
     }
-
-
 }
 
 
