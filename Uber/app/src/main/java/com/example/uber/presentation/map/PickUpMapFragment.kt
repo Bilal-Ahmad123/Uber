@@ -51,7 +51,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.lang.ref.WeakReference
-
 import kotlin.math.abs
 
 class PickUpMapFragment : Fragment(), IBottomSheetListener {
