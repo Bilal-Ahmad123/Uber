@@ -33,22 +33,25 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.common.MapboxOptions
 import com.mapbox.geojson.Point
-import com.mapbox.maps.CameraChangedCallback
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.MapView
-import com.mapbox.maps.MapboxMap
-import com.mapbox.maps.Style
-import com.mapbox.maps.extension.observable.eventdata.MapIdleEventData
-import com.mapbox.maps.plugin.animation.CameraAnimationsLifecycleListener
-import com.mapbox.maps.plugin.animation.CameraAnimatorType
-import com.mapbox.maps.plugin.animation.MapAnimationOptions.Companion.mapAnimationOptions
-import com.mapbox.maps.plugin.animation.animator.CameraAnimator
-import com.mapbox.maps.plugin.animation.camera
-import com.mapbox.maps.plugin.delegates.listeners.OnMapIdleListener
-import com.mapbox.maps.plugin.gestures.OnMoveListener
-import com.mapbox.maps.plugin.gestures.gestures
-import com.mapbox.maps.plugin.locationcomponent.location
-import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider
+import com.mapbox.mapboxsdk.Mapbox
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
+import com.mapbox.mapboxsdk.location.modes.CameraMode
+import com.mapbox.mapboxsdk.location.modes.RenderMode
+import com.mapbox.mapboxsdk.maps.MapboxMap
+import com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener
+import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
+import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.plugins.annotation.LineManager
+import com.mapbox.mapboxsdk.plugins.annotation.LineOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.lang.ref.WeakReference
+
 import kotlin.math.abs
 
 class PickUpMapFragment : Fragment(), IBottomSheetListener {
@@ -159,9 +162,10 @@ class PickUpMapFragment : Fragment(), IBottomSheetListener {
 
     fun onMapReady(mapboxMap: MapboxMap) {
         _map = mapboxMap
-//        mapboxMap.setStyle(getCurrentMapStyle())
-//        mapboxMap.addOnCameraIdleListener(cameraPositionChangeListener)
-//        routeHelper = RouteCreationHelper(WeakReference(binding.mapView), WeakReference(mapboxMap),requireContext())
+        mapboxMap.setStyle(getCurrentMapStyle())
+        mapboxMap.addOnMoveListener(moveListener)
+        mapboxMap.addOnCameraIdleListener(cameraPositionChangeListener)
+        routeHelper = RouteCreationHelper(WeakReference(binding.mapView), WeakReference(mapboxMap),requireContext())
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
