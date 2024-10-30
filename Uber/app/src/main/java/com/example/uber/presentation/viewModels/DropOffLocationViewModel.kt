@@ -7,11 +7,13 @@ import com.example.uber.app.common.Resource
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.utils.FetchLocation
+//import com.example.uber.core.utils.FetchLocation
 import com.example.uber.data.remote.GeoCode.GoogleMaps.GeoCodingGoogleMapsResponse
 import com.example.uber.domain.model.DropOffLocation
 import com.example.uber.domain.model.PickUpLocation
 import com.example.uber.domain.use_case.locations.DropOffLocationUseCase
 import com.example.uber.domain.use_case.locations.PickUpLocationUseCase
+import com.mapbox.geojson.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Response
@@ -29,6 +31,10 @@ class DropOffLocationViewModel @Inject constructor(
     private var _longitude: Double = 0.0
     val latitude get() = _latitude
     val longitude get() = _longitude
+
+    init {
+        giveInitialLocationValueToLatLng()
+    }
 
     fun geoCodeLocation(latitude: Double, longitude: Double) {
         launchOnBack {
@@ -49,12 +55,20 @@ class DropOffLocationViewModel @Inject constructor(
     }
 
     fun setPickUpLocationName(latitude: Double, longitude: Double) {
-        launchOnBack {
-            val res = FetchLocation.getLocation(latitude, longitude, context)
-            _locationName.postValue(res)
-        }
         this._latitude = latitude
         this._longitude = longitude
+        launchOnBack {
+//            val res = FetchLocation.getLocation(latitude, longitude, context)
+//            _locationName.postValue(res)
+        }
 
+
+    }
+
+    private fun giveInitialLocationValueToLatLng(){
+        FetchLocation.getCurrentLocation(context){point: Point? ->
+            this._latitude = point!!.latitude()
+            this._longitude = point.longitude()
+        }
     }
 }

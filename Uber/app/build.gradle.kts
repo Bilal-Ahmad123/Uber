@@ -81,11 +81,16 @@ dependencies {
     implementation("com.intuit.sdp:sdp-android:1.1.1")
     implementation("com.intuit.ssp:ssp-android:1.0.6")
     implementation ("com.google.android.gms:play-services-location:17.0.0")
-    implementation(libs.mapbox.android.navigation.ui)
-    implementation (libs.mapbox.android.navigation)
+//    implementation(libs.mapbox.android.navigation.ui)
+//    implementation (libs.mapbox.android.navigation)
 
 
-    implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:8.6.2")
+//    implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:8.6.2")
+    implementation ("com.mapbox.maps:android:11.7.1")
+    implementation ("com.mapbox.navigationcore:navigation:3.4.1")
+    implementation ("com.mapbox.navigationcore:ui-components:3.4.1")
+    implementation ("com.mapbox.plugin:maps-locationcomponent:11.7.1")
+
 
     implementation ("com.google.android.gms:play-services-location:17.0.0")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
@@ -110,6 +115,7 @@ dependencies {
 
     implementation ("androidx.room:room-runtime:$room_version")
     kapt ("androidx.room:room-compiler:$room_version")
+
 
 
 }

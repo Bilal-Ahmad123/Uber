@@ -24,6 +24,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+
     <LinearLayout
         android:visibility="gone"
         android:id="@+id/llplan_your_ride"
@@ -31,6 +33,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical">
+
 
         <TextView
             android:id="@+id/tv_bottom_sheet_heading"
