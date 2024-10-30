@@ -53,6 +53,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 
@@ -159,7 +160,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         mapboxMap.setStyle(getCurrentMapStyle())
         mapboxMap.addOnMoveListener(moveListener)
         mapboxMap.addOnCameraIdleListener(cameraPositionChangeListener)
-        routeHelper = RouteCreationHelper(binding.mapView, mapboxMap)
+        routeHelper = RouteCreationHelper(WeakReference( binding.mapView), WeakReference(mapboxMap),requireContext())
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
