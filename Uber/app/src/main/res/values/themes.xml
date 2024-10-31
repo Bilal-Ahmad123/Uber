@@ -19,6 +19,7 @@
         <item name="confirmDestinationBtn">@color/black</item>
         <item name="confirmDestinationBtnText">@color/white</item>
         <item name="planYourRide">@color/black</item>
+        <item name="markerAnnotation">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <item name="bottomSheetDragHandleStyle">

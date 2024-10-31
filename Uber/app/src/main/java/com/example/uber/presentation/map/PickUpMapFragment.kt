@@ -411,7 +411,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                     dropOffLocationViewModel.longitude,
                     dropOffLocationViewModel.latitude
                 )
-            )
+            )?.setViewModels(pickUpLocationViewModel, dropOffLocationViewModel)
         }
     }
 }

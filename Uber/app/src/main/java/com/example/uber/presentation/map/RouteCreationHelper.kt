@@ -1,4 +1,3 @@
-
 package com.example.uber.presentation.map
 
 import android.content.Context
@@ -11,6 +10,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.uber.BuildConfig
 import com.example.uber.R
+import com.example.uber.presentation.viewModels.DropOffLocationViewModel
+import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.MapboxDirections
 import com.mapbox.api.directions.v5.models.DirectionsResponse
@@ -38,11 +39,13 @@ import java.lang.ref.WeakReference
 class RouteCreationHelper(
     private val mapView: WeakReference<MapView>,
     private val map: WeakReference<MapboxMap>,
-    private val context:Context
+    private val context: Context
 ) {
     private val mCouroutineScope = CoroutineScope(Dispatchers.IO)
+    private var pickUpLocationViewModel:PickUpLocationViewModel? = null
+    private var dropOffLocationViewModel:DropOffLocationViewModel? = null
 
-    fun createRoute(pickUpLocation: Point, dropOffLocation: Point) {
+    fun createRoute(pickUpLocation: Point, dropOffLocation: Point):RouteCreationHelper {
         mCouroutineScope.launch {
             val originPoint =
                 Point.fromLngLat(pickUpLocation.longitude(), pickUpLocation.latitude())
@@ -63,6 +66,7 @@ class RouteCreationHelper(
                 ) {
                     if (response.isSuccessful) {
                         val routes: MutableList<DirectionsRoute>? = response.body()?.routes()
+                        Log.d("Route", "Response: ${response.body()}")
                         if (routes != null && routes.isNotEmpty()) {
                             val route = routes[0]
                             mCouroutineScope.launch {
@@ -89,6 +93,7 @@ class RouteCreationHelper(
             })
 
         }
+        return this
 
 
     }
@@ -108,6 +113,7 @@ class RouteCreationHelper(
 
 
             addMarkerIconsToStyle(map.get()!!.style!!)
+            addMarkerAnnotationToStyle(map.get()!!.style!!)
             val lineOptions = LineOptions()
                 .withLineColor(Color.parseColor("#3887BE").toString())
                 .withLineWidth(3f)
@@ -118,6 +124,7 @@ class RouteCreationHelper(
                 dropOffLatitude,
                 dropOffLongitude
             )
+            addMarkerAnnotation(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude)
         }
     }
 
@@ -143,6 +150,27 @@ class RouteCreationHelper(
         symbolManager.create(symbolOptionsDropOff)
     }
 
+    private fun addMarkerAnnotation(
+        pickUpLatitude: Double,
+        pickUpLongitude: Double,
+        dropOffLatitude: Double,
+        dropOffLongitude: Double
+    ) {
+        var symbolManager = SymbolManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
+        val symbolOptionsPickUpAnnotation = SymbolOptions()
+            .withLatLng(LatLng(pickUpLatitude, pickUpLongitude))
+            .withIconImage("pickup-marker-annotation")
+            .withIconOffset(arrayOf(0f, -30f))
+
+        symbolManager.create(symbolOptionsPickUpAnnotation)
+
+        val symbolOptionsDropOffAnnotation = SymbolOptions()
+            .withLatLng(LatLng(dropOffLatitude, dropOffLongitude))
+            .withIconImage("dropoff-marker-annotation")
+            .withIconOffset(arrayOf(0f, -30f))
+        symbolManager.create(symbolOptionsDropOffAnnotation)
+    }
+
 
     private fun addMarkerIconsToStyle(style: Style) {
         val pickupIcon = BitmapUtils.getBitmapFromDrawable(
@@ -157,6 +185,16 @@ class RouteCreationHelper(
         }
     }
 
+    private fun addMarkerAnnotationToStyle(style: Style) {
+        val markerAnnotation = BitmapUtils.getBitmapFromDrawable(
+            ContextCompat.getDrawable(mapView.get()?.context!!, R.drawable.marker_annotations)
+        )
+        if (markerAnnotation != null) {
+            style.addImage("pickup-marker-annotation", markerAnnotation)
+            style.addImage("dropoff-marker-annotation", markerAnnotation)
+        }
+    }
+
     private fun scaleBitMapImageSize(icon: Bitmap): Bitmap? {
         val scaledIcon = icon?.let {
             Bitmap.createScaledBitmap(it, 20, 20, false)
@@ -164,87 +202,9 @@ class RouteCreationHelper(
         return scaledIcon
     }
 
-
-    private fun addCustomViewsToPickUpAndDropOff(
-        pickUpLatitude: Double,
-        pickUpLongitude: Double,
-        dropOffLatitude: Double,
-        dropOffLongitude: Double
-    ) {
-        val mapboxMap = map.get()
-        val mapViewLayout = mapView.get()
-
-        if (mapboxMap != null && mapViewLayout != null) {
-            val overlay = FrameLayout(mapViewLayout.context)
-            overlay.layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT
-            )
-
-            val pickupView = LinearLayout(mapViewLayout.context).apply {
-                setBackgroundColor(Color.BLACK)
-                layoutParams = FrameLayout.LayoutParams(100, 100)
-                orientation = LinearLayout.VERTICAL
-            }
-
-            val pickupTextView = TextView(mapViewLayout.context).apply {
-                text = "Pickup Location"
-                setTextColor(Color.WHITE)
-                textSize = 14f
-            }
-
-            pickupView.addView(pickupTextView)
-
-            val dropOffView = LinearLayout(mapViewLayout.context).apply {
-                setBackgroundColor(Color.BLACK)
-                layoutParams = FrameLayout.LayoutParams(100, 100)
-                orientation = LinearLayout.VERTICAL
-            }
-
-            val dropoffTextView = TextView(mapViewLayout.context).apply {
-                text = "Dropoff Location"
-                setTextColor(Color.WHITE)
-                textSize = 14f
-            }
-
-            dropOffView.addView(dropoffTextView)
-
-            val pickupPoint = mapboxMap.projection.toScreenLocation(LatLng(pickUpLatitude, pickUpLongitude))
-            val dropoffPoint = mapboxMap.projection.toScreenLocation(LatLng(dropOffLatitude, dropOffLongitude))
-
-            val pickupLayoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                leftMargin = pickupPoint.x.toInt()
-                topMargin = pickupPoint.y.toInt()
-            }
-
-            val dropoffLayoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                leftMargin = dropoffPoint.x.toInt()
-                topMargin = dropoffPoint.y.toInt()
-            }
-
-            overlay.addView(pickupView, pickupLayoutParams)
-            overlay.addView(dropOffView, dropoffLayoutParams)
-            mapViewLayout.addView(overlay)
-        }
+    fun setViewModels(pickUpLocationViewModel: PickUpLocationViewModel, dropOffLocationViewModel: DropOffLocationViewModel){
+        this.pickUpLocationViewModel = pickUpLocationViewModel
+        this.dropOffLocationViewModel = dropOffLocationViewModel
     }
-
-//    private fun createAnnotation(pickUpLatitude: Double, pickUpLongitude: Double){
-//        val icon = IconFactory.getInstance(context)
-//        icon.fromResource(R.drawable.baseline_home_24)
-//
-//        map.get()?.addMarker(MarkerOptions()
-//            .position(LatLng(-37.821648, 144.978594))
-//            .title("Nice"))
-//    }
-
-
-
-
 }
 
