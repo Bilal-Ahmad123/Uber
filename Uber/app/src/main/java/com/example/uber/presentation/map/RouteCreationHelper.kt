@@ -2,11 +2,11 @@ package com.example.uber.presentation.map
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
 import android.util.Log
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.uber.BuildConfig
 import com.example.uber.R
@@ -39,13 +39,13 @@ import java.lang.ref.WeakReference
 class RouteCreationHelper(
     private val mapView: WeakReference<MapView>,
     private val map: WeakReference<MapboxMap>,
-    private val context: Context
+    private val context: Context,
+    private var pickUpLocationViewModel: PickUpLocationViewModel,
+    private var dropOffLocationViewModel: DropOffLocationViewModel
 ) {
     private val mCouroutineScope = CoroutineScope(Dispatchers.IO)
-    private var pickUpLocationViewModel:PickUpLocationViewModel? = null
-    private var dropOffLocationViewModel:DropOffLocationViewModel? = null
 
-    fun createRoute(pickUpLocation: Point, dropOffLocation: Point):RouteCreationHelper {
+    fun createRoute(pickUpLocation: Point, dropOffLocation: Point): RouteCreationHelper {
         mCouroutineScope.launch {
             val originPoint =
                 Point.fromLngLat(pickUpLocation.longitude(), pickUpLocation.latitude())
@@ -186,13 +186,12 @@ class RouteCreationHelper(
     }
 
     private fun addMarkerAnnotationToStyle(style: Style) {
-        val markerAnnotation = BitmapUtils.getBitmapFromDrawable(
-            ContextCompat.getDrawable(mapView.get()?.context!!, R.drawable.marker_annotations)
-        )
-        if (markerAnnotation != null) {
-            style.addImage("pickup-marker-annotation", markerAnnotation)
-            style.addImage("dropoff-marker-annotation", markerAnnotation)
-        }
+
+        val pickupMarker = createTextMarkerDrawable(context, pickUpLocationViewModel.locationName.value.toString())
+        val dropoffMarker = createTextMarkerDrawable(context, dropOffLocationViewModel.locationName.value.toString())
+        style.addImage("pickup-marker-annotation", pickupMarker)
+        style.addImage("dropoff-marker-annotation", dropoffMarker)
+
     }
 
     private fun scaleBitMapImageSize(icon: Bitmap): Bitmap? {
@@ -201,10 +200,35 @@ class RouteCreationHelper(
         }
         return scaledIcon
     }
+    private fun createTextMarkerDrawable(context: Context, text: String): Bitmap {
+        val shapeDrawable = ContextCompat.getDrawable(context, R.drawable.marker_annotations)!!
+        val paint = Paint().apply {
+            color = Color.BLACK
+            textSize = 20f
+            isAntiAlias = true
+            textAlign = Paint.Align.CENTER
+        }
+        val rect = Rect();
+        paint.getTextBounds(text, 0, text.length, rect)
+        val height = shapeDrawable.intrinsicHeight
+        shapeDrawable.setBounds(0, 0, rect.width() + 20, height)
 
-    fun setViewModels(pickUpLocationViewModel: PickUpLocationViewModel, dropOffLocationViewModel: DropOffLocationViewModel){
-        this.pickUpLocationViewModel = pickUpLocationViewModel
-        this.dropOffLocationViewModel = dropOffLocationViewModel
+        val bitmap = Bitmap.createBitmap(rect.width() + 20, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        shapeDrawable.draw(canvas)
+
+        val xPos = canvas.width / 2f
+        val yPos = (canvas.height / 2f) - (paint.descent() + paint.ascent()) / 2
+        canvas.drawText(text, xPos, yPos, paint)
+
+        return bitmap
     }
+
+    private fun getDurationInMinutes(seconds: Int):Int{
+        val minutes = (seconds % 3600) / 60
+        return minutes
+    }
+
 }
 

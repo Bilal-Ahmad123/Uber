@@ -160,7 +160,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         mapboxMap.setStyle(getCurrentMapStyle())
         mapboxMap.addOnMoveListener(moveListener)
         mapboxMap.addOnCameraIdleListener(cameraPositionChangeListener)
-        routeHelper = RouteCreationHelper(WeakReference(binding.mapView), WeakReference(mapboxMap),requireContext())
+        routeHelper = RouteCreationHelper(WeakReference(binding.mapView), WeakReference(mapboxMap),requireContext(),pickUpLocationViewModel, dropOffLocationViewModel)
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
@@ -411,7 +411,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                     dropOffLocationViewModel.longitude,
                     dropOffLocationViewModel.latitude
                 )
-            )?.setViewModels(pickUpLocationViewModel, dropOffLocationViewModel)
+            )
         }
     }
 }
