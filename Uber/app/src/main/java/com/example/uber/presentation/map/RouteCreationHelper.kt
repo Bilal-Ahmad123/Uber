@@ -48,6 +48,7 @@ class RouteCreationHelper(
     private var mCouroutineScope: CoroutineScope? = CoroutineScope(Dispatchers.IO)
     private var _duration: Int = 0
     private var lineManager: LineManager? = null
+    private var symbolManager: SymbolManager? = null
 
     fun createRoute(pickUpLocation: Point, dropOffLocation: Point): RouteCreationHelper {
         mCouroutineScope?.launch {
@@ -139,19 +140,18 @@ class RouteCreationHelper(
         dropOffLatitude: Double,
         dropOffLongitude: Double
     ) {
-        var symbolManager = SymbolManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
-
+        symbolManager = SymbolManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
         val symbolOptionsPickUp = SymbolOptions()
             .withLatLng(LatLng(pickUpLatitude, pickUpLongitude))
             .withIconImage("pickup-marker")
             .withIconSize(1.3f)
-        symbolManager.create(symbolOptionsPickUp)
+        symbolManager?.create(symbolOptionsPickUp)
 
         val symbolOptionsDropOff = SymbolOptions()
             .withLatLng(LatLng(dropOffLatitude, dropOffLongitude))
             .withIconImage("dropoff-marker")
             .withIconSize(1.3f)
-        symbolManager.create(symbolOptionsDropOff)
+        symbolManager?.create(symbolOptionsDropOff)
     }
 
     private fun addMarkerAnnotation(
@@ -160,22 +160,21 @@ class RouteCreationHelper(
         dropOffLatitude: Double,
         dropOffLongitude: Double
     ) {
-        var symbolManager = SymbolManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
-        symbolManager.iconAllowOverlap = true
-        symbolManager.iconIgnorePlacement = true
+        symbolManager?.iconAllowOverlap = true
+        symbolManager?.iconIgnorePlacement = true
         val symbolOptionsPickUpAnnotation = SymbolOptions()
             .withLatLng(LatLng(pickUpLatitude, pickUpLongitude))
             .withIconImage("pickup-marker-annotation")
             .withIconOffset(arrayOf(0f, -30f))
 
 
-        symbolManager.create(symbolOptionsPickUpAnnotation)
+        symbolManager?.create(symbolOptionsPickUpAnnotation)
 
         val symbolOptionsDropOffAnnotation = SymbolOptions()
             .withLatLng(LatLng(dropOffLatitude, dropOffLongitude))
             .withIconImage("dropoff-marker-annotation")
             .withIconOffset(arrayOf(0f, -30f))
-        symbolManager.create(symbolOptionsDropOffAnnotation)
+        symbolManager?.create(symbolOptionsDropOffAnnotation)
     }
 
 
@@ -260,15 +259,17 @@ class RouteCreationHelper(
         map.get()?.style?.removeImage("dropoff-marker-annotation")
         lineManager?.deleteAll()
         lineManager = null
+        symbolManager?.deleteAll()
     }
 
     fun doesLineManagerExist(): Boolean {
         return lineManager != null
     }
 
-    fun clearResources(){
+    fun clearResources() {
         mCouroutineScope = null
         lineManager = null
+        symbolManager = null
     }
 
 }
