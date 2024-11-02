@@ -45,11 +45,12 @@ class RouteCreationHelper(
     private var pickUpLocationViewModel: PickUpLocationViewModel,
     private var dropOffLocationViewModel: DropOffLocationViewModel
 ) {
-    private val mCouroutineScope = CoroutineScope(Dispatchers.IO)
+    private var mCouroutineScope: CoroutineScope? = CoroutineScope(Dispatchers.IO)
     private var _duration: Int = 0
+    private var lineManager: LineManager? = null
 
     fun createRoute(pickUpLocation: Point, dropOffLocation: Point): RouteCreationHelper {
-        mCouroutineScope.launch {
+        mCouroutineScope?.launch {
             val originPoint =
                 Point.fromLngLat(pickUpLocation.longitude(), pickUpLocation.latitude())
             val destinationPoint =
@@ -72,7 +73,7 @@ class RouteCreationHelper(
                         Log.d("Route", "Response: ${response.body()}")
                         if (routes != null && routes.isNotEmpty()) {
                             val route = routes[0]
-                            mCouroutineScope.launch {
+                            mCouroutineScope?.launch {
                                 _duration = getDurationInMinutes(routes[0].duration()!!)
                                 displayRoute(
                                     route,
@@ -113,7 +114,7 @@ class RouteCreationHelper(
         val lineString = LineString.fromPolyline(route.geometry()!!, 6)
 
         withContext(Dispatchers.Main) {
-            val lineManager = LineManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
+            lineManager = LineManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
 
 
             addMarkerIconsToStyle(map.get()!!.style!!)
@@ -121,7 +122,7 @@ class RouteCreationHelper(
             val lineOptions = LineOptions()
                 .withLineColor(Color.parseColor("#3887BE").toString())
                 .withLineWidth(3f)
-            lineManager.create(lineOptions.withGeometry(lineString))
+            lineManager?.create(lineOptions.withGeometry(lineString))
             addMarkerToRouteStartAndRouteEnd(
                 pickUpLatitude,
                 pickUpLongitude,
@@ -161,7 +162,7 @@ class RouteCreationHelper(
     ) {
         var symbolManager = SymbolManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
         symbolManager.iconAllowOverlap = true
-        symbolManager.iconIgnorePlacement =true
+        symbolManager.iconIgnorePlacement = true
         val symbolOptionsPickUpAnnotation = SymbolOptions()
             .withLatLng(LatLng(pickUpLatitude, pickUpLongitude))
             .withIconImage("pickup-marker-annotation")
@@ -250,6 +251,24 @@ class RouteCreationHelper(
         } else {
             minutes.toInt()
         }
+    }
+
+    fun deleteRoute() {
+        map.get()?.style?.removeImage("pickup-marker")
+        map.get()?.style?.removeImage("dropoff-marker")
+        map.get()?.style?.removeImage("pickup-marker-annotation")
+        map.get()?.style?.removeImage("dropoff-marker-annotation")
+        lineManager?.deleteAll()
+        lineManager = null
+    }
+
+    fun doesLineManagerExist(): Boolean {
+        return lineManager != null
+    }
+
+    fun clearResources(){
+        mCouroutineScope = null
+        lineManager = null
     }
 
 }

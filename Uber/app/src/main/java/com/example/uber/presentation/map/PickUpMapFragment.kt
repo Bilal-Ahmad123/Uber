@@ -240,9 +240,9 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         _map = null
         bottomSheetManager = null
         FetchLocation.cleanResources()
+        routeHelper?.clearResources()
         routeHelper = null
-
-
+        _rideOptionsBottomSheet = null
     }
 
     private val moveListener: MapboxMap.OnMoveListener = object : MapboxMap.OnMoveListener {
@@ -330,6 +330,10 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                 bottomSheetManager?.showBottomSheet()
             }
             _rideOptionsBottomSheet?.hideBottomSheet()
+            if(routeHelper?.doesLineManagerExist()!!){
+               deleteRoutes()
+            }
+
         }
     }
 
@@ -451,6 +455,15 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     }
     private fun showRideOptionsBottomSheet(){
         _rideOptionsBottomSheet?.showBottomSheet()
+    }
+
+    private fun deleteRoutes(){
+        routeHelper?.deleteRoute()
+        showLocationPickerMarker()
+    }
+
+    private fun showLocationPickerMarker(){
+        binding.activityMainCenterLocationPin.visibility = View.VISIBLE
     }
 }
 
