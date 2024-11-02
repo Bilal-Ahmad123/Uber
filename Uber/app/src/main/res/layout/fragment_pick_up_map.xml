@@ -42,6 +42,7 @@
         android:layout_width="@dimen/_30sdp"
         android:layout_height="@dimen/_30sdp"
         android:layout_gravity="center"
+        android:id="@+id/activity_main_center_location_pin"
         android:layout_marginBottom="@dimen/_15sdp"
         android:contentDescription="TODO"
         android:src="@drawable/pin_location"/>
@@ -66,5 +67,6 @@
 
 </FrameLayout>
     <include layout="@layout/bottom_sheet_where_to" />
+    <include layout="@layout/ride_options_bottom_sheet" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -84,9 +84,11 @@ dependencies {
     implementation(libs.mapbox.android.navigation.ui)
     implementation (libs.mapbox.android.navigation)
 
+    implementation ("com.faltenreich:skeletonlayout:5.0.0")
+
+
 
     implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:8.6.2")
-
     implementation ("com.google.android.gms:play-services-location:17.0.0")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 

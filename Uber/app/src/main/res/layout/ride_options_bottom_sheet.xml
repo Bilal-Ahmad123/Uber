@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ride_options_bottom_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_bottom_sheet"
+    android:backgroundTint="?attr/changeBottomSheetColor"
+    android:elevation="@dimen/_10sdp"
+    android:orientation="vertical"
+    android:padding="15dp"
+    app:behavior_hideable="true"
+    android:clickable="true"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+    <View
+        android:id="@+id/handlebar"
+        android:layout_width="@dimen/_45sdp"
+        android:layout_height="@dimen/_3sdp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="@dimen/_11sdp"
+        android:background="@drawable/handlebar_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:text="Choose a Ride"
+        android:textStyle="bold"
+        android:id="@+id/tv_plan_your_ride"
+        android:textColor="?attr/planYourRide"
+        android:textSize="@dimen/_15ssp"
+        android:layout_marginBottom="@dimen/_15sdp"
+        />
+
+    <com.faltenreich.skeletonlayout.SkeletonLayout
+        android:id="@+id/skeletonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_200sdp">
+
+    </com.faltenreich.skeletonlayout.SkeletonLayout>
+
+
+</LinearLayout>

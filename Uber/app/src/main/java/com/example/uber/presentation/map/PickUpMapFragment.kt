@@ -26,6 +26,7 @@ import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
+import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -65,6 +66,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private val binding get() = _binding!!
     private var loadedMapStyle: Style? = null
     private var bottomSheetManager: BottomSheetManager? = null
+    private var _rideOptionsBottomSheet: RideOptionsBottomSheet? = null
     private var isPopulatingLocation = false
     private lateinit var bottomSheetView: LinearLayout
     private lateinit var pickupTextView: EditText
@@ -95,26 +97,11 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        bottomSheetView = binding.root.findViewById<LinearLayout>(R.id.bottom_sheet)
-        pickupTextView = binding.root.findViewById<EditText>(R.id.ti_pickup)
-        dropOffTextView = binding.root.findViewById<EditText>(R.id.ti_drop_off)
-        confirmDestinationBtn =
-            binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
+        initializeBottomSheets(view)
+        initializeBottomSheetViews()
         setBackButtonOnClickListener()
         editTextFocusChangeListener()
-        bottomSheetManager =
-            BottomSheetManager(
-                view,
-                requireContext(),
-                this,
-                viewLifecycleOwner,
-                pickUpLocationViewModel,
-                dropOffLocationViewModel
-            )
-        binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
-            .setOnClickListener {
-                createRoute()
-            }
+        setConfirmDestinationBtnClickListener()
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync(this)
 
@@ -124,6 +111,36 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             getInitialPickUpLocation()
         }
 
+    }
+
+    private fun initializeBottomSheets(view: View) {
+        bottomSheetManager =
+            BottomSheetManager(
+                view,
+                requireContext(),
+                this,
+                viewLifecycleOwner,
+                pickUpLocationViewModel,
+                dropOffLocationViewModel
+            )
+        _rideOptionsBottomSheet = RideOptionsBottomSheet(view, requireContext())
+
+
+    }
+
+    private fun initializeBottomSheetViews() {
+        bottomSheetView = binding.root.findViewById<LinearLayout>(R.id.bottom_sheet)
+        pickupTextView = binding.root.findViewById<EditText>(R.id.ti_pickup)
+        dropOffTextView = binding.root.findViewById<EditText>(R.id.ti_drop_off)
+        confirmDestinationBtn =
+            binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
+    }
+
+    private fun setConfirmDestinationBtnClickListener() {
+        binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
+            .setOnClickListener {
+                createRoute()
+            }
     }
 
     private fun showUserLocation(loadedMapStyle: Style) {
@@ -160,7 +177,13 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         mapboxMap.setStyle(getCurrentMapStyle())
         mapboxMap.addOnMoveListener(moveListener)
         mapboxMap.addOnCameraIdleListener(cameraPositionChangeListener)
-        routeHelper = RouteCreationHelper(WeakReference(binding.mapView), WeakReference(mapboxMap),requireContext(),pickUpLocationViewModel, dropOffLocationViewModel)
+        routeHelper = RouteCreationHelper(
+            WeakReference(binding.mapView),
+            WeakReference(mapboxMap),
+            requireContext(),
+            pickUpLocationViewModel,
+            dropOffLocationViewModel
+        )
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
@@ -303,9 +326,10 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
 
     private fun setBackButtonOnClickListener() {
         binding.backFbn.setOnClickListener {
-            if (bottomSheetManager?.bottomSheetBehavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
-                bottomSheetManager?.bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            if (bottomSheetManager?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetManager?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_HIDDEN) {
+                bottomSheetManager?.showBottomSheet()
             }
+            _rideOptionsBottomSheet?.hideBottomSheet()
         }
     }
 
@@ -401,6 +425,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     }
 
     private fun createRoute() {
+        hideLocationPickerMarker()
+        hidePickUpBottomSheet()
         lifecycleScope.launch(Dispatchers.IO) {
             routeHelper?.createRoute(
                 Point.fromLngLat(
@@ -413,6 +439,18 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                 )
             )
         }
+        showRideOptionsBottomSheet()
+    }
+
+    private fun hideLocationPickerMarker() {
+        binding.activityMainCenterLocationPin.visibility = View.GONE
+    }
+
+    private fun hidePickUpBottomSheet() {
+        bottomSheetManager?.hideBottomSheet()
+    }
+    private fun showRideOptionsBottomSheet(){
+        _rideOptionsBottomSheet?.showBottomSheet()
     }
 }
 

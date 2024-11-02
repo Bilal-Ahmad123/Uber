@@ -32,7 +32,7 @@ class BottomSheetManager(
     private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
     private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
     private val whereTo: ConstraintLayout by lazy { view.findViewById(R.id.cl_where_to) }
-    val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+    private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
     private val et_pickup: TextView by lazy { view.findViewById(R.id.ti_pickup) }
@@ -188,5 +188,19 @@ class BottomSheetManager(
 
     private fun setEditTextDropOffInFocus() {
         et_drop_off.requestFocus()
+    }
+
+    fun hideBottomSheet(){
+        bottomSheetBehavior.isHideable = true
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+    }
+
+    fun showBottomSheet(){
+        bottomSheetBehavior.isHideable = false
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    fun bottomSheetBehaviour():Int{
+        return bottomSheetBehavior.state
     }
 }
