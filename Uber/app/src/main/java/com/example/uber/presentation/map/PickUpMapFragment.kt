@@ -3,7 +3,7 @@ package com.example.uber.presentation.map
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.graphics.Color
+import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +18,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.uber.BuildConfig
 import com.example.uber.R
+import com.example.uber.core.RxBus.RxBus
+import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.interfaces.utils.permissions.Permission
@@ -31,11 +33,6 @@ import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.android.gestures.MoveGestureDetector
-import com.mapbox.api.directions.v5.DirectionsCriteria
-import com.mapbox.api.directions.v5.MapboxDirections
-import com.mapbox.api.directions.v5.models.DirectionsResponse
-import com.mapbox.api.directions.v5.models.DirectionsRoute
-import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -47,13 +44,8 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.mapboxsdk.plugins.annotation.LineManager
-import com.mapbox.mapboxsdk.plugins.annotation.LineOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -182,7 +174,9 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             WeakReference(mapboxMap),
             requireContext(),
             pickUpLocationViewModel,
-            dropOffLocationViewModel
+            dropOffLocationViewModel,
+            WeakReference(bottomSheetManager),
+            WeakReference(_rideOptionsBottomSheet)
         )
     }
 
@@ -374,20 +368,18 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         }
     }
 
+    @SuppressLint("CheckResult")
     private fun editTextFocusChangeListener() {
-        pickupTextView.setOnFocusChangeListener { view, b ->
-            if (b) {
-                isPickupEtInFocus = true
-                isDropOffEtInFocus = false
+
+        RxBus.listen(RxEvent.EventEditTextFocus::class.java).subscribe {
+            if(it.isPickUpEditTextFocus){
                 animateToPickUpLocation()
             }
-        }
-        dropOffTextView.setOnFocusChangeListener { view, b ->
-            if (b) {
-                isPickupEtInFocus = false
-                isDropOffEtInFocus = true
+            else if(it.isDropOffEditTextFocus){
                 animateToDropOffLocation()
             }
+            isPickupEtInFocus = it.isPickUpEditTextFocus
+            isDropOffEtInFocus = it.isDropOffEditTextFocus
         }
     }
 

@@ -157,6 +157,8 @@
                  />
         <EditText
             android:textSize="@dimen/_12ssp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:layout_weight="2"
             android:id="@+id/ti_pickup"
             android:layout_width="match_parent"

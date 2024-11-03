@@ -5,6 +5,7 @@ import android.content.Context
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
@@ -12,8 +13,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
 import com.example.uber.R
 import com.example.uber.app.common.Resource
+import com.example.uber.core.RxBus.RxBus
+import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.interfaces.IBottomSheetListener
-import com.example.uber.core.utils.FocusHelper
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.GeoCodeGoogleLocationViewModel
@@ -35,8 +37,8 @@ class BottomSheetManager(
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
-    private val et_pickup: TextView by lazy { view.findViewById(R.id.ti_pickup) }
-    private val et_drop_off: TextView by lazy { view.findViewById(R.id.ti_drop_off) }
+    private val et_pickup: EditText by lazy { view.findViewById(R.id.ti_pickup) }
+    private val et_drop_off: EditText by lazy { view.findViewById(R.id.ti_drop_off) }
     private val bottomSheetHeading: TextView by lazy { view.findViewById(R.id.tv_bottom_sheet_heading) }
     private val tv_pin_location: TextView = view.findViewById(R.id.tv_pin_location)
     private val llSetLocationOnMap: LinearLayout by lazy { view.findViewById(R.id.ll_set_location_on_map) }
@@ -49,6 +51,7 @@ class BottomSheetManager(
         observeDropOffLocationChanges()
         setLocationOnMapLinearLayoutOnClickListener()
         setEditTextDropOffInFocus()
+        editTextFocusChangeListener()
     }
 
     private fun setupBottomSheetCallback() {
@@ -60,7 +63,6 @@ class BottomSheetManager(
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 bottomSheetListener.onBottomSheetSlide(slideOffset)
-                listenEditTextFocus()
                 fadeInOutBottomSheetContent(slideOffset)
                 showPickUpDropOffContent(slideOffset)
             }
@@ -124,13 +126,6 @@ class BottomSheetManager(
             }
         }
     }
-
-    private fun listenEditTextFocus() {
-        val (pickupInFocus, dropOffInFocus) = FocusHelper.isInputInFocus(et_pickup, et_drop_off)
-        isPickupEtInFocus = pickupInFocus
-        isDropOffEtInFocus = dropOffInFocus
-    }
-
     private fun Activity.dismissKeyboard() {
         val inputMethodManager =
             getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -142,9 +137,8 @@ class BottomSheetManager(
         checkInternetConnection {
             with(pickUpLocationViewModel) {
                 locationName.observe(viewLifecycleOwner) {
-                    et_pickup.text = it
+                    et_pickup.setText(it)
                     updateLocationText(it)
-
                 }
             }
         }
@@ -155,9 +149,7 @@ class BottomSheetManager(
         checkInternetConnection {
             with(dropOffLocationViewModel) {
                 locationName.observe(viewLifecycleOwner) {
-
-                    et_drop_off.text =
-                        it
+                    et_drop_off.setText(it)
                     updateLocationText(it)
                 }
             }
@@ -195,12 +187,38 @@ class BottomSheetManager(
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    fun showBottomSheet(){
+    fun showBottomSheet() {
         bottomSheetBehavior.isHideable = false
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        when {
+            isPickupEtInFocus -> {
+                et_pickup.requestFocus()
+            }
+
+            isDropOffEtInFocus -> {
+                et_drop_off.requestFocus()
+            }
+        }
     }
 
     fun bottomSheetBehaviour():Int{
         return bottomSheetBehavior.state
+    }
+
+    private fun editTextFocusChangeListener() {
+        et_pickup.setOnFocusChangeListener { view, b ->
+            if (b) {
+                RxBus.publish(RxEvent.EventEditTextFocus(true,false))
+                isPickupEtInFocus = true
+                isDropOffEtInFocus = false
+            }
+        }
+        et_drop_off.setOnFocusChangeListener { view, b ->
+            RxBus.publish(RxEvent.EventEditTextFocus(false,true))
+            if (b) {
+                isPickupEtInFocus = false
+                isDropOffEtInFocus = true
+            }
+        }
     }
 }

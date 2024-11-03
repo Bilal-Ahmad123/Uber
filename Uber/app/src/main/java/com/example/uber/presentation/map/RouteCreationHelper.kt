@@ -11,6 +11,8 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.uber.BuildConfig
 import com.example.uber.R
+import com.example.uber.presentation.bottomSheet.BottomSheetManager
+import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.mapbox.api.directions.v5.DirectionsCriteria
@@ -37,13 +39,20 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.lang.ref.WeakReference
 
+enum class Marker {
+    DROP_OFF,
+    PICK_UP
+}
+
 
 class RouteCreationHelper(
     private val mapView: WeakReference<MapView>,
     private val map: WeakReference<MapboxMap>,
     private val context: Context,
     private var pickUpLocationViewModel: PickUpLocationViewModel,
-    private var dropOffLocationViewModel: DropOffLocationViewModel
+    private var dropOffLocationViewModel: DropOffLocationViewModel,
+    private var bottomSheetManager: WeakReference<BottomSheetManager>,
+    private var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>
 ) {
     private var mCouroutineScope: CoroutineScope? = CoroutineScope(Dispatchers.IO)
     private var _duration: Int = 0
@@ -141,6 +150,7 @@ class RouteCreationHelper(
         dropOffLongitude: Double
     ) {
         symbolManager = SymbolManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
+        addAnnotationClickListener()
         val symbolOptionsPickUp = SymbolOptions()
             .withLatLng(LatLng(pickUpLatitude, pickUpLongitude))
             .withIconImage("pickup-marker")
@@ -270,6 +280,14 @@ class RouteCreationHelper(
         mCouroutineScope = null
         lineManager = null
         symbolManager = null
+    }
+
+    private fun addAnnotationClickListener() {
+        symbolManager?.addClickListener {
+            bottomSheetManager.get()?.showBottomSheet()
+            rideOptionsBottomSheet.get()?.hideBottomSheet()
+            deleteRoute()
+        }
     }
 
 }

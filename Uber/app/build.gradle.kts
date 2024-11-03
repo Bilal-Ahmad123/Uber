@@ -85,6 +85,8 @@ dependencies {
     implementation (libs.mapbox.android.navigation)
 
     implementation ("com.faltenreich:skeletonlayout:5.0.0")
+    implementation ("io.reactivex.rxjava3:rxjava:3.1.0")
+
 
 
 
