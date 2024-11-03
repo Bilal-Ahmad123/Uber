@@ -6,7 +6,6 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -176,7 +175,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             pickUpLocationViewModel,
             dropOffLocationViewModel,
             WeakReference(bottomSheetManager),
-            WeakReference(_rideOptionsBottomSheet)
+            WeakReference(_rideOptionsBottomSheet),
+            this
         )
     }
 
@@ -445,7 +445,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private fun hidePickUpBottomSheet() {
         bottomSheetManager?.hideBottomSheet()
     }
-    private fun showRideOptionsBottomSheet(){
+     private fun showRideOptionsBottomSheet(){
         _rideOptionsBottomSheet?.showBottomSheet()
     }
 
@@ -454,7 +454,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         showLocationPickerMarker()
     }
 
-    private fun showLocationPickerMarker(){
+     fun showLocationPickerMarker(){
         binding.activityMainCenterLocationPin.visibility = View.VISIBLE
     }
 }

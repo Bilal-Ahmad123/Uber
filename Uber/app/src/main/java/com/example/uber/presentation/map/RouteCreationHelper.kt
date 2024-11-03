@@ -52,7 +52,8 @@ class RouteCreationHelper(
     private var pickUpLocationViewModel: PickUpLocationViewModel,
     private var dropOffLocationViewModel: DropOffLocationViewModel,
     private var bottomSheetManager: WeakReference<BottomSheetManager>,
-    private var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>
+    private var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
+     private val  pickUpMapFragment: PickUpMapFragment
 ) {
     private var mCouroutineScope: CoroutineScope? = CoroutineScope(Dispatchers.IO)
     private var _duration: Int = 0
@@ -287,6 +288,7 @@ class RouteCreationHelper(
             bottomSheetManager.get()?.showBottomSheet()
             rideOptionsBottomSheet.get()?.hideBottomSheet()
             deleteRoute()
+            pickUpMapFragment.showLocationPickerMarker()
         }
     }
 
