@@ -86,8 +86,6 @@ class RouteCreationHelper(
                         Log.d("Route", "Response: ${response.body()}")
                         if (routes != null && routes.isNotEmpty()) {
                             val route = routes[0]
-                            decodeGeometryStringToRoutes()
-
                             _geometry = route.geometry()
                             mCouroutineScope?.launch {
                                 _duration = getDurationInMinutes(routes[0].duration()!!)
@@ -300,7 +298,7 @@ class RouteCreationHelper(
             deleteRoute()
             pickUpMapFragment.showLocationPickerMarker()
             pickUpMapFragment.onAddCameraAndMoveListeners()
-            decodeGeometryStringToRoutes()
+
         }
     }
 

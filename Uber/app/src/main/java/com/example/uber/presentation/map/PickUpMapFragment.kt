@@ -19,6 +19,7 @@ import com.example.uber.BuildConfig
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
+import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.interfaces.utils.permissions.Permission
@@ -462,9 +463,6 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         binding.activityMainCenterLocationPin.visibility = View.VISIBLE
     }
 
-    private fun animateCameraToRoute(){
-        val routeCoordinates: List<Point> = listOf(Point.fromLngLat(pickUpLocationViewModel.longitude, pickUpLocationViewModel.latitude), Point.fromLngLat(dropOffLocationViewModel.longitude, dropOffLocationViewModel.latitude))
-    }
 
     fun onAddCameraAndMoveListeners(){
         if(!_areListenersRegistered) {
