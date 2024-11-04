@@ -15,6 +15,7 @@ import com.example.uber.R
 import com.example.uber.app.common.Resource
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
+import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
@@ -187,16 +188,13 @@ class BottomSheetManager(
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    fun showBottomSheet() {
+    fun showBottomSheet(etAnnotationFocusListener:Markers?=null) {
         bottomSheetBehavior.isHideable = false
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        when {
-            isPickupEtInFocus -> {
-                et_pickup.requestFocus()
-            }
-
-            isDropOffEtInFocus -> {
-                et_drop_off.requestFocus()
+        if(etAnnotationFocusListener != null) {
+            when (etAnnotationFocusListener) {
+                Markers.PICK_UP -> et_pickup.requestFocus()
+                Markers.DROP_OFF -> et_drop_off.requestFocus()
             }
         }
     }

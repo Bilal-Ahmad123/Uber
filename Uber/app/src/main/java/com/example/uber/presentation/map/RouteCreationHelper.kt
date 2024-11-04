@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.uber.BuildConfig
 import com.example.uber.R
+import com.example.uber.core.enums.Markers
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
@@ -19,9 +20,12 @@ import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.MapboxDirections
 import com.mapbox.api.directions.v5.models.DirectionsResponse
 import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.geojson.Geometry
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.Style
@@ -30,6 +34,8 @@ import com.mapbox.mapboxsdk.plugins.annotation.LineOptions
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.utils.BitmapUtils
+import com.mapbox.services.android.navigation.v5.navigation.camera.Camera
+import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,11 +44,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.lang.ref.WeakReference
-
-enum class Marker {
-    DROP_OFF,
-    PICK_UP
-}
 
 
 class RouteCreationHelper(
@@ -59,6 +60,7 @@ class RouteCreationHelper(
     private var _duration: Int = 0
     private var lineManager: LineManager? = null
     private var symbolManager: SymbolManager? = null
+    private var _geometry:String? = null
 
     fun createRoute(pickUpLocation: Point, dropOffLocation: Point): RouteCreationHelper {
         mCouroutineScope?.launch {
@@ -84,6 +86,9 @@ class RouteCreationHelper(
                         Log.d("Route", "Response: ${response.body()}")
                         if (routes != null && routes.isNotEmpty()) {
                             val route = routes[0]
+                            decodeGeometryStringToRoutes()
+
+                            _geometry = route.geometry()
                             mCouroutineScope?.launch {
                                 _duration = getDurationInMinutes(routes[0].duration()!!)
                                 displayRoute(
@@ -285,10 +290,37 @@ class RouteCreationHelper(
 
     private fun addAnnotationClickListener() {
         symbolManager?.addClickListener {
-            bottomSheetManager.get()?.showBottomSheet()
+            if(it.iconImage == "pickup-marker-annotation"){
+                bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
+            }
+            else{
+                bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
+            }
             rideOptionsBottomSheet.get()?.hideBottomSheet()
             deleteRoute()
             pickUpMapFragment.showLocationPickerMarker()
+            pickUpMapFragment.onAddCameraAndMoveListeners()
+            decodeGeometryStringToRoutes()
+        }
+    }
+
+    private fun decodeGeometryStringToRoutes(){
+        mCouroutineScope?.launch(Dispatchers.Default) {
+            val lineString = LineString.fromPolyline(_geometry!!, 6)
+            val latLngList = lineString.coordinates().map { point ->
+                LatLng(point.latitude(), point.longitude())
+            }
+            val latLngBounds = LatLngBounds.Builder()
+                .includes(latLngList)
+                .build()
+            withContext(Dispatchers.Main) {
+                map.get()?.animateCamera(
+                    CameraUpdateFactory.newLatLngBounds(
+                        latLngBounds,
+                        50
+                    )
+                )
+            }
         }
     }
 

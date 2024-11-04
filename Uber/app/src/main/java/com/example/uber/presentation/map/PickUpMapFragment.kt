@@ -43,6 +43,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -68,6 +69,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
     private var routeHelper: RouteCreationHelper? = null
+    private var _areListenersRegistered = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,8 +168,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     override fun onMapReady(mapboxMap: MapboxMap) {
         _map = mapboxMap
         mapboxMap.setStyle(getCurrentMapStyle())
-        mapboxMap.addOnMoveListener(moveListener)
-        mapboxMap.addOnCameraIdleListener(cameraPositionChangeListener)
+        onAddCameraAndMoveListeners()
         routeHelper = RouteCreationHelper(
             WeakReference(binding.mapView),
             WeakReference(mapboxMap),
@@ -229,8 +230,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private fun cleanUpResources() {
         _binding = null
         loadedMapStyle = null
-        map.removeOnMoveListener(moveListener)
-        map.removeOnCameraIdleListener(cameraPositionChangeListener)
+        onRemoveCameraAndMoveListener()
         _map = null
         bottomSheetManager = null
         FetchLocation.cleanResources()
@@ -326,6 +326,9 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             _rideOptionsBottomSheet?.hideBottomSheet()
             if(routeHelper?.doesLineManagerExist()!!){
                deleteRoutes()
+            }
+            if(!_areListenersRegistered){
+                onAddCameraAndMoveListeners()
             }
 
         }
@@ -423,6 +426,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private fun createRoute() {
         hideLocationPickerMarker()
         hidePickUpBottomSheet()
+        onRemoveCameraAndMoveListener()
         lifecycleScope.launch(Dispatchers.IO) {
             routeHelper?.createRoute(
                 Point.fromLngLat(
@@ -456,6 +460,26 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
 
      fun showLocationPickerMarker(){
         binding.activityMainCenterLocationPin.visibility = View.VISIBLE
+    }
+
+    private fun animateCameraToRoute(){
+        val routeCoordinates: List<Point> = listOf(Point.fromLngLat(pickUpLocationViewModel.longitude, pickUpLocationViewModel.latitude), Point.fromLngLat(dropOffLocationViewModel.longitude, dropOffLocationViewModel.latitude))
+    }
+
+    fun onAddCameraAndMoveListeners(){
+        if(!_areListenersRegistered) {
+            _areListenersRegistered =  true
+            _map?.addOnMoveListener(moveListener)
+            _map?.addOnCameraIdleListener(cameraPositionChangeListener)
+        }
+    }
+
+    fun onRemoveCameraAndMoveListener(){
+        if(_areListenersRegistered) {
+            _areListenersRegistered = false
+            _map?.removeOnMoveListener(moveListener)
+            _map?.removeOnCameraIdleListener(cameraPositionChangeListener)
+        }
     }
 }
 
