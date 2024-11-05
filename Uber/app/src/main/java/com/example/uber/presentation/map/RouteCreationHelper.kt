@@ -1,5 +1,6 @@
 package com.example.uber.presentation.map
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -20,7 +21,6 @@ import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.MapboxDirections
 import com.mapbox.api.directions.v5.models.DirectionsResponse
 import com.mapbox.api.directions.v5.models.DirectionsRoute
-import com.mapbox.geojson.Geometry
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
@@ -34,8 +34,6 @@ import com.mapbox.mapboxsdk.plugins.annotation.LineOptions
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolOptions
 import com.mapbox.mapboxsdk.utils.BitmapUtils
-import com.mapbox.services.android.navigation.v5.navigation.camera.Camera
-import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,74 +44,99 @@ import retrofit2.Response
 import java.lang.ref.WeakReference
 
 
-class RouteCreationHelper(
-    private val mapView: WeakReference<MapView>,
-    private val map: WeakReference<MapboxMap>,
-    private val context: Context,
-    private var pickUpLocationViewModel: PickUpLocationViewModel,
-    private var dropOffLocationViewModel: DropOffLocationViewModel,
-    private var bottomSheetManager: WeakReference<BottomSheetManager>,
-    private var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
-     private val  pickUpMapFragment: PickUpMapFragment
-) {
+object RouteCreationHelper {
+    private lateinit var bottomSheetManager: WeakReference<BottomSheetManager>
+    private lateinit var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>
+    private lateinit var pickUpMapFragment: WeakReference<PickUpMapFragment>
+    private lateinit var pickUpLocationViewModel: PickUpLocationViewModel
+    private lateinit var dropOffLocationViewModel: DropOffLocationViewModel
+    private lateinit var mapView: WeakReference<MapView>
+    private lateinit var map: WeakReference<MapboxMap>
+    private lateinit var context: WeakReference<Context>
     private var mCouroutineScope: CoroutineScope? = CoroutineScope(Dispatchers.IO)
     private var _duration: Int = 0
     private var lineManager: LineManager? = null
     private var symbolManager: SymbolManager? = null
-    private var _geometry:String? = null
+    private var _geometry: String? = null
+    private var cachedLatLngBounds: LatLngBounds? = null
 
-    fun createRoute(pickUpLocation: Point, dropOffLocation: Point): RouteCreationHelper {
+    fun initInstances(
+        mapView: WeakReference<MapView>,
+        map: WeakReference<MapboxMap>,
+        context: WeakReference<Context>,
+        pickUpLocationViewModel: PickUpLocationViewModel,
+        dropOffLocationViewModel: DropOffLocationViewModel,
+        rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
+        bottomSheetManager: WeakReference<BottomSheetManager>,
+        pickUpMapFragment: WeakReference<PickUpMapFragment>
+    ) {
+        this.map = map
+        this.mapView = mapView
+        this.context = context
+        this.pickUpLocationViewModel = pickUpLocationViewModel
+        this.dropOffLocationViewModel =dropOffLocationViewModel
+        this.rideOptionsBottomSheet = rideOptionsBottomSheet
+        this.bottomSheetManager = bottomSheetManager
+        this.pickUpMapFragment = pickUpMapFragment
+    }
+
+    fun createRoute(
+        pickUpLocation: Point,
+        dropOffLocation: Point,
+        ) {
+
         mCouroutineScope?.launch {
             val originPoint =
                 Point.fromLngLat(pickUpLocation.longitude(), pickUpLocation.latitude())
             val destinationPoint =
                 Point.fromLngLat(dropOffLocation.longitude(), dropOffLocation.latitude())
-            val directionsCall = MapboxDirections.builder()
-                .origin(originPoint)
-                .destination(destinationPoint)
-                .overview(DirectionsCriteria.OVERVIEW_FULL)
-                .profile(DirectionsCriteria.PROFILE_DRIVING)
-                .accessToken(BuildConfig.MAPBOX_TOKEN)
-                .build()
+            requestRoute(originPoint, destinationPoint)
+        }
+    }
 
-            directionsCall.enqueueCall(object : Callback<DirectionsResponse> {
-                override fun onResponse(
-                    call: Call<DirectionsResponse>,
-                    response: Response<DirectionsResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        val routes: MutableList<DirectionsRoute>? = response.body()?.routes()
-                        Log.d("Route", "Response: ${response.body()}")
-                        if (routes != null && routes.isNotEmpty()) {
-                            val route = routes[0]
-                            _geometry = route.geometry()
-                            mCouroutineScope?.launch {
-                                _duration = getDurationInMinutes(routes[0].duration()!!)
-                                displayRoute(
-                                    route,
-                                    pickUpLocation.latitude(),
-                                    pickUpLocation.longitude(),
-                                    dropOffLocation.latitude(),
-                                    dropOffLocation.longitude(),
-                                )
-                            }
-                        } else {
-                            Log.e("Route Error", "No routes found")
+    private fun requestRoute(originPoint: Point, destinationPoint: Point) {
+        val directionsCall = MapboxDirections.builder()
+            .origin(originPoint)
+            .destination(destinationPoint)
+            .overview(DirectionsCriteria.OVERVIEW_FULL)
+            .profile(DirectionsCriteria.PROFILE_DRIVING)
+            .accessToken(BuildConfig.MAPBOX_TOKEN)
+            .build()
+
+        directionsCall.enqueueCall(object : Callback<DirectionsResponse> {
+            override fun onResponse(
+                call: Call<DirectionsResponse>,
+                response: Response<DirectionsResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val routes: MutableList<DirectionsRoute>? = response.body()?.routes()
+                    Log.d("Route", "Response: ${response.body()}")
+                    if (!routes.isNullOrEmpty()) {
+                        val route = routes[0]
+                        _geometry = route.geometry()
+                        mCouroutineScope?.launch {
+                            _duration = getDurationInMinutes(routes[0].duration()!!)
+                            displayRoute(
+                                route,
+                                originPoint.latitude(),
+                                originPoint.longitude(),
+                                destinationPoint.latitude(),
+                                destinationPoint.longitude(),
+                            )
                         }
                     } else {
-                        Log.e("Route Error", "Error: ${response.message()}")
+                        Log.e("Route Error", "No routes found")
                     }
+                } else {
+                    Log.e("Route Error", "Error: ${response.message()}")
                 }
+            }
 
-                override fun onFailure(call: Call<DirectionsResponse>, t: Throwable) {
-                    TODO("Not yet implemented")
-                }
+            override fun onFailure(call: Call<DirectionsResponse>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
 
-            })
-
-        }
-        return this
-
+        })
 
     }
 
@@ -144,6 +167,7 @@ class RouteCreationHelper(
                 dropOffLongitude
             )
             addMarkerAnnotation(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude)
+            animateMapToFitRoutes()
         }
     }
 
@@ -209,11 +233,11 @@ class RouteCreationHelper(
 
         val pickupMarker =
             createTextMarkerDrawable(
-                context,
+                context.get()!!,
                 "(${_duration} MIN) " + pickUpLocationViewModel.locationName.value.toString() + "  >  "
             )
         val dropoffMarker = createTextMarkerDrawable(
-            context,
+            context.get()!!,
             dropOffLocationViewModel.locationName.value.toString() + "  >  "
         )
         style.addImage("pickup-marker-annotation", pickupMarker)
@@ -288,39 +312,52 @@ class RouteCreationHelper(
 
     private fun addAnnotationClickListener() {
         symbolManager?.addClickListener {
-            if(it.iconImage == "pickup-marker-annotation"){
+            if (it.iconImage == "pickup-marker-annotation") {
                 bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
-            }
-            else{
+            } else {
                 bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
             }
             rideOptionsBottomSheet.get()?.hideBottomSheet()
             deleteRoute()
-            pickUpMapFragment.showLocationPickerMarker()
-            pickUpMapFragment.onAddCameraAndMoveListeners()
-
+            pickUpMapFragment.get()?.showLocationPickerMarker()
+            pickUpMapFragment.get()?.onAddCameraAndMoveListeners()
         }
     }
 
-    private fun decodeGeometryStringToRoutes(){
-        mCouroutineScope?.launch(Dispatchers.Default) {
-            val lineString = LineString.fromPolyline(_geometry!!, 6)
-            val latLngList = lineString.coordinates().map { point ->
-                LatLng(point.latitude(), point.longitude())
-            }
-            val latLngBounds = LatLngBounds.Builder()
-                .includes(latLngList)
-                .build()
+    private fun decodeGeometryStringToRoutes(): LatLngBounds {
+        val lineString = LineString.fromPolyline(_geometry!!, 6)
+        val latLngList = lineString.coordinates().map { point ->
+            LatLng(point.latitude(), point.longitude())
+        }
+        val latLngBounds = LatLngBounds.Builder()
+            .includes(latLngList)
+            .build()
+        return latLngBounds
+    }
+
+    private var latLngBounds: LatLngBounds? = null
+
+    private fun animateMapToFitRoutes() {
+        mCouroutineScope?.launch(Dispatchers.IO) {
+            latLngBounds = decodeGeometryStringToRoutes()
             withContext(Dispatchers.Main) {
-                map.get()?.animateCamera(
-                    CameraUpdateFactory.newLatLngBounds(
-                        latLngBounds,
-                        50
-                    )
-                )
+                animateToRespectivePadding(200)
             }
         }
+
     }
+
+    fun animateToRespectivePadding(padding: Int = 350){
+        if(map.get() != null && latLngBounds != null) {
+            map.get()?.animateCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    latLngBounds!!,
+                    padding
+                )
+            )
+        }
+    }
+
 
 }
 

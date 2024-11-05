@@ -73,7 +73,6 @@ class BottomSheetManager(
 
     private fun handleStateChange(newState: Int) {
 
-
         when (newState) {
             BottomSheetBehavior.STATE_COLLAPSED -> {
                 (view.context as? Activity)?.dismissKeyboard()

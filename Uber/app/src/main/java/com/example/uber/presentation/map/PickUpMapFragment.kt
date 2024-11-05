@@ -170,15 +170,15 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         _map = mapboxMap
         mapboxMap.setStyle(getCurrentMapStyle())
         onAddCameraAndMoveListeners()
-        routeHelper = RouteCreationHelper(
+        RouteCreationHelper.initInstances(
             WeakReference(binding.mapView),
             WeakReference(mapboxMap),
-            requireContext(),
+            WeakReference(requireContext()),
             pickUpLocationViewModel,
             dropOffLocationViewModel,
-            WeakReference(bottomSheetManager),
             WeakReference(_rideOptionsBottomSheet),
-            this
+            WeakReference(bottomSheetManager),
+            WeakReference(this)
         )
     }
 
@@ -325,7 +325,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                 bottomSheetManager?.showBottomSheet()
             }
             _rideOptionsBottomSheet?.hideBottomSheet()
-            if(routeHelper?.doesLineManagerExist()!!){
+            if(RouteCreationHelper.doesLineManagerExist()){
                deleteRoutes()
             }
             if(!_areListenersRegistered){
@@ -429,7 +429,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         hidePickUpBottomSheet()
         onRemoveCameraAndMoveListener()
         lifecycleScope.launch(Dispatchers.IO) {
-            routeHelper?.createRoute(
+            RouteCreationHelper.createRoute(
                 Point.fromLngLat(
                     pickUpLocationViewModel.longitude,
                     pickUpLocationViewModel.latitude
@@ -455,7 +455,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     }
 
     private fun deleteRoutes(){
-        routeHelper?.deleteRoute()
+        RouteCreationHelper.deleteRoute()
         showLocationPickerMarker()
     }
 
