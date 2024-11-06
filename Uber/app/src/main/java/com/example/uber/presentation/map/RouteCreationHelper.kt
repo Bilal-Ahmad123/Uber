@@ -1,6 +1,5 @@
 package com.example.uber.presentation.map
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -23,6 +22,7 @@ import com.mapbox.api.directions.v5.models.DirectionsResponse
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
@@ -341,21 +341,31 @@ object RouteCreationHelper {
         mCouroutineScope?.launch(Dispatchers.IO) {
             latLngBounds = decodeGeometryStringToRoutes()
             withContext(Dispatchers.Main) {
-                animateToRespectivePadding(200)
+                animateToRespectivePadding()
             }
         }
 
     }
 
-    fun animateToRespectivePadding(padding: Int = 350){
+    fun animateToRespectivePadding(padding: Int = 500){
         if(map.get() != null && latLngBounds != null) {
-            map.get()?.animateCamera(
+            val paddingTop = 100
+            val paddingLeft = 100
+            val paddingRight = 100
+            map.get()!!.animateCamera(
                 CameraUpdateFactory.newLatLngBounds(
                     latLngBounds!!,
+                    paddingLeft,
+                    paddingTop,
+                    paddingRight,
                     padding
                 )
             )
         }
+    }
+
+    private fun setMapZoomLevel(){
+        map.get()?.cameraPosition= CameraPosition.Builder().zoom(1.00).build()
     }
 
 

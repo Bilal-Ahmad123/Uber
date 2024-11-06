@@ -37,10 +37,10 @@ class RideOptionsBottomSheet(
 
         when (newState) {
             BottomSheetBehavior.STATE_EXPANDED -> {
-                RouteCreationHelper.animateToRespectivePadding()
+                RouteCreationHelper.animateToRespectivePadding(1000)
             }
             BottomSheetBehavior.STATE_COLLAPSED -> {
-                RouteCreationHelper.animateToRespectivePadding(200)
+                RouteCreationHelper.animateToRespectivePadding()
             }
         }
     }
