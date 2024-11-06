@@ -5,7 +5,7 @@ import android.content.Context
 import android.view.View
 import com.example.uber.R
 import com.example.uber.presentation.map.RouteCreationHelper
-import com.faltenreich.skeletonlayout.Skeleton
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 class RideOptionsBottomSheet(
@@ -13,7 +13,7 @@ class RideOptionsBottomSheet(
 ) {
     private val bottomSheet: View = view.findViewById(R.id.ride_options_bottom_sheet)
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-    private val skeleton:Skeleton =  bottomSheet.findViewById(R.id.skeletonLayout)
+    private val shimmer: ShimmerFrameLayout by lazy { view.findViewById(R.id.shimmerLayout) }
 
     init {
         setBottomSheetStyle()
@@ -39,6 +39,7 @@ class RideOptionsBottomSheet(
             BottomSheetBehavior.STATE_EXPANDED -> {
                 RouteCreationHelper.animateToRespectivePadding(1000)
             }
+
             BottomSheetBehavior.STATE_COLLAPSED -> {
                 RouteCreationHelper.animateToRespectivePadding()
             }
@@ -54,24 +55,24 @@ class RideOptionsBottomSheet(
         bottomSheetBehavior.isHideable = false
     }
 
-    fun showBottomSheet(){
+    fun showBottomSheet() {
         bottomSheetBehavior.isHideable = false
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        skeleton.showShimmer = true
-        skeleton.showSkeleton()
+        shimmer.startShimmer()
+
     }
 
-    private fun initialBottomSheetHidden(){
+    private fun initialBottomSheetHidden() {
         bottomSheetBehavior.isHideable = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    fun hideBottomSheet(){
+    fun hideBottomSheet() {
         bottomSheetBehavior.isHideable = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    fun bottomSheetBehaviour():Int{
+    fun bottomSheetBehaviour(): Int {
         return bottomSheetBehavior.state
     }
 }
