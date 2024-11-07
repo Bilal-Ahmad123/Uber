@@ -24,15 +24,20 @@ android {
         debug {
             val MAPBOX_DOWNLOADS_TOKEN = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
             val GOOGLE_API_KEY = providers.gradleProperty("GOOGLE_API_KEY").get()
+            val SESSION_TOKEN = providers.gradleProperty("SESSION_TOKEN").get()
             buildConfigField("String","MAPBOX_TOKEN","\"${MAPBOX_DOWNLOADS_TOKEN}\"")
             buildConfigField("String","GOOGLE_API_KEY","\"${GOOGLE_API_KEY}\"")
+            buildConfigField("String","SESSION_TOKEN","\"${SESSION_TOKEN}\"")
+
 
         }
         release {
             val MAPBOX_DOWNLOADS_TOKEN = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
             val GOOGLE_API_KEY = providers.gradleProperty("GOOGLE_API_KEY").get()
+            val SESSION_TOKEN = providers.gradleProperty("SESSION_TOKEN").get()
             buildConfigField("String","MAPBOX_TOKEN","\"${MAPBOX_DOWNLOADS_TOKEN}\"")
             buildConfigField("String","GOOGLE_API_KEY","\"${GOOGLE_API_KEY}\"")
+            buildConfigField("String","SESSION_TOKEN","\"${SESSION_TOKEN}\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
