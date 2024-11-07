@@ -8,14 +8,14 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import com.example.uber.data.local.Dao.DropOffLocationDao
-import com.example.uber.data.remote.GeoCode.GoogleMaps.IGeocodingGoogleMapService
+import com.example.uber.data.remote.api.GoogleMaps.IGoogleMapService
 
 @Module
 @InstallIn(SingletonComponent::class)
 object DropOffLocationModule {
     @Singleton
     @Provides
-    fun provideDropOffLocationRepositoryImpl(dropOffLocationDao:DropOffLocationDao,googleApi: IGeocodingGoogleMapService):IDropOffLocationRepository{
+    fun provideDropOffLocationRepositoryImpl(dropOffLocationDao:DropOffLocationDao,googleApi: IGoogleMapService):IDropOffLocationRepository{
         return DropOffLocationRepositoryImpl(dropOffLocationDao,googleApi)
     }
 }

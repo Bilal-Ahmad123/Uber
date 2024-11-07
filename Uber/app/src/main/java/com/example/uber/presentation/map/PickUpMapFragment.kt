@@ -19,7 +19,6 @@ import com.example.uber.BuildConfig
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
-import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.interfaces.utils.permissions.Permission
@@ -30,6 +29,7 @@ import com.example.uber.databinding.FragmentPickUpMapBinding
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
+import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.android.gestures.MoveGestureDetector
@@ -44,7 +44,6 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
-import com.mapbox.turf.TurfMeasurement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -67,6 +66,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private lateinit var confirmDestinationBtn: AppCompatButton
     private val pickUpLocationViewModel: PickUpLocationViewModel by activityViewModels()
     private val dropOffLocationViewModel: DropOffLocationViewModel by activityViewModels()
+    private val mapboxViewModel:MapboxViewModel by activityViewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
     private var routeHelper: RouteCreationHelper? = null
@@ -115,7 +115,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                 this,
                 viewLifecycleOwner,
                 pickUpLocationViewModel,
-                dropOffLocationViewModel
+                dropOffLocationViewModel,
+                mapboxViewModel
             )
         _rideOptionsBottomSheet = RideOptionsBottomSheet(view, requireContext())
 

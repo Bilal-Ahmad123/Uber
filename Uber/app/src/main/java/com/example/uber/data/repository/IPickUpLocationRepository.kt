@@ -1,6 +1,6 @@
 package com.example.uber.data.repository
 
-import com.example.uber.data.remote.GeoCode.GoogleMaps.GeoCodingGoogleMapsResponse
+import com.example.uber.data.remote.models.google.geoCodeResponse.GeoCodingGoogleMapsResponse
 import com.example.uber.domain.model.PickUpLocation
 import retrofit2.Response
 

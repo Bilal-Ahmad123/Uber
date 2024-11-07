@@ -1,9 +1,9 @@
 package com.example.uber.di.Network
 
-import com.example.uber.app.common.AppConstants
-import com.example.uber.data.remote.GeoCode.MapBox.IGeocodingService
-import com.example.uber.data.repository.IGetGeoCodeLocationRepository
-import com.example.uber.domain.repository.GetGeoCodeLocationRepositoryImpl
+import com.example.uber.core.common.AppConstants
+import com.example.uber.data.remote.api.MapBox.IMapboxService
+import com.example.uber.data.repository.IMapBoxRepository
+import com.example.uber.domain.repository.MapboxRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,15 +18,15 @@ object MapBoxNetwork {
 
     @Provides
     @Singleton
-    fun provideMapBoxGeoCodingService(): IGeocodingService {
+    fun provideMapBoxGeoCodingService(): IMapboxService {
         return Retrofit.Builder().baseUrl(AppConstants.MAP_BOX_URL)
             .addConverterFactory(GsonConverterFactory.create()).build()
-            .create(IGeocodingService::class.java)
+            .create(IMapboxService::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideGeoCodeRepositoryImpl(api: IGeocodingService):IGetGeoCodeLocationRepository{
-        return GetGeoCodeLocationRepositoryImpl(api)
+    fun provideGeoCodeRepositoryImpl(api: IMapboxService):IMapBoxRepository{
+        return MapboxRepositoryImpl(api)
     }
 }

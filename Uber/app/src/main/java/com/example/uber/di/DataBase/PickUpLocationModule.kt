@@ -1,7 +1,7 @@
 package com.example.uber.di.DataBase
 
 import com.example.uber.data.local.Dao.PickUpLocationDao
-import com.example.uber.data.remote.GeoCode.GoogleMaps.IGeocodingGoogleMapService
+import com.example.uber.data.remote.api.GoogleMaps.IGoogleMapService
 import com.example.uber.data.repository.IPickUpLocationRepository
 import com.example.uber.domain.repository.PickUpLocationRepositoryImpl
 import dagger.Module
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 object PickUpLocationModule {
     @Provides
     @Singleton
-    fun providePickUpLocationRepository(pickUpLocationDao: PickUpLocationDao,googleApi: IGeocodingGoogleMapService): IPickUpLocationRepository {
+    fun providePickUpLocationRepository(pickUpLocationDao: PickUpLocationDao,googleApi: IGoogleMapService): IPickUpLocationRepository {
         return PickUpLocationRepositoryImpl(pickUpLocationDao,googleApi)
     }
 

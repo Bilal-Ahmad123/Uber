@@ -1,17 +1,13 @@
 package com.example.uber.presentation.viewModels
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.example.uber.app.common.Resource
+import com.example.uber.core.common.Resource
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.utils.FetchLocation
-import com.example.uber.data.remote.GeoCode.GoogleMaps.GeoCodingGoogleMapsResponse
-import com.example.uber.domain.model.DropOffLocation
-import com.example.uber.domain.model.PickUpLocation
+import com.example.uber.data.remote.models.google.geoCodeResponse.GeoCodingGoogleMapsResponse
 import com.example.uber.domain.use_case.locations.DropOffLocationUseCase
-import com.example.uber.domain.use_case.locations.PickUpLocationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Response

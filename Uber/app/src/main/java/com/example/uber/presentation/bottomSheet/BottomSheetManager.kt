@@ -2,6 +2,8 @@ package com.example.uber.presentation.bottomSheet
 
 import android.app.Activity
 import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -12,14 +14,13 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
 import com.example.uber.R
-import com.example.uber.app.common.Resource
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
-import com.example.uber.presentation.viewModels.GeoCodeGoogleLocationViewModel
+import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
@@ -31,6 +32,7 @@ class BottomSheetManager(
     private val viewLifecycleOwner: LifecycleOwner,
     private val pickUpLocationViewModel: PickUpLocationViewModel,
     private val dropOffLocationViewModel: DropOffLocationViewModel,
+    private val mapboxViewModel: MapboxViewModel,
 ) {
     private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
     private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
@@ -53,6 +55,8 @@ class BottomSheetManager(
         setLocationOnMapLinearLayoutOnClickListener()
         setEditTextDropOffInFocus()
         editTextFocusChangeListener()
+        observePlacesSuggestions()
+        editTextPickUpListeners()
     }
 
     private fun setupBottomSheetCallback() {
@@ -215,6 +219,33 @@ class BottomSheetManager(
             if (b) {
                 isPickupEtInFocus = false
                 isDropOffEtInFocus = true
+            }
+        }
+    }
+
+    private fun editTextPickUpListeners(){
+        et_pickup.addTextChangedListener(object :TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                getPlacesSuggestions(p0.toString())
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+            }
+
+        })
+    }
+
+    private fun getPlacesSuggestions(place:String){
+        mapboxViewModel.getPlacesSuggestion(place)
+    }
+
+    private fun observePlacesSuggestions(){
+        with(mapboxViewModel){
+            placesSuggestion.observe(viewLifecycleOwner) {
+                Log.d("PlacesSuggestions", "observePlacesSuggestions: ${it.data}")
             }
         }
     }

@@ -1,15 +1,14 @@
 package com.example.uber.domain.repository
 
-import com.example.uber.core.utils.FetchLocation
 import com.example.uber.data.local.Dao.DropOffLocationDao
-import com.example.uber.data.remote.GeoCode.GoogleMaps.GeoCodingGoogleMapsResponse
-import com.example.uber.data.remote.GeoCode.GoogleMaps.IGeocodingGoogleMapService
+import com.example.uber.data.remote.api.GoogleMaps.IGoogleMapService
+import com.example.uber.data.remote.models.google.geoCodeResponse.GeoCodingGoogleMapsResponse
 import com.example.uber.data.repository.IDropOffLocationRepository
 import com.example.uber.domain.model.DropOffLocation
 import retrofit2.Response
 import javax.inject.Inject
 
-class DropOffLocationRepositoryImpl @Inject constructor(private val dropOffLocationDao: DropOffLocationDao, private val googleApi: IGeocodingGoogleMapService):IDropOffLocationRepository {
+class DropOffLocationRepositoryImpl @Inject constructor(private val dropOffLocationDao: DropOffLocationDao, private val googleApi: IGoogleMapService):IDropOffLocationRepository {
     override suspend fun getDropOffLocation() = dropOffLocationDao.getDropOffLocation()
     override suspend fun insertDropOffLocation(dropOffLocation: DropOffLocation) =
         dropOffLocationDao.insertDropOffLocation(dropOffLocation)

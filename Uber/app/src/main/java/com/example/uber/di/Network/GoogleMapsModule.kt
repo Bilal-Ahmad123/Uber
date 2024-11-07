@@ -1,11 +1,9 @@
 package com.example.uber.di.Network
 
-import com.example.uber.app.common.AppConstants
-import com.example.uber.data.remote.GeoCode.GoogleMaps.IGeocodingGoogleMapService
-import com.example.uber.data.remote.GeoCode.MapBox.IGeocodingService
-import com.example.uber.data.repository.IGetGeoCodeGoogleLocationRepository
-import com.example.uber.data.repository.IGetGeoCodeLocationRepository
-import com.example.uber.domain.repository.GetGeoCodeGoogleLocationRepositoryImpl
+import com.example.uber.core.common.AppConstants
+import com.example.uber.data.remote.api.GoogleMaps.IGoogleMapService
+import com.example.uber.data.repository.IGoogleRepository
+import com.example.uber.domain.repository.GoogleRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,15 +17,15 @@ import javax.inject.Singleton
 object GoogleMapsModule {
     @Provides
     @Singleton
-    fun provideGoogleMapsGeoCodingService(): IGeocodingGoogleMapService {
+    fun provideGoogleMapsGeoCodingService(): IGoogleMapService {
         return Retrofit.Builder().baseUrl(AppConstants.GOOGLE_MAPS_URL)
             .addConverterFactory(GsonConverterFactory.create()).build()
-            .create(IGeocodingGoogleMapService::class.java)
+            .create(IGoogleMapService::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideGeoCodeRepositoryImpl(api: IGeocodingGoogleMapService): IGetGeoCodeGoogleLocationRepository {
-        return GetGeoCodeGoogleLocationRepositoryImpl(api)
+    fun provideGeoCodeRepositoryImpl(api: IGoogleMapService): IGoogleRepository {
+        return GoogleRepositoryImpl(api)
     }
 }

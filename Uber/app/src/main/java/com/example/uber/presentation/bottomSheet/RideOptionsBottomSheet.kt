@@ -59,7 +59,6 @@ class RideOptionsBottomSheet(
         bottomSheetBehavior.isHideable = false
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         shimmer.startShimmer()
-
     }
 
     private fun initialBottomSheetHidden() {
