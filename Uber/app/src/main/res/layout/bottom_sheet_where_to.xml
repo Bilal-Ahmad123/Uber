@@ -20,9 +20,7 @@
         android:layout_gravity="center"
         android:layout_marginBottom="@dimen/_11sdp"
         android:background="@drawable/handlebar_background"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        />
 
     <LinearLayout
         android:visibility="gone"
@@ -129,188 +127,214 @@
             app:layout_constraintBottom_toTopOf="@+id/ll"
             app:layout_constraintTop_toTopOf="parent"
            />
+
         <LinearLayout
             android:id="@+id/ll"
-            android:background="@drawable/constraint_where_to_border"
-            app:layout_constraintTop_toBottomOf="@id/tv_plan_your_ride"
-            app:layout_constraintLeft_toLeftOf="@id/cl_where_to"
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:layout_marginTop="@dimen/_20sdp"
-            android:paddingVertical="@dimen/_8sdp"
-            android:paddingStart="@dimen/_8sdp"
-            app:layout_constraintRight_toRightOf="@id/cl_where_to"
-            android:layout_height="wrap_content">
-
-         <LinearLayout
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:gravity="center_vertical"
-             android:weightSum="3"
-             android:orientation="horizontal">
-             <ImageView
-                 android:layout_weight="1"
-                 android:layout_marginRight="@dimen/_8sdp"
-                 android:src="@drawable/circle"
-                 android:layout_width="@dimen/_20sdp"
-                 android:layout_height="@dimen/_20sdp"
-                 />
-        <EditText
-            android:textSize="@dimen/_12ssp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:layout_weight="2"
-            android:id="@+id/ti_pickup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:autofillHints=""
-            android:hint="Enter pickup location"
-            android:background="#00000000"
-            android:inputType="text"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/llplan_your_ride"
-            tools:ignore="NotSibling" />
+            android:layout_marginTop="@dimen/_20sdp"
+            android:background="@drawable/constraint_where_to_border"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/_8sdp"
+            android:paddingStart="@dimen/_8sdp"
+            app:layout_constraintLeft_toLeftOf="@id/cl_where_to"
+            app:layout_constraintRight_toRightOf="@id/cl_where_to"
+            app:layout_constraintTop_toBottomOf="@id/tv_plan_your_ride">
 
-         </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <ImageView
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_20sdp"
+                    android:layout_marginRight="@dimen/_8sdp"
+                    android:layout_weight="1"
+                    android:src="@drawable/circle" />
+
+                <EditText
+                    android:id="@+id/ti_pickup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:autofillHints=""
+                    android:background="#00000000"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:hint="Enter pickup location"
+                    android:inputType="text"
+                    android:textSize="@dimen/_12ssp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/llplan_your_ride"
+                    tools:ignore="NotSibling" />
+
+            </LinearLayout>
 
             <View
-                android:layout_marginVertical="@dimen/_2sdp"
                 android:id="@+id/view1"
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/_2sdp"
                 android:layout_marginLeft="@dimen/_19sdp"
-                android:background="#c0c0c0"/>
+                android:background="#c0c0c0" />
 
             <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-                android:weightSum="3"
-            android:orientation="horizontal">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
                 <ImageView
-                    android:layout_weight="1"
-                    android:layout_marginRight="@dimen/_8sdp"
-                    android:src="@drawable/box"
                     android:layout_width="@dimen/_20sdp"
                     android:layout_height="@dimen/_20sdp"
-                    />
-        <EditText
-            android:layout_weight="2"
-            android:id="@+id/ti_drop_off"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints=""
-            android:background="#00000000"
-            android:inputType="text"
-            android:hint="Where to?"
-            android:textSize="@dimen/_12ssp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ti_pickup" />
-        </LinearLayout>
+                    android:layout_marginRight="@dimen/_8sdp"
+                    android:layout_weight="1"
+                    android:src="@drawable/box" />
+
+                <EditText
+                    android:id="@+id/ti_drop_off"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:autofillHints=""
+                    android:background="#00000000"
+                    android:hint="Where to?"
+                    android:inputType="text"
+                    android:textSize="@dimen/_12ssp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/ti_pickup" />
+            </LinearLayout>
         </LinearLayout>
 
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/_10sdp"
+       >
+
+
         <LinearLayout
-            app:layout_constraintTop_toBottomOf="@+id/ll"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-            <LinearLayout
-                android:clickable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:focusable="true"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <RelativeLayout
+                android:id="@+id/list_container"
                 android:layout_width="match_parent"
-                android:orientation="horizontal"
-                android:paddingVertical="@dimen/_18sdp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:paddingBottom="8dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
-                android:layout_height="wrap_content">
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/_18sdp">
+
                 <ImageView
                     android:layout_width="@dimen/_15sdp"
                     android:layout_height="@dimen/_15sdp"
-                    android:layout_marginRight="@dimen/_16sdp"
                     android:layout_marginLeft="@dimen/_7sdp"
-                    android:src="@drawable/baseline_location_pin_24"/>
+                    android:layout_marginRight="@dimen/_16sdp"
+                    android:src="@drawable/baseline_location_pin_24" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/black"
                     android:layout_marginLeft="@dimen/_3sdp"
-                    android:textStyle="bold"
-                    android:text="Islamabad"/>
+                    android:text="Islamabad"
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
             </LinearLayout>
+
             <View
-                android:layout_marginVertical="@dimen/_2sdp"
-                android:layout_alignStart="@+id/tv_set_location_on_map"
                 android:layout_width="fill_parent"
-                android:layout_marginLeft="@dimen/_38sdp"
                 android:layout_height="1dp"
-                android:background="#c0c0c0"/>
+                android:layout_alignStart="@+id/tv_set_location_on_map"
+                android:layout_marginVertical="@dimen/_2sdp"
+                android:layout_marginLeft="@dimen/_38sdp"
+                android:background="#c0c0c0" />
+
             <LinearLayout
-                android:clickable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:focusable="true"
                 android:layout_width="match_parent"
-                android:orientation="horizontal"
-                android:paddingVertical="@dimen/_10sdp"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
-                android:layout_height="wrap_content">
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/_10sdp">
+
                 <ImageView
                     android:layout_width="@dimen/_30sdp"
                     android:layout_height="@dimen/_30sdp"
                     android:layout_marginRight="@dimen/_10sdp"
-                    android:src="@drawable/search_in_a_different_city"/>
+                    android:src="@drawable/search_in_a_different_city" />
+
                 <TextView
                     android:id="@+id/tv_search_in_different_city"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="Search in a different city"
                     android:textColor="@color/black"
-                    android:textStyle="bold"
-                    android:text="Search in a different city"/>
+                    android:textStyle="bold" />
             </LinearLayout>
+
             <View
-                android:layout_marginVertical="@dimen/_2sdp"
-                android:layout_alignStart="@+id/tv_set_location_on_map"
                 android:id="@+id/view2"
                 android:layout_width="fill_parent"
-                android:layout_marginLeft="@dimen/_38sdp"
                 android:layout_height="1dp"
-                android:background="#c0c0c0"/>
+                android:layout_alignStart="@+id/tv_set_location_on_map"
+                android:layout_marginVertical="@dimen/_2sdp"
+                android:layout_marginLeft="@dimen/_38sdp"
+                android:background="#c0c0c0" />
 
             <LinearLayout
-                android:clickable="true"
                 android:id="@+id/ll_set_location_on_map"
-                android:foreground="?attr/selectableItemBackground"
-                android:focusable="true"
                 android:layout_width="match_parent"
-                android:orientation="horizontal"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
-                android:paddingVertical="@dimen/_10sdp"
-                android:layout_height="wrap_content">
+                android:orientation="horizontal"
+                android:paddingVertical="@dimen/_10sdp">
+
                 <ImageView
                     android:layout_width="@dimen/_30sdp"
                     android:layout_height="@dimen/_30sdp"
                     android:layout_marginRight="@dimen/_10sdp"
-                    android:src="@drawable/set_location_on_map_layer"/>
+                    android:src="@drawable/set_location_on_map_layer" />
+
                 <TextView
                     android:id="@+id/tv_set_location_on_map"
-                    android:textColor="@color/black"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold"
-                    android:text="Set location on map"/>
+                    android:text="Set location on map"
+                    android:textColor="@color/black"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <View
@@ -321,9 +345,8 @@
                 android:layout_marginLeft="@dimen/_38sdp"
                 android:background="#c0c0c0" />
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 

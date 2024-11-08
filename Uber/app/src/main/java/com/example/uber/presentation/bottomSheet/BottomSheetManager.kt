@@ -13,6 +13,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
@@ -20,6 +21,8 @@ import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.utils.system.SystemInfo
+import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
+import com.example.uber.data.remote.models.mapbox.SuggestionResponse.Suggestion
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
@@ -251,7 +254,8 @@ class BottomSheetManager(
     private fun observePlacesSuggestions(){
         with(mapboxViewModel){
             placesSuggestion.observe(viewLifecycleOwner) {
-                Log.d("PlacesSuggestions", "observePlacesSuggestions: ${it.data}")
+                val searchedResults:MutableList<PlaceDetail> = extractSearchedResults(it.data?.suggestions)
+                showSuggestedPlacesOnBottomSheet(searchedResults)
             }
         }
     }
@@ -260,14 +264,22 @@ class BottomSheetManager(
         placeSuggestionAdapter = PlaceSuggestionAdapter { place ->
             executeSearchedPlace()
         }
+        recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = placeSuggestionAdapter
     }
 
-    private fun executeSearchedPlace(){
-
+    private fun showSuggestedPlacesOnBottomSheet(searchedResults:MutableList<PlaceDetail>){
+        placeSuggestionAdapter.submitList(searchedResults)
     }
 
-    private fun extractSearchedResults(){
-        
+    private fun extractSearchedResults(suggestions:List<Suggestion>?):MutableList<PlaceDetail>{
+        val searchedResults:MutableList<PlaceDetail> = mutableListOf()
+        suggestions?.forEach {
+            searchedResults.add(PlaceDetail(name= it.name, fullAddress = it.place_formatted))
+        }
+        return searchedResults
+    }
+    private fun executeSearchedPlace(){
+
     }
 }
