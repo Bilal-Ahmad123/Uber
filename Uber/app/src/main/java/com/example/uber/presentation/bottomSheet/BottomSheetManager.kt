@@ -13,12 +13,14 @@ import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
+import androidx.recyclerview.widget.RecyclerView
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.utils.system.SystemInfo
+import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
@@ -46,6 +48,9 @@ class BottomSheetManager(
     private val tv_pin_location: TextView = view.findViewById(R.id.tv_pin_location)
     private val llSetLocationOnMap: LinearLayout by lazy { view.findViewById(R.id.ll_set_location_on_map) }
     private val btn_confirm_destination: AppCompatButton by lazy { view.findViewById(R.id.btn_confirm_destination) }
+    private val recyclerView:RecyclerView by lazy { view.findViewById(R.id.recyclerView) }
+    private lateinit var placeSuggestionAdapter: PlaceSuggestionAdapter
+
 
     init {
         setBottomSheetStyle()
@@ -57,6 +62,7 @@ class BottomSheetManager(
         editTextFocusChangeListener()
         observePlacesSuggestions()
         editTextPickUpListeners()
+        setUpRecyclerViewAdapter()
     }
 
     private fun setupBottomSheetCallback() {
@@ -248,5 +254,20 @@ class BottomSheetManager(
                 Log.d("PlacesSuggestions", "observePlacesSuggestions: ${it.data}")
             }
         }
+    }
+
+    private fun setUpRecyclerViewAdapter(){
+        placeSuggestionAdapter = PlaceSuggestionAdapter { place ->
+            executeSearchedPlace()
+        }
+        recyclerView.adapter = placeSuggestionAdapter
+    }
+
+    private fun executeSearchedPlace(){
+
+    }
+
+    private fun extractSearchedResults(){
+        
     }
 }
