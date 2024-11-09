@@ -44,6 +44,7 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -66,11 +67,13 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private lateinit var confirmDestinationBtn: AppCompatButton
     private val pickUpLocationViewModel: PickUpLocationViewModel by activityViewModels()
     private val dropOffLocationViewModel: DropOffLocationViewModel by activityViewModels()
-    private val mapboxViewModel:MapboxViewModel by activityViewModels()
+    private val mapboxViewModel: MapboxViewModel by activityViewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
     private var routeHelper: RouteCreationHelper? = null
     private var _areListenersRegistered = false
+    private val _compositeDisposable = CompositeDisposable()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -239,6 +242,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         routeHelper?.clearResources()
         routeHelper = null
         _rideOptionsBottomSheet = null
+        _compositeDisposable.dispose()
     }
 
     private val moveListener: MapboxMap.OnMoveListener = object : MapboxMap.OnMoveListener {
@@ -326,10 +330,10 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                 bottomSheetManager?.showBottomSheet()
             }
             _rideOptionsBottomSheet?.hideBottomSheet()
-            if(RouteCreationHelper.doesLineManagerExist()){
-               deleteRoutes()
+            if (RouteCreationHelper.doesLineManagerExist()) {
+                deleteRoutes()
             }
-            if(!_areListenersRegistered){
+            if (!_areListenersRegistered) {
                 onAddCameraAndMoveListeners()
             }
 
@@ -376,16 +380,17 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     @SuppressLint("CheckResult")
     private fun editTextFocusChangeListener() {
 
-        RxBus.listen(RxEvent.EventEditTextFocus::class.java).subscribe {
-            if(it.isPickUpEditTextFocus){
-                animateToPickUpLocation()
+        _compositeDisposable.add(
+            RxBus.listen(RxEvent.EventEditTextFocus::class.java).subscribe {
+                if (it.isPickUpEditTextFocus) {
+                    animateToPickUpLocation()
+                } else if (it.isDropOffEditTextFocus) {
+                    animateToDropOffLocation()
+                }
+                isPickupEtInFocus = it.isPickUpEditTextFocus
+                isDropOffEtInFocus = it.isDropOffEditTextFocus
             }
-            else if(it.isDropOffEditTextFocus){
-                animateToDropOffLocation()
-            }
-            isPickupEtInFocus = it.isPickUpEditTextFocus
-            isDropOffEtInFocus = it.isDropOffEditTextFocus
-        }
+        )
     }
 
     private fun getInitialPickUpLocation() {
@@ -451,30 +456,31 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private fun hidePickUpBottomSheet() {
         bottomSheetManager?.hideBottomSheet()
     }
-     private fun showRideOptionsBottomSheet(){
+
+    private fun showRideOptionsBottomSheet() {
         _rideOptionsBottomSheet?.showBottomSheet()
     }
 
-    private fun deleteRoutes(){
+    private fun deleteRoutes() {
         RouteCreationHelper.deleteRoute()
         showLocationPickerMarker()
     }
 
-     fun showLocationPickerMarker(){
+    fun showLocationPickerMarker() {
         binding.activityMainCenterLocationPin.visibility = View.VISIBLE
     }
 
 
-    fun onAddCameraAndMoveListeners(){
-        if(!_areListenersRegistered) {
-            _areListenersRegistered =  true
+    fun onAddCameraAndMoveListeners() {
+        if (!_areListenersRegistered) {
+            _areListenersRegistered = true
             _map?.addOnMoveListener(moveListener)
             _map?.addOnCameraIdleListener(cameraPositionChangeListener)
         }
     }
 
-    fun onRemoveCameraAndMoveListener(){
-        if(_areListenersRegistered) {
+    fun onRemoveCameraAndMoveListener() {
+        if (_areListenersRegistered) {
             _areListenersRegistered = false
             _map?.removeOnMoveListener(moveListener)
             _map?.removeOnCameraIdleListener(cameraPositionChangeListener)
