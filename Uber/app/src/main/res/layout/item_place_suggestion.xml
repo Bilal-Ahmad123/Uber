@@ -9,7 +9,8 @@
         android:layout_width="@dimen/_15sdp"
         android:layout_height="@dimen/_15sdp"
         android:layout_marginRight="@dimen/_16sdp"
-        android:layout_marginLeft="@dimen/_7sdp"
+        android:layout_marginLeft="-3dp"
+        android:layout_gravity="center_vertical"
         android:src="@drawable/baseline_location_pin_24"/>
 
     <LinearLayout
@@ -20,18 +21,22 @@
 
         <TextView
             android:id="@+id/placeName"
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Place Name"
-            android:textSize="16sp"
+            android:textColor="?attr/textBlackAndWhite"
+            android:textSize="@dimen/_11ssp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/placeAddress"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Place Address"
-            android:textSize="14sp"
+            android:textSize="@dimen/_11ssp"
             android:textColor="#888888" />
     </LinearLayout>
 </LinearLayout>

@@ -26,6 +26,8 @@
             @style/Widget.MaterialComponents.BottomSheet.DragHandle.DarkMode
         </item>
         <item name="android:windowFullscreen">true</item>
+        <item name="textBlackAndWhite">@color/black</item>
+        <item name="bottomSheetIcons">@color/grey</item>
 
         <!-- Customize your theme here. -->
     </style>

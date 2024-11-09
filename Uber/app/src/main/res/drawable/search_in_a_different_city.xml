@@ -4,7 +4,7 @@
     <!-- Background oval shape -->
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/grey"/>
+            <solid android:color="?attr/bottomSheetIcons"/>
             <size
                 android:width="190dp"
                 android:height="190dp"

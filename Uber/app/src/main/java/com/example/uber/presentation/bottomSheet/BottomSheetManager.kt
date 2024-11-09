@@ -28,6 +28,7 @@ import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.divider.MaterialDividerItemDecoration
 
 
 class BottomSheetManager(
@@ -41,7 +42,7 @@ class BottomSheetManager(
 ) {
     private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
     private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
-    private val whereTo: ConstraintLayout by lazy { view.findViewById(R.id.cl_where_to) }
+    private val whereTo: LinearLayout by lazy { view.findViewById(R.id.cl_where_to) }
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
@@ -266,6 +267,7 @@ class BottomSheetManager(
         }
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = placeSuggestionAdapter
+        setItemRecyclerViewItemDivider()
     }
 
     private fun showSuggestedPlacesOnBottomSheet(searchedResults:MutableList<PlaceDetail>){
@@ -281,5 +283,19 @@ class BottomSheetManager(
     }
     private fun executeSearchedPlace(){
 
+    }
+
+    private fun setItemRecyclerViewItemDivider(){
+        view.context.let {
+            val dividerItemDecoration = MaterialDividerItemDecoration(
+                it,
+                MaterialDividerItemDecoration.VERTICAL
+            ).apply {
+                dividerInsetEnd = 10
+                dividerInsetStart = 16
+            }
+            recyclerView.addItemDecoration(dividerItemDecoration)
+//            dividerItemDecoration.setDividerColorResource(it, R.color.colorDivider)
+        }
     }
 }

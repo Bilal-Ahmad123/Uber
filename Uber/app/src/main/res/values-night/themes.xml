@@ -23,6 +23,8 @@
         <item name="confirmDestinationBtnText">@color/black</item>
         <item name="planYourRide">@color/white</item>
         <item name="markerAnnotation">@color/white</item>
+        <item name="textBlackAndWhite">@color/white</item>
+        <item name="bottomSheetIcons">@color/chromaphobicBlack</item>
         <item name="bottomSheetDragHandleStyle">
             @style/Widget.MaterialComponents.BottomSheet.DragHandle.LightMode
         </item>
