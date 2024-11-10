@@ -4,14 +4,12 @@ import android.app.Activity
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,11 +22,17 @@ import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.Suggestion
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
+import com.example.uber.presentation.animation.AnimationManager
 import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
+import com.jakewharton.rxbinding.widget.RxTextView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import rx.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 
 
 class BottomSheetManager(
@@ -52,7 +56,8 @@ class BottomSheetManager(
     private val tv_pin_location: TextView = view.findViewById(R.id.tv_pin_location)
     private val llSetLocationOnMap: LinearLayout by lazy { view.findViewById(R.id.ll_set_location_on_map) }
     private val btn_confirm_destination: AppCompatButton by lazy { view.findViewById(R.id.btn_confirm_destination) }
-    private val recyclerView:RecyclerView by lazy { view.findViewById(R.id.recyclerView) }
+    private val recyclerView: RecyclerView by lazy { view.findViewById(R.id.recyclerView) }
+    private val lineView: View by lazy { view.findViewById<View>(R.id.lineView) }
     private lateinit var placeSuggestionAdapter: PlaceSuggestionAdapter
 
 
@@ -65,7 +70,7 @@ class BottomSheetManager(
         setEditTextDropOffInFocus()
         editTextFocusChangeListener()
         observePlacesSuggestions()
-        editTextPickUpListeners()
+        debounce()
         setUpRecyclerViewAdapter()
     }
 
@@ -140,6 +145,7 @@ class BottomSheetManager(
             }
         }
     }
+
     private fun Activity.dismissKeyboard() {
         val inputMethodManager =
             getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -196,15 +202,15 @@ class BottomSheetManager(
         et_drop_off.requestFocus()
     }
 
-    fun hideBottomSheet(){
+    fun hideBottomSheet() {
         bottomSheetBehavior.isHideable = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    fun showBottomSheet(etAnnotationFocusListener:Markers?=null) {
+    fun showBottomSheet(etAnnotationFocusListener: Markers? = null) {
         bottomSheetBehavior.isHideable = false
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        if(etAnnotationFocusListener != null) {
+        if (etAnnotationFocusListener != null) {
             when (etAnnotationFocusListener) {
                 Markers.PICK_UP -> et_pickup.requestFocus()
                 Markers.DROP_OFF -> et_drop_off.requestFocus()
@@ -212,20 +218,20 @@ class BottomSheetManager(
         }
     }
 
-    fun bottomSheetBehaviour():Int{
+    fun bottomSheetBehaviour(): Int {
         return bottomSheetBehavior.state
     }
 
     private fun editTextFocusChangeListener() {
         et_pickup.setOnFocusChangeListener { view, b ->
             if (b) {
-                RxBus.publish(RxEvent.EventEditTextFocus(true,false))
+                RxBus.publish(RxEvent.EventEditTextFocus(true, false))
                 isPickupEtInFocus = true
                 isDropOffEtInFocus = false
             }
         }
         et_drop_off.setOnFocusChangeListener { view, b ->
-            RxBus.publish(RxEvent.EventEditTextFocus(false,true))
+            RxBus.publish(RxEvent.EventEditTextFocus(false, true))
             if (b) {
                 isPickupEtInFocus = false
                 isDropOffEtInFocus = true
@@ -233,35 +239,23 @@ class BottomSheetManager(
         }
     }
 
-    private fun editTextPickUpListeners(){
-        et_pickup.addTextChangedListener(object :TextWatcher{
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
 
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                getPlacesSuggestions(p0.toString())
-            }
 
-            override fun afterTextChanged(p0: Editable?) {
-            }
-
-        })
-    }
-
-    private fun getPlacesSuggestions(place:String){
+    private fun getPlacesSuggestions(place: String) {
         mapboxViewModel.getPlacesSuggestion(place)
     }
 
-    private fun observePlacesSuggestions(){
-        with(mapboxViewModel){
+    private fun observePlacesSuggestions() {
+        with(mapboxViewModel) {
             placesSuggestion.observe(viewLifecycleOwner) {
-                val searchedResults:MutableList<PlaceDetail> = extractSearchedResults(it.data?.suggestions)
+                val searchedResults: MutableList<PlaceDetail> =
+                    extractSearchedResults(it.data?.suggestions)
                 showSuggestedPlacesOnBottomSheet(searchedResults)
             }
         }
     }
 
-    private fun setUpRecyclerViewAdapter(){
+    private fun setUpRecyclerViewAdapter() {
         placeSuggestionAdapter = PlaceSuggestionAdapter { place ->
             executeSearchedPlace()
         }
@@ -270,22 +264,23 @@ class BottomSheetManager(
         setItemRecyclerViewItemDivider()
     }
 
-    private fun showSuggestedPlacesOnBottomSheet(searchedResults:MutableList<PlaceDetail>){
+    private fun showSuggestedPlacesOnBottomSheet(searchedResults: MutableList<PlaceDetail>) {
         placeSuggestionAdapter.submitList(searchedResults)
     }
 
-    private fun extractSearchedResults(suggestions:List<Suggestion>?):MutableList<PlaceDetail>{
-        val searchedResults:MutableList<PlaceDetail> = mutableListOf()
+    private fun extractSearchedResults(suggestions: List<Suggestion>?): MutableList<PlaceDetail> {
+        val searchedResults: MutableList<PlaceDetail> = mutableListOf()
         suggestions?.forEach {
-            searchedResults.add(PlaceDetail(name= it.name, fullAddress = it.place_formatted))
+            searchedResults.add(PlaceDetail(name = it.name, fullAddress = it.place_formatted))
         }
         return searchedResults
     }
-    private fun executeSearchedPlace(){
+
+    private fun executeSearchedPlace() {
 
     }
 
-    private fun setItemRecyclerViewItemDivider(){
+    private fun setItemRecyclerViewItemDivider() {
         view.context.let {
             val dividerItemDecoration = MaterialDividerItemDecoration(
                 it,
@@ -295,7 +290,19 @@ class BottomSheetManager(
                 dividerInsetStart = 16
             }
             recyclerView.addItemDecoration(dividerItemDecoration)
-//            dividerItemDecoration.setDividerColorResource(it, R.color.colorDivider)
+        }
+    }
+
+    private fun translateOnXAxis() {
+
+        AnimationManager.animateToEndOfScreenAndScale(lineView, context = context)
+    }
+
+    private fun debounce() {
+        RxTextView.textChanges(et_pickup).debounce(500, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread()).subscribe {
+            getPlacesSuggestions(it.toString())
+            translateOnXAxis()
         }
     }
 }

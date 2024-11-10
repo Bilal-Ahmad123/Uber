@@ -90,6 +90,8 @@ dependencies {
     implementation (libs.mapbox.android.navigation)
 
     implementation ("io.reactivex.rxjava3:rxjava:3.1.0")
+    implementation ("com.jakewharton.rxbinding:rxbinding:0.4.0")
+
 
     implementation (libs.shimmer)
 
