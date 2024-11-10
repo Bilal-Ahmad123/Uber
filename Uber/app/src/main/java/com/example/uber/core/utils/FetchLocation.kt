@@ -7,8 +7,6 @@ import android.location.Location
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.uber.core.interfaces.utils.permissions.Permission
-import com.example.uber.core.interfaces.utils.permissions.PermissionManager
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineProvider
@@ -24,7 +22,6 @@ import java.util.Locale
 object FetchLocation {
     private val mCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     private var locationEngine: LocationEngine? = null;
-    private var permissionManager: PermissionManager? = null;
     suspend fun getLocation(latitude: Double, longitude: Double, context: Context): String {
         var addresses: List<Address> = emptyList()
             val geocoder = Geocoder(context, Locale.getDefault())
@@ -49,7 +46,6 @@ object FetchLocation {
         dispatcher: (Location?) -> Unit
     ) {
         lazyInitializeLocationEngine(context)
-        lazyInitializePermissionManager(fragmentContext)
         mCoroutineScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             Log.d("mCoroutineScope", "Running")
             val lastLocation: Unit = locationEngine!!.getLastLocation(object :
@@ -76,11 +72,6 @@ object FetchLocation {
     }
 
 
-    private fun lazyInitializePermissionManager(context: Fragment) {
-        if (permissionManager == null) {
-            permissionManager = PermissionManager.from(context)
-        }
-    }
 
     val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
         throwable.printStackTrace()
@@ -88,7 +79,6 @@ object FetchLocation {
 
     fun cleanResources() {
         locationEngine = null;
-        permissionManager = null;
     }
 
     fun customLocationMapper(latitude: Double, longitude: Double): Location {

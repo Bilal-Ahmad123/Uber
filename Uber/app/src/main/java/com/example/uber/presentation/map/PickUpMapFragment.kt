@@ -1,6 +1,7 @@
 package com.example.uber.presentation.map
 
 
+import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
@@ -21,9 +22,8 @@ import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.interfaces.IBottomSheetListener
 import com.example.uber.core.interfaces.utils.mode.CheckMode
-import com.example.uber.core.interfaces.utils.permissions.Permission
-import com.example.uber.core.interfaces.utils.permissions.PermissionManager
 import com.example.uber.core.utils.FetchLocation
+import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
@@ -54,7 +54,6 @@ import kotlin.math.abs
 class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private var _map: MapboxMap? = null
     private val map get() = _map!!
-    private val permissionManager = PermissionManager.from(this)
     private var _binding: FragmentPickUpMapBinding? = null
     private val binding get() = _binding!!
     private var loadedMapStyle: Style? = null
@@ -312,15 +311,13 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     }
 
     private fun checkLocationPermission(rationale: String?, onGranted: () -> Unit) {
-        val request = permissionManager.request(Permission.Location)
-        if (rationale != null) {
-            request.rationale(rationale)
-        }
-        request.checkPermission { granted ->
-            if (granted) {
+        PermissionManagers.requestPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) {
+            if (it) {
                 onGranted.invoke()
             }
-
         }
     }
 
