@@ -14,8 +14,7 @@ import com.example.uber.R
 import com.example.uber.core.enums.Markers
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
-import com.example.uber.presentation.viewModels.DropOffLocationViewModel
-import com.example.uber.presentation.viewModels.PickUpLocationViewModel
+import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.MapboxDirections
 import com.mapbox.api.directions.v5.models.DirectionsResponse
@@ -48,8 +47,6 @@ object RouteCreationHelper {
     private lateinit var bottomSheetManager: WeakReference<BottomSheetManager>
     private lateinit var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>
     private lateinit var pickUpMapFragment: WeakReference<PickUpMapFragment>
-    private lateinit var pickUpLocationViewModel: PickUpLocationViewModel
-    private lateinit var dropOffLocationViewModel: DropOffLocationViewModel
     private lateinit var mapView: WeakReference<MapView>
     private lateinit var map: WeakReference<MapboxMap>
     private lateinit var context: WeakReference<Context>
@@ -59,25 +56,24 @@ object RouteCreationHelper {
     private var symbolManager: SymbolManager? = null
     private var _geometry: String? = null
     private var cachedLatLngBounds: LatLngBounds? = null
+    private lateinit var mapboxViewModel: MapboxViewModel
 
     fun initInstances(
         mapView: WeakReference<MapView>,
         map: WeakReference<MapboxMap>,
         context: WeakReference<Context>,
-        pickUpLocationViewModel: PickUpLocationViewModel,
-        dropOffLocationViewModel: DropOffLocationViewModel,
         rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
         bottomSheetManager: WeakReference<BottomSheetManager>,
-        pickUpMapFragment: WeakReference<PickUpMapFragment>
+        pickUpMapFragment: WeakReference<PickUpMapFragment>,
+        mapboxViewModel: MapboxViewModel
     ) {
         this.map = map
         this.mapView = mapView
         this.context = context
-        this.pickUpLocationViewModel = pickUpLocationViewModel
-        this.dropOffLocationViewModel =dropOffLocationViewModel
         this.rideOptionsBottomSheet = rideOptionsBottomSheet
         this.bottomSheetManager = bottomSheetManager
         this.pickUpMapFragment = pickUpMapFragment
+        this.mapboxViewModel = mapboxViewModel
     }
 
     fun createRoute(
@@ -234,11 +230,11 @@ object RouteCreationHelper {
         val pickupMarker =
             createTextMarkerDrawable(
                 context.get()!!,
-                "(${_duration} MIN) " + pickUpLocationViewModel.locationName.value.toString() + "  >  "
+                "(${_duration} MIN) " + mapboxViewModel.pickUpLocationName.value.toString() + "  >  "
             )
         val dropoffMarker = createTextMarkerDrawable(
             context.get()!!,
-            dropOffLocationViewModel.locationName.value.toString() + "  >  "
+            mapboxViewModel.dropOffLocationName.value.toString() + "  >  "
         )
         style.addImage("pickup-marker-annotation", pickupMarker)
         style.addImage("dropoff-marker-annotation", dropoffMarker)

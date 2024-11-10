@@ -21,6 +21,8 @@ object AnimationManager {
     ) {
 
         val width = context.resources.displayMetrics.widthPixels.toFloat()
+        if(lineView.visibility == View.INVISIBLE)
+            lineView.visibility = View.VISIBLE
         ObjectAnimator.ofFloat(lineView, "translationX", 0f, width).apply {
             this.duration = duration
             start()

@@ -213,6 +213,7 @@
         </LinearLayout>
         <View
             android:id="@+id/lineView"
+            android:visibility="invisible"
             android:layout_marginTop="@dimen/_4sdp"
             android:layout_width="@dimen/_30sdp"
             android:layout_height="@dimen/_2sdp"

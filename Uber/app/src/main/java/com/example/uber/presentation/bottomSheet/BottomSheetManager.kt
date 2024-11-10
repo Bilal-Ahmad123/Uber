@@ -2,8 +2,7 @@ package com.example.uber.presentation.bottomSheet
 
 import android.app.Activity
 import android.content.Context
-import android.text.Editable
-import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -17,20 +16,16 @@ import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
-import com.example.uber.core.interfaces.IBottomSheetListener
+import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.Suggestion
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.animation.AnimationManager
-import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
-import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
@@ -38,12 +33,11 @@ import java.util.concurrent.TimeUnit
 class BottomSheetManager(
     private val view: View,
     private val context: Context,
-    private val bottomSheetListener: IBottomSheetListener,
+    private val pickUpMapFragmentActions: IActions,
     private val viewLifecycleOwner: LifecycleOwner,
-    private val pickUpLocationViewModel: PickUpLocationViewModel,
-    private val dropOffLocationViewModel: DropOffLocationViewModel,
     private val mapboxViewModel: MapboxViewModel,
-) {
+
+    ) {
     private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
     private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
     private val whereTo: LinearLayout by lazy { view.findViewById(R.id.cl_where_to) }
@@ -62,16 +56,26 @@ class BottomSheetManager(
 
 
     init {
-        setBottomSheetStyle()
-        setupBottomSheetCallback()
-        observePickUpLocationChanges()
-        observeDropOffLocationChanges()
+        setUpBottomSheet()
+        setUpObservers()
         setLocationOnMapLinearLayoutOnClickListener()
         setEditTextDropOffInFocus()
         editTextFocusChangeListener()
         observePlacesSuggestions()
         debounce()
         setUpRecyclerViewAdapter()
+    }
+
+    private fun setUpBottomSheet() {
+        setBottomSheetStyle()
+        setupBottomSheetCallback()
+        confirmDestinationBtnClickListener()
+    }
+
+    private fun setUpObservers() {
+        observePickUpLocationChanges()
+        observeDropOffLocationChanges()
+        observeSuggestedPlaceDetail()
     }
 
     private fun setupBottomSheetCallback() {
@@ -82,7 +86,7 @@ class BottomSheetManager(
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                bottomSheetListener.onBottomSheetSlide(slideOffset)
+                pickUpMapFragmentActions.onBottomSheetSlide(slideOffset)
                 fadeInOutBottomSheetContent(slideOffset)
                 showPickUpDropOffContent(slideOffset)
             }
@@ -155,8 +159,8 @@ class BottomSheetManager(
 
     private fun observePickUpLocationChanges() {
         checkInternetConnection {
-            with(pickUpLocationViewModel) {
-                locationName.observe(viewLifecycleOwner) {
+            with(mapboxViewModel) {
+                pickUpLocationName.observe(viewLifecycleOwner) {
                     et_pickup.setText(it)
                     updateLocationText(it)
                 }
@@ -167,8 +171,8 @@ class BottomSheetManager(
 
     private fun observeDropOffLocationChanges() {
         checkInternetConnection {
-            with(dropOffLocationViewModel) {
-                locationName.observe(viewLifecycleOwner) {
+            with(mapboxViewModel) {
+                dropOffLocationName.observe(viewLifecycleOwner) {
                     et_drop_off.setText(it)
                     updateLocationText(it)
                 }
@@ -240,7 +244,6 @@ class BottomSheetManager(
     }
 
 
-
     private fun getPlacesSuggestions(place: String) {
         mapboxViewModel.getPlacesSuggestion(place)
     }
@@ -257,7 +260,7 @@ class BottomSheetManager(
 
     private fun setUpRecyclerViewAdapter() {
         placeSuggestionAdapter = PlaceSuggestionAdapter { place ->
-            executeSearchedPlace()
+            executeSearchedPlace(place)
         }
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = placeSuggestionAdapter
@@ -271,13 +274,27 @@ class BottomSheetManager(
     private fun extractSearchedResults(suggestions: List<Suggestion>?): MutableList<PlaceDetail> {
         val searchedResults: MutableList<PlaceDetail> = mutableListOf()
         suggestions?.forEach {
-            searchedResults.add(PlaceDetail(name = it.name, fullAddress = it.place_formatted))
+            searchedResults.add(
+                PlaceDetail(
+                    name = it.name,
+                    fullAddress = it.place_formatted,
+                    mapboxId = it.mapbox_id
+                )
+            )
         }
         return searchedResults
     }
 
-    private fun executeSearchedPlace() {
+    private fun executeSearchedPlace(place: PlaceDetail) {
+        mapboxViewModel.retrieveSuggestedPlaceDetail(place.mapboxId)
+    }
 
+    private fun observeSuggestedPlaceDetail() {
+        with(mapboxViewModel) {
+            retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
+                Log.d("TAG", "observeSuggestedPlaceDetail: $it")
+            }
+        }
     }
 
     private fun setItemRecyclerViewItemDivider() {
@@ -294,15 +311,20 @@ class BottomSheetManager(
     }
 
     private fun translateOnXAxis() {
-
         AnimationManager.animateToEndOfScreenAndScale(lineView, context = context)
     }
 
     private fun debounce() {
         RxTextView.textChanges(et_pickup).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
-            getPlacesSuggestions(it.toString())
-            translateOnXAxis()
+                getPlacesSuggestions(it.toString())
+                translateOnXAxis()
+            }
+    }
+
+    private fun confirmDestinationBtnClickListener() {
+        btn_confirm_destination.setOnClickListener {
+            pickUpMapFragmentActions.createRouteAction()
         }
     }
 }

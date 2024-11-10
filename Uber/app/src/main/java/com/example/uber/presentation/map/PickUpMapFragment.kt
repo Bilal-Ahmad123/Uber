@@ -20,7 +20,7 @@ import com.example.uber.BuildConfig
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
-import com.example.uber.core.interfaces.IBottomSheetListener
+import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.permissions.PermissionManagers
@@ -28,9 +28,7 @@ import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
-import com.example.uber.presentation.viewModels.DropOffLocationViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
-import com.example.uber.presentation.viewModels.PickUpLocationViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
@@ -51,7 +49,7 @@ import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 
-class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
+class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     private var _map: MapboxMap? = null
     private val map get() = _map!!
     private var _binding: FragmentPickUpMapBinding? = null
@@ -63,9 +61,6 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
     private lateinit var bottomSheetView: LinearLayout
     private lateinit var pickupTextView: EditText
     private lateinit var dropOffTextView: EditText
-    private lateinit var confirmDestinationBtn: AppCompatButton
-    private val pickUpLocationViewModel: PickUpLocationViewModel by activityViewModels()
-    private val dropOffLocationViewModel: DropOffLocationViewModel by activityViewModels()
     private val mapboxViewModel: MapboxViewModel by activityViewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
@@ -97,7 +92,6 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         initializeBottomSheetViews()
         setBackButtonOnClickListener()
         editTextFocusChangeListener()
-        setConfirmDestinationBtnClickListener()
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync(this)
 
@@ -116,9 +110,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                 requireContext(),
                 this,
                 viewLifecycleOwner,
-                pickUpLocationViewModel,
-                dropOffLocationViewModel,
-                mapboxViewModel
+                mapboxViewModel,
             )
         _rideOptionsBottomSheet = RideOptionsBottomSheet(view, requireContext())
 
@@ -129,16 +121,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         bottomSheetView = binding.root.findViewById<LinearLayout>(R.id.bottom_sheet)
         pickupTextView = binding.root.findViewById<EditText>(R.id.ti_pickup)
         dropOffTextView = binding.root.findViewById<EditText>(R.id.ti_drop_off)
-        confirmDestinationBtn =
-            binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
     }
 
-    private fun setConfirmDestinationBtnClickListener() {
-        binding.root.findViewById<AppCompatButton>(R.id.btn_confirm_destination)
-            .setOnClickListener {
-                createRoute()
-            }
-    }
 
     private fun showUserLocation(loadedMapStyle: Style) {
         val locationComponentActivationOptions =
@@ -177,11 +161,10 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             WeakReference(binding.mapView),
             WeakReference(mapboxMap),
             WeakReference(requireContext()),
-            pickUpLocationViewModel,
-            dropOffLocationViewModel,
             WeakReference(_rideOptionsBottomSheet),
             WeakReference(bottomSheetManager),
-            WeakReference(this)
+            WeakReference(this),
+            mapboxViewModel
         )
     }
 
@@ -357,12 +340,12 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             runCatching {
                 try {
                     if (isPickupEtInFocus) {
-                        pickUpLocationViewModel.setPickUpLocationName(
+                        mapboxViewModel.setPickUpLocationName(
                             map.cameraPosition.target.latitude,
                             map.cameraPosition.target.longitude
                         )
                     } else if (isDropOffEtInFocus) {
-                        dropOffLocationViewModel.setPickUpLocationName(
+                        mapboxViewModel.setDropOffLocationName(
                             map.cameraPosition.target.latitude,
                             map.cameraPosition.target.longitude
                         )
@@ -397,7 +380,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
                 requireContext()
             ) { location ->
                 runCatching {
-                    pickUpLocationViewModel.setPickUpLocationName(
+                    mapboxViewModel.setPickUpLocationName(
                         location!!.latitude, location.longitude
                     )
                 }
@@ -410,7 +393,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
 
     private fun animateToPickUpLocation() {
         val locationMapper = FetchLocation.customLocationMapper(
-            pickUpLocationViewModel.latitude, pickUpLocationViewModel.longitude
+            mapboxViewModel.pickUpLatitude, mapboxViewModel.pickUpLongitude
         )
         runCatching { animateCameraToCurrentLocation(locationMapper) }
 
@@ -418,8 +401,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
 
     private fun animateToDropOffLocation() {
         val locationMapper = FetchLocation.customLocationMapper(
-            dropOffLocationViewModel.latitude,
-            dropOffLocationViewModel.longitude
+            mapboxViewModel.dropOffLatitude,
+            mapboxViewModel.dropOffLongitude
         )
 
 
@@ -434,12 +417,12 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
         lifecycleScope.launch(Dispatchers.IO) {
             RouteCreationHelper.createRoute(
                 Point.fromLngLat(
-                    pickUpLocationViewModel.longitude,
-                    pickUpLocationViewModel.latitude
+                    mapboxViewModel.pickUpLongitude,
+                    mapboxViewModel.pickUpLatitude
                 ),
                 Point.fromLngLat(
-                    dropOffLocationViewModel.longitude,
-                    dropOffLocationViewModel.latitude
+                    mapboxViewModel.dropOffLongitude,
+                    mapboxViewModel.dropOffLatitude
                 )
             )
         }
@@ -483,6 +466,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IBottomSheetListener {
             _map?.removeOnCameraIdleListener(cameraPositionChangeListener)
         }
     }
+
+    override fun createRouteAction() = createRoute()
 }
 
 

@@ -2,6 +2,7 @@ package com.example.uber.domain.repository
 
 
 import com.example.uber.data.remote.api.MapBox.IMapboxService
+import com.example.uber.data.remote.models.mapbox.RetrieveSuggestedPlaceDetail.RetrieveSuggestResponse
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.SuggestionResponse
 import com.example.uber.data.remote.models.mapbox.geoCodeResponse.GeoCodingResponse
 import com.example.uber.data.repository.IMapBoxRepository
@@ -15,6 +16,10 @@ class MapboxRepositoryImpl @Inject constructor(private val mapBoxApi: IMapboxSer
 
     override suspend fun getSuggestions(place: String): Response<SuggestionResponse> {
         return mapBoxApi.getSuggestions(place)
+    }
+
+    override suspend fun retrieveSuggestedPlaceDetail(mapboxId: String): Response<RetrieveSuggestResponse> {
+        return mapBoxApi.retrieveSuggestedPlaceDetail(mapboxId)
     }
 
 }
