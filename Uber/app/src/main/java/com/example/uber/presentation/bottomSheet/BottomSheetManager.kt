@@ -67,6 +67,11 @@ class BottomSheetManager(
         setUpRecyclerViewAdapter()
     }
 
+    private fun debounce(){
+        pickUpLocationDebounce()
+        dropOffLocationDebounce()
+    }
+
     private fun setUpBottomSheet() {
         setBottomSheetStyle()
         setupBottomSheetCallback()
@@ -245,6 +250,7 @@ class BottomSheetManager(
             if (b) {
                 isPickupEtInFocus = false
                 isDropOffEtInFocus = true
+                clearRecyclerViewAdapter()
             }
         }
     }
@@ -273,8 +279,10 @@ class BottomSheetManager(
         setItemRecyclerViewItemDivider()
     }
 
+    private var searchedResults:MutableList<PlaceDetail> = mutableListOf()
     private fun showSuggestedPlacesOnBottomSheet(searchedResults: MutableList<PlaceDetail>) {
         placeSuggestionAdapter.submitList(searchedResults)
+        this.searchedResults = searchedResults
     }
 
     private fun extractSearchedResults(suggestions: List<Suggestion>?): MutableList<PlaceDetail> {
@@ -321,8 +329,16 @@ class BottomSheetManager(
         AnimationManager.animateToEndOfScreenAndScale(lineView, context = context)
     }
 
-    private fun debounce() {
+    private fun pickUpLocationDebounce() {
         RxTextView.textChanges(et_pickup).debounce(500, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread()).subscribe {
+                getPlacesSuggestions(it.toString())
+                translateOnXAxis()
+            }
+    }
+
+    private fun dropOffLocationDebounce(){
+        RxTextView.textChanges(et_drop_off).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
                 getPlacesSuggestions(it.toString())
                 translateOnXAxis()
@@ -350,4 +366,10 @@ class BottomSheetManager(
         hideBottomSheet()
         hideKeyBoard()
     }
+
+    private fun clearRecyclerViewAdapter(){
+        searchedResults.clear()
+        placeSuggestionAdapter.notifyDataSetChanged()
+    }
+
 }

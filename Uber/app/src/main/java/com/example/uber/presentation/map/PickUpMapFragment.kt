@@ -12,9 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.appcompat.widget.AppCompatButton
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.uber.BuildConfig
 import com.example.uber.R
@@ -42,13 +41,14 @@ import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
-
+@AndroidEntryPoint
 class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     private var _map: MapboxMap? = null
     private val map get() = _map!!
@@ -61,7 +61,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     private lateinit var bottomSheetView: LinearLayout
     private lateinit var pickupTextView: EditText
     private lateinit var dropOffTextView: EditText
-    private val mapboxViewModel: MapboxViewModel by activityViewModels()
+    private val mapboxViewModel: MapboxViewModel by viewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
     private var routeHelper: RouteCreationHelper? = null
@@ -417,11 +417,11 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         val pickUp = pickUpLatLng ?: LatLng(
             mapboxViewModel.pickUpLatitude,
             mapboxViewModel.pickUpLongitude,
-            )
+        )
         val dropOff = dropOffLatLng ?: LatLng(
             mapboxViewModel.dropOffLatitude,
             mapboxViewModel.dropOffLongitude
-            )
+        )
 
         hideLocationPickerMarker()
         onRemoveCameraAndMoveListener()
@@ -481,8 +481,6 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     ) {
         createRoute(pickUpLatLng, dropOffLatLng)
     }
-
-
 
 
 }
