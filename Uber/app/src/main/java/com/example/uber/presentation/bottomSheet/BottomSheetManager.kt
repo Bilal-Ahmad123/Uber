@@ -26,6 +26,7 @@ import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
+import com.mapbox.mapboxsdk.geometry.LatLng
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
@@ -98,10 +99,15 @@ class BottomSheetManager(
 
         when (newState) {
             BottomSheetBehavior.STATE_COLLAPSED -> {
-                (view.context as? Activity)?.dismissKeyboard()
+                hideKeyBoard()
             }
         }
     }
+
+    private fun hideKeyBoard(){
+        (view.context as? Activity)?.dismissKeyboard()
+    }
+
 
 
     private fun setBottomSheetStyle() {
@@ -206,7 +212,7 @@ class BottomSheetManager(
         et_drop_off.requestFocus()
     }
 
-    fun hideBottomSheet() {
+    private fun hideBottomSheet() {
         bottomSheetBehavior.isHideable = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
@@ -290,9 +296,10 @@ class BottomSheetManager(
     }
 
     private fun observeSuggestedPlaceDetail() {
-        with(mapboxViewModel) {
+        mapboxViewModel.run {
             retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
                 Log.d("TAG", "observeSuggestedPlaceDetail: $it")
+                createRouteAndHideSheet(LatLng(it[1], it[0]))
             }
         }
     }
@@ -324,7 +331,23 @@ class BottomSheetManager(
 
     private fun confirmDestinationBtnClickListener() {
         btn_confirm_destination.setOnClickListener {
-            pickUpMapFragmentActions.createRouteAction()
+            createRouteAndHideSheet()
         }
+    }
+
+    private fun createRoute(
+        pickUpLatLng: LatLng? = null,
+        dropOffLatLng: LatLng? = null
+    ) {
+        pickUpMapFragmentActions.createRouteAction(pickUpLatLng, dropOffLatLng)
+    }
+
+    private fun createRouteAndHideSheet(
+        pickUpLatLng: LatLng? = null,
+        dropOffLatLng: LatLng? = null
+    ) {
+        createRoute(pickUpLatLng, dropOffLatLng)
+        hideBottomSheet()
+        hideKeyBoard()
     }
 }

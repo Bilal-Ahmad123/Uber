@@ -410,19 +410,30 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
 
     }
 
-    private fun createRoute() {
+    private fun createRoute(
+        pickUpLatLng: LatLng? = null,
+        dropOffLatLng: LatLng? = null
+    ) {
+        val pickUp = pickUpLatLng ?: LatLng(
+            mapboxViewModel.pickUpLatitude,
+            mapboxViewModel.pickUpLongitude,
+            )
+        val dropOff = dropOffLatLng ?: LatLng(
+            mapboxViewModel.dropOffLatitude,
+            mapboxViewModel.dropOffLongitude
+            )
+
         hideLocationPickerMarker()
-        hidePickUpBottomSheet()
         onRemoveCameraAndMoveListener()
         lifecycleScope.launch(Dispatchers.IO) {
             RouteCreationHelper.createRoute(
                 Point.fromLngLat(
-                    mapboxViewModel.pickUpLongitude,
-                    mapboxViewModel.pickUpLatitude
+                    pickUp.longitude,
+                    pickUp.latitude
                 ),
                 Point.fromLngLat(
-                    mapboxViewModel.dropOffLongitude,
-                    mapboxViewModel.dropOffLatitude
+                    dropOff.longitude,
+                    dropOff.latitude
                 )
             )
         }
@@ -433,9 +444,6 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         binding.activityMainCenterLocationPin.visibility = View.GONE
     }
 
-    private fun hidePickUpBottomSheet() {
-        bottomSheetManager?.hideBottomSheet()
-    }
 
     private fun showRideOptionsBottomSheet() {
         _rideOptionsBottomSheet?.showBottomSheet()
@@ -467,7 +475,16 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         }
     }
 
-    override fun createRouteAction() = createRoute()
+    override fun createRouteAction(
+        pickUpLatLng: LatLng?,
+        dropOffLatLng: LatLng?
+    ) {
+        createRoute(pickUpLatLng, dropOffLatLng)
+    }
+
+
+
+
 }
 
 
