@@ -316,8 +316,13 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
             if (!_areListenersRegistered) {
                 onAddCameraAndMoveListeners()
             }
+            requestEditTextDropOffFocus()
 
         }
+    }
+
+    private fun requestEditTextDropOffFocus(){
+        bottomSheetManager?.requestEditTextDropOffFocus()
     }
 
     override fun onBottomSheetSlide(slideOffset: Float) {

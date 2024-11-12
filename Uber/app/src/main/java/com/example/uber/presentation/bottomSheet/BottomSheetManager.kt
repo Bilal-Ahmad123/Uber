@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -67,7 +68,7 @@ class BottomSheetManager(
         setUpRecyclerViewAdapter()
     }
 
-    private fun debounce(){
+    private fun debounce() {
         pickUpLocationDebounce()
         dropOffLocationDebounce()
     }
@@ -106,13 +107,28 @@ class BottomSheetManager(
             BottomSheetBehavior.STATE_COLLAPSED -> {
                 hideKeyBoard()
             }
+
+            BottomSheetBehavior.STATE_HIDDEN -> {
+                hideKeyBoard()
+            }
         }
     }
 
-    private fun hideKeyBoard(){
-        (view.context as? Activity)?.dismissKeyboard()
+    private fun hideKeyBoard() {
+        if (isPickupEtInFocus) {
+            this.et_pickup?.let { view ->
+                val imm =
+                    context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+        } else {
+            this.et_drop_off?.let { view ->
+                val imm =
+                    context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+        }
     }
-
 
 
     private fun setBottomSheetStyle() {
@@ -279,7 +295,7 @@ class BottomSheetManager(
         setItemRecyclerViewItemDivider()
     }
 
-    private var searchedResults:MutableList<PlaceDetail> = mutableListOf()
+    private var searchedResults: MutableList<PlaceDetail> = mutableListOf()
     private fun showSuggestedPlacesOnBottomSheet(searchedResults: MutableList<PlaceDetail>) {
         placeSuggestionAdapter.submitList(searchedResults)
         this.searchedResults = searchedResults
@@ -306,8 +322,11 @@ class BottomSheetManager(
     private fun observeSuggestedPlaceDetail() {
         mapboxViewModel.run {
             retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
-                Log.d("TAG", "observeSuggestedPlaceDetail: $it")
-                createRouteAndHideSheet(LatLng(it[1], it[0]))
+                if (isPickupEtInFocus) {
+                    createRouteAndHideSheet(pickUpLatLng = LatLng(it[1], it[0]))
+                } else {
+                    createRouteAndHideSheet(dropOffLatLng = LatLng(it[1], it[0]))
+                }
             }
         }
     }
@@ -337,7 +356,7 @@ class BottomSheetManager(
             }
     }
 
-    private fun dropOffLocationDebounce(){
+    private fun dropOffLocationDebounce() {
         RxTextView.textChanges(et_drop_off).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
                 getPlacesSuggestions(it.toString())
@@ -365,11 +384,28 @@ class BottomSheetManager(
         createRoute(pickUpLatLng, dropOffLatLng)
         hideBottomSheet()
         hideKeyBoard()
+        updateLocationInViewModel(pickUpLatLng, dropOffLatLng)
     }
 
-    private fun clearRecyclerViewAdapter(){
+    private fun updateLocationInViewModel(
+        pickUpLatLng: LatLng? = null,
+        dropOffLatLng: LatLng? = null
+    ) {
+        pickUpLatLng?.let {
+            mapboxViewModel.setPickUpLocationName(it.latitude, it.longitude)
+        }
+        dropOffLatLng?.let {
+            mapboxViewModel.setDropOffLocationName(it.latitude, it.longitude)
+        }
+    }
+
+    private fun clearRecyclerViewAdapter() {
         searchedResults.clear()
         placeSuggestionAdapter.notifyDataSetChanged()
+    }
+
+    fun requestEditTextDropOffFocus() {
+        et_drop_off.requestFocus()
     }
 
 }
