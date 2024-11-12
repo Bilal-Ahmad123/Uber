@@ -111,6 +111,12 @@ class BottomSheetManager(
             BottomSheetBehavior.STATE_HIDDEN -> {
                 hideKeyBoard()
             }
+            BottomSheetBehavior.STATE_EXPANDED -> {
+                if (isPickupEtInFocus)
+                    requestEditTextPickUpFocus()
+                else
+                    requestEditTextDropOffFocus()
+            }
         }
     }
 
@@ -406,6 +412,19 @@ class BottomSheetManager(
 
     fun requestEditTextDropOffFocus() {
         et_drop_off.requestFocus()
+        showKeyBoardOnBottomsheetExpand()
     }
 
+    private fun requestEditTextPickUpFocus() {
+        et_pickup.requestFocus()
+        showKeyBoardOnBottomsheetExpand(et_pickup)
+    }
+
+    private fun showKeyBoardOnBottomsheetExpand(editText: EditText = et_drop_off){
+        val imm =
+            context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
+
+    }
+    
 }
