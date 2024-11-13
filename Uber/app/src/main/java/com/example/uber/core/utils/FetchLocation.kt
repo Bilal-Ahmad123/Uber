@@ -47,19 +47,24 @@ object FetchLocation {
     ) {
         lazyInitializeLocationEngine(context)
         mCoroutineScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
-            Log.d("mCoroutineScope", "Running")
-            val lastLocation: Unit = locationEngine!!.getLastLocation(object :
-                LocationEngineCallback<LocationEngineResult> {
-                override fun onSuccess(result: LocationEngineResult?) {
-                    dispatcher.invoke(result?.locations?.get(0))
-                }
+            try {
+                val lastLocation: Unit = locationEngine!!.getLastLocation(object :
+                    LocationEngineCallback<LocationEngineResult> {
+                    override fun onSuccess(result: LocationEngineResult?) {
+                        runCatching {
+                            dispatcher.invoke(result?.locations?.get(0))
+                        }
+                    }
 
-                override fun onFailure(exception: Exception) {
-                    Toast.makeText(context, exception.message, Toast.LENGTH_SHORT)
-                        .show()
-                }
+                    override fun onFailure(exception: Exception) {
+                        Toast.makeText(context, exception.message, Toast.LENGTH_SHORT)
+                            .show()
+                    }
 
-            })
+                })
+            }catch (it:Exception) {
+                Log.e("getCurrentLocation", it.message.toString())
+            }
 
 
         }

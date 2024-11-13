@@ -7,6 +7,7 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -358,6 +359,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
                 } finally {
                     isPopulatingLocation = false
                 }
+            }.onFailure {
+                Log.e("Location Error", it.message.toString())
             }
         }
     }

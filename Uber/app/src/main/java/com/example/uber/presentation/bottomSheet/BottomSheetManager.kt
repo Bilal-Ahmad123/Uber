@@ -2,6 +2,9 @@ package com.example.uber.presentation.bottomSheet
 
 import android.app.Activity
 import android.content.Context
+import android.text.Editable
+import android.text.Selection
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -66,6 +69,17 @@ class BottomSheetManager(
         observePlacesSuggestions()
         debounce()
         setUpRecyclerViewAdapter()
+        et_drop_off.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                Log.d("onTextChanged", "true")
+            }
+        })
     }
 
     private fun debounce() {
@@ -111,6 +125,7 @@ class BottomSheetManager(
             BottomSheetBehavior.STATE_HIDDEN -> {
                 hideKeyBoard()
             }
+
             BottomSheetBehavior.STATE_EXPANDED -> {
                 if (isPickupEtInFocus)
                     requestEditTextPickUpFocus()
@@ -191,24 +206,20 @@ class BottomSheetManager(
     }
 
     private fun observePickUpLocationChanges() {
-        checkInternetConnection {
-            with(mapboxViewModel) {
-                pickUpLocationName.observe(viewLifecycleOwner) {
-                    et_pickup.setText(it)
-                    updateLocationText(it)
-                }
+        with(mapboxViewModel) {
+            pickUpLocationName.observe(viewLifecycleOwner) {
+                et_pickup.setText(it)
+                updateLocationText(it)
             }
         }
 
     }
 
     private fun observeDropOffLocationChanges() {
-        checkInternetConnection {
-            with(mapboxViewModel) {
-                dropOffLocationName.observe(viewLifecycleOwner) {
-                    et_drop_off.setText(it)
-                    updateLocationText(it)
-                }
+        with(mapboxViewModel) {
+            dropOffLocationName.observe(viewLifecycleOwner) {
+                et_drop_off.setText(it)
+                updateLocationText(it)
             }
         }
     }
@@ -272,6 +283,7 @@ class BottomSheetManager(
             if (b) {
                 isPickupEtInFocus = false
                 isDropOffEtInFocus = true
+                Log.d("editTextFocusChangeListener", "true")
                 clearRecyclerViewAdapter()
             }
         }
@@ -412,6 +424,7 @@ class BottomSheetManager(
 
     fun requestEditTextDropOffFocus() {
         et_drop_off.requestFocus()
+        selectTextInsideEditText()
         showKeyBoardOnBottomsheetExpand()
     }
 
@@ -420,11 +433,20 @@ class BottomSheetManager(
         showKeyBoardOnBottomsheetExpand(et_pickup)
     }
 
-    private fun showKeyBoardOnBottomsheetExpand(editText: EditText = et_drop_off){
+    private fun showKeyBoardOnBottomsheetExpand(editText: EditText = et_drop_off) {
         val imm =
             context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
 
     }
-    
+
+    private fun selectTextInsideEditText() {
+        et_drop_off.placeCursorAtEnd()
+    }
+
+    private fun EditText.placeCursorAtEnd() {
+        Selection.setSelection(this.text, this.text.length);
+
+    }
+
 }

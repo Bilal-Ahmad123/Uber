@@ -99,40 +99,44 @@ object RouteCreationHelper {
             .accessToken(BuildConfig.MAPBOX_TOKEN)
             .build()
 
-        directionsCall.enqueueCall(object : Callback<DirectionsResponse> {
-            override fun onResponse(
-                call: Call<DirectionsResponse>,
-                response: Response<DirectionsResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val routes: MutableList<DirectionsRoute>? = response.body()?.routes()
-                    Log.d("Route", "Response: ${response.body()}")
-                    if (!routes.isNullOrEmpty()) {
-                        val route = routes[0]
-                        _geometry = route.geometry()
-                        mCouroutineScope?.launch {
-                            _duration = getDurationInMinutes(routes[0].duration()!!)
-                            displayRoute(
-                                route,
-                                originPoint.latitude(),
-                                originPoint.longitude(),
-                                destinationPoint.latitude(),
-                                destinationPoint.longitude(),
-                            )
+        runCatching {
+
+            directionsCall.enqueueCall(object : Callback<DirectionsResponse> {
+                override fun onResponse(
+                    call: Call<DirectionsResponse>,
+                    response: Response<DirectionsResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val routes: MutableList<DirectionsRoute>? = response.body()?.routes()
+                        Log.d("Route", "Response: ${response.body()}")
+                        if (!routes.isNullOrEmpty()) {
+                            val route = routes[0]
+                            _geometry = route.geometry()
+                            mCouroutineScope?.launch {
+                                _duration = getDurationInMinutes(routes[0].duration()!!)
+                                displayRoute(
+                                    route,
+                                    originPoint.latitude(),
+                                    originPoint.longitude(),
+                                    destinationPoint.latitude(),
+                                    destinationPoint.longitude(),
+                                )
+                            }
+                        } else {
+                            Log.e("Route Error", "No routes found")
                         }
                     } else {
-                        Log.e("Route Error", "No routes found")
+                        Log.e("Route Error", "Error: ${response.message()}")
                     }
-                } else {
-                    Log.e("Route Error", "Error: ${response.message()}")
                 }
-            }
 
-            override fun onFailure(call: Call<DirectionsResponse>, t: Throwable) {
-                TODO("Not yet implemented")
-            }
+                override fun onFailure(call: Call<DirectionsResponse>, t: Throwable) {
+                }
 
-        })
+            })
+        }.onFailure {
+            Log.e("Route Error", "Error: ${it.message}")
+        }
 
     }
 
