@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -17,6 +18,7 @@ import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private var currentNightMode: Int = 0
     private val ll_nointernet: View by lazy { findViewById(R.id.noInternetConnection) }
     private val ll_no_location_service: View by lazy { findViewById(R.id.ll_no_location_service) }
+    private val iv_cross: View by lazy { findViewById(R.id.iv_cross) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +44,7 @@ class MainActivity : AppCompatActivity() {
         createNavigation()
         checkForThemeChange()
         continuousBackgroundThread()
+        onImageViewClickListener()
     }
 
     private fun createNavigation() {
@@ -84,8 +88,10 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    private lateinit var _job:Job
+
     private fun continuousBackgroundThread() {
-        lifecycleScope.launch(Dispatchers.Default) {
+        _job = lifecycleScope.launch(Dispatchers.Default) {
             while (true) {
                 if (!checkIfInternet() && !checkIfInternetVisible()) {
                     makeItVisibleOrDisappear(View.VISIBLE)
@@ -133,5 +139,22 @@ class MainActivity : AppCompatActivity() {
         withContext(Dispatchers.Main) {
             ll_no_location_service.visibility = visibility
         }
+    }
+
+    private fun onImageViewClickListener(){
+        iv_cross.setOnClickListener {
+            if(_job.isActive){
+                disappearNoInternetConnection()
+                disposeBackgroundThread()
+            }
+        }
+    }
+
+    private fun disposeBackgroundThread(){
+        _job.cancel()
+    }
+
+    private fun disappearNoInternetConnection(){
+        ll_nointernet.visibility = View.GONE
     }
 }
