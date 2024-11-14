@@ -20,6 +20,7 @@
         <item name="confirmDestinationBtnText">@color/white</item>
         <item name="planYourRide">@color/black</item>
         <item name="markerAnnotation">@color/black</item>
+        <item name="commonColor">@color/black</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <item name="bottomSheetDragHandleStyle">
@@ -28,6 +29,9 @@
         <item name="android:windowFullscreen">true</item>
         <item name="textBlackAndWhite">@color/black</item>
         <item name="bottomSheetIcons">@color/grey</item>
+        <item name="divider">@color/gainsBoro</item>
+        <item name="noInternetConnection">@color/lipStick</item>
+        <item name="noLocationService">@color/saffron</item>
 
         <!-- Customize your theme here. -->
     </style>

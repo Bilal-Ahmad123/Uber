@@ -25,9 +25,13 @@
         <item name="markerAnnotation">@color/white</item>
         <item name="textBlackAndWhite">@color/white</item>
         <item name="bottomSheetIcons">@color/chromaphobicBlack</item>
+        <item name="commonColor">@color/white</item>
+        <item name="noLocationService">@color/lipStick</item>
         <item name="bottomSheetDragHandleStyle">
             @style/Widget.MaterialComponents.BottomSheet.DragHandle.LightMode
         </item>
+        <item name="divider">@color/darkCharCoal</item>
+
         <!-- Customize your theme here. -->
     </style>
     <!-- Base application theme. -->

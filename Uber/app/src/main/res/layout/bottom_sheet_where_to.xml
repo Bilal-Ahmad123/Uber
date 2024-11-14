@@ -202,11 +202,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
-                    android:autofillHints=""
                     android:background="#00000000"
                     android:hint="Where to?"
                     android:inputType="text"
                     android:textSize="@dimen/_12ssp"
+                    android:ellipsize="end"
                    />
             </LinearLayout>
 
@@ -245,40 +245,6 @@
                         />
                 </RelativeLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingVertical="@dimen/_18sdp">
-
-                    <ImageView
-                        android:layout_width="@dimen/_15sdp"
-                        android:layout_height="@dimen/_15sdp"
-                        android:layout_marginLeft="@dimen/_12sdp"
-                        android:layout_marginRight="@dimen/_16sdp"
-                        android:src="@drawable/baseline_location_pin_24" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/_3sdp"
-                        android:text="Islamabad"
-                        android:textSize="@dimen/_11ssp"
-                        android:textColor="?attr/textBlackAndWhite"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <View
-                    android:layout_width="fill_parent"
-                    android:layout_height="1dp"
-                    android:layout_alignStart="@+id/tv_set_location_on_map"
-                    android:layout_marginVertical="@dimen/_2sdp"
-                    android:layout_marginLeft="@dimen/_38sdp"
-                    android:background="#c0c0c0" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -313,8 +279,8 @@
                     android:layout_height="1dp"
                     android:layout_alignStart="@+id/tv_set_location_on_map"
                     android:layout_marginVertical="@dimen/_2sdp"
-                    android:layout_marginLeft="@dimen/_38sdp"
-                    android:background="#c0c0c0" />
+                    android:layout_marginLeft="@dimen/_7sdp"
+                    android:background="?attr/divider" />
 
                 <LinearLayout
                     android:id="@+id/ll_set_location_on_map"
@@ -349,8 +315,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="1dp"
                     android:layout_marginVertical="@dimen/_2sdp"
-                    android:layout_marginLeft="@dimen/_38sdp"
-                    android:background="#c0c0c0" />
+                    android:layout_marginLeft="@dimen/_7sdp"
+                    android:background="?attr/divider" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 

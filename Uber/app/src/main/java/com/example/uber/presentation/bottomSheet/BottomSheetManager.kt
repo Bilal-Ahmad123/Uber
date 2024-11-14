@@ -69,17 +69,6 @@ class BottomSheetManager(
         observePlacesSuggestions()
         debounce()
         setUpRecyclerViewAdapter()
-        et_drop_off.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                Log.d("onTextChanged", "true")
-            }
-        })
     }
 
     private fun debounce() {
@@ -283,8 +272,6 @@ class BottomSheetManager(
             if (b) {
                 isPickupEtInFocus = false
                 isDropOffEtInFocus = true
-                Log.d("editTextFocusChangeListener", "true")
-                clearRecyclerViewAdapter()
             }
         }
     }
