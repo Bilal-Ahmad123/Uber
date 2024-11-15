@@ -165,7 +165,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
             WeakReference(_rideOptionsBottomSheet),
             WeakReference(bottomSheetManager),
             WeakReference(this),
-            mapboxViewModel
+            WeakReference(mapboxViewModel)
         )
     }
 

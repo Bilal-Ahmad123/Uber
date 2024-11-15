@@ -1,11 +1,13 @@
 package com.example.uber.presentation
 
-import android.app.Activity
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
+import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -14,13 +16,10 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.uber.R
-import com.example.uber.core.utils.system.SystemInfo
+import com.example.uber.core.utils.system.GPSCheck
+import com.example.uber.core.utils.system.NetworkStateReceiver
 import com.example.uber.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -41,10 +40,38 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(0, 0, 0, 0)
             insets
         }
+
+        registerGPSListener()
+        registerNetworkListener()
         createNavigation()
         checkForThemeChange()
-        continuousBackgroundThread()
-        onImageViewClickListener()
+        onCrossBtnClickListener()
+    }
+
+    private fun registerNetworkListener(){
+        registerReceiver(NetworkStateReceiver(object : NetworkStateReceiver.NetworkStateReceiverListener {
+            override fun networkAvailable() {
+                disappearNoInternetConnection()
+            }
+
+            override fun networkUnavailable() {
+                showNoInternetConnection()
+            }
+        }), IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+    }
+
+    private fun registerGPSListener(){
+        val intentFilter = IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION)
+        intentFilter.addAction(Intent.ACTION_PROVIDER_CHANGED)
+        registerReceiver(GPSCheck(object : GPSCheck.LocationCallBack {
+            override fun turnedOn() {
+                disappearNoLocationService()
+            }
+
+            override fun turnedOff() {
+                showNoLocationService()
+            }
+        }), IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION))
     }
 
     private fun createNavigation() {
@@ -88,73 +115,28 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private lateinit var _job:Job
-
-    private fun continuousBackgroundThread() {
-        _job = lifecycleScope.launch(Dispatchers.Default) {
-            while (true) {
-                if (!checkIfInternet() && !checkIfInternetVisible()) {
-                    makeItVisibleOrDisappear(View.VISIBLE)
-                } else if (checkIfInternet()) {
-                    interactWithNoLocationService()
-                    if (checkIfInternetVisible()) {
-                        makeItVisibleOrDisappear(View.GONE)
-                    }
-                }
-            }
-        }
-    }
-
-    private suspend fun interactWithNoLocationService(){
-        if (!isLocationServiceEnabled() && !isNoInternetConnectionVisible()) {
-            makeNoLocationServiceDisappearOrAppear(View.VISIBLE)
-        } else if (isLocationServiceEnabled() && isNoInternetConnectionVisible()) {
-            makeNoLocationServiceDisappearOrAppear(View.GONE)
-        }
-    }
-
-    private fun isLocationServiceEnabled(): Boolean {
-        return SystemInfo.isLocationEnabled(this@MainActivity)
-    }
-
-    private fun checkIfInternetVisible(): Boolean {
-        return ll_nointernet.visibility == View.VISIBLE
-    }
-
-    private suspend fun makeItVisibleOrDisappear(visibility: Int) {
-        withContext(Dispatchers.Main) {
-            ll_nointernet.visibility = visibility
-        }
-    }
-
-    private fun checkIfInternet(): Boolean {
-        return SystemInfo.CheckInternetConnection(this@MainActivity)
-    }
-
-    private fun isNoInternetConnectionVisible(): Boolean {
-        return ll_no_location_service.visibility == View.VISIBLE
-    }
-
-    private suspend fun makeNoLocationServiceDisappearOrAppear(visibility: Int) {
-        withContext(Dispatchers.Main) {
-            ll_no_location_service.visibility = visibility
-        }
-    }
-
-    private fun onImageViewClickListener(){
-        iv_cross.setOnClickListener {
-            if(_job.isActive){
-                disappearNoInternetConnection()
-                disposeBackgroundThread()
-            }
-        }
-    }
-
-    private fun disposeBackgroundThread(){
-        _job.cancel()
-    }
 
     private fun disappearNoInternetConnection(){
         ll_nointernet.visibility = View.GONE
     }
+
+    private fun showNoInternetConnection(){
+        ll_nointernet.visibility = View.VISIBLE
+        ll_nointernet.bringToFront()
+    }
+
+    private fun disappearNoLocationService(){
+        ll_no_location_service.visibility = View.GONE
+    }
+
+    private fun showNoLocationService(){
+        ll_no_location_service.visibility = View.VISIBLE
+    }
+
+    private fun onCrossBtnClickListener(){
+        iv_cross.setOnClickListener {
+            disappearNoInternetConnection()
+        }
+    }
+
 }

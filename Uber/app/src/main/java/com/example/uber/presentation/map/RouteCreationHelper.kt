@@ -55,8 +55,7 @@ object RouteCreationHelper {
     private var lineManager: LineManager? = null
     private var symbolManager: SymbolManager? = null
     private var _geometry: String? = null
-    private var cachedLatLngBounds: LatLngBounds? = null
-    private lateinit var mapboxViewModel: MapboxViewModel
+    private lateinit var mapboxViewModel: WeakReference<MapboxViewModel>
 
     fun initInstances(
         mapView: WeakReference<MapView>,
@@ -65,7 +64,7 @@ object RouteCreationHelper {
         rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
         bottomSheetManager: WeakReference<BottomSheetManager>,
         pickUpMapFragment: WeakReference<PickUpMapFragment>,
-        mapboxViewModel: MapboxViewModel
+        mapboxViewModel: WeakReference<MapboxViewModel>
     ) {
         this.map = map
         this.mapView = mapView
@@ -234,11 +233,11 @@ object RouteCreationHelper {
         val pickupMarker =
             createTextMarkerDrawable(
                 context.get()!!,
-                "(${_duration} MIN) " + mapboxViewModel.pickUpLocationName.value.toString() + "  >  "
+                "(${_duration} MIN) " + mapboxViewModel.get()?.pickUpLocationName?.value.toString() + "  >  "
             )
         val dropoffMarker = createTextMarkerDrawable(
             context.get()!!,
-            mapboxViewModel.dropOffLocationName.value.toString() + "  >  "
+            mapboxViewModel.get()?.dropOffLocationName?.value.toString() + "  >  "
         )
         style.addImage("pickup-marker-annotation", pickupMarker)
         style.addImage("dropoff-marker-annotation", dropoffMarker)
