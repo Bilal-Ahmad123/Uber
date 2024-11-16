@@ -45,6 +45,8 @@ import com.mapbox.mapboxsdk.maps.Style
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.abs
@@ -65,7 +67,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     private lateinit var dropOffTextView: EditText
     private val mapboxViewModel: MapboxViewModel by viewModels()
     private var isPickupEtInFocus = false
-    private var isDropOffEtInFocus = false
+    private var isDropOffEtInFocus = true
     private var routeHelper: RouteCreationHelper? = null
     private var _areListenersRegistered = false
     private val _compositeDisposable = CompositeDisposable()
@@ -93,10 +95,8 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         initializeBottomSheets(view)
         initializeBottomSheetViews()
         setBackButtonOnClickListener()
-        editTextFocusChangeListener()
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync(this)
-        ifNetworkOrGPSDisabled()
 
         if (isAdded) {
             setUpCurrentLocationButton()
@@ -156,8 +156,10 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         _map = mapboxMap
-        mapboxMap.setStyle(getCurrentMapStyle())
         onAddCameraAndMoveListeners()
+        mapboxMap.setStyle(getCurrentMapStyle())
+        ifNetworkOrGPSDisabled()
+        editTextFocusChangeListener()
         RouteCreationHelper.initInstances(
             WeakReference(binding.mapView),
             WeakReference(mapboxMap),
@@ -248,8 +250,13 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     }
 
     private val cameraPositionChangeListener = OnCameraIdleListener {
-        if (!isPopulatingLocation) {
-            fetchLocation()
+        ifNetworkOrGPSDisabled {
+            if (!it) {
+                if (!isPopulatingLocation) {
+
+                    fetchLocation()
+                }
+            }
         }
     }
 
@@ -492,24 +499,35 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     }
 
     private fun storeLocationOffline() {
-        mapboxViewModel.saveCurrentLocationToDB(
-            CurrentLocation(
-                location = LatLng(
-                    map.locationComponent.lastKnownLocation!!.latitude,
-                    map.locationComponent.lastKnownLocation!!.longitude
-                )
-            )
-        )
-    }
-
-    private fun ifNetworkOrGPSDisabled() {
-        if (!SystemInfo.isLocationEnabled(requireContext()) || !SystemInfo.CheckInternetConnection(
-                requireContext()
-            )
-        ) {
-            mapboxViewModel.setLatitudeAndLongitudeIfNoNetworkOrGPS()
+        lifecycleScope.launch {
+            async {
+                if (map.locationComponent.lastKnownLocation != null) {
+                    mapboxViewModel.saveCurrentLocationToDB(
+                        CurrentLocation(
+                            location = LatLng(
+                                map.locationComponent.lastKnownLocation!!.latitude,
+                                map.locationComponent.lastKnownLocation!!.longitude
+                            )
+                        )
+                    )
+                }
+            }.await()
         }
     }
+
+    private inline fun ifNetworkOrGPSDisabled(dispatcher: (Boolean) -> Unit = {}) {
+        val isNetworkOrGPSDisabled = !SystemInfo.isLocationEnabled(requireContext()) ||
+                !SystemInfo.CheckInternetConnection(requireContext())
+
+        if (isNetworkOrGPSDisabled) {
+            mapboxViewModel.setLatitudeAndLongitudeIfNoNetworkOrGPS()
+            dispatcher(true)
+        } else {
+            dispatcher(false)
+        }
+    }
+
+
 }
 
 

@@ -15,6 +15,7 @@ import com.example.uber.domain.use_case.geocoding.MapboxUseCase
 import com.mapbox.mapboxsdk.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.async
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -41,7 +42,7 @@ class MapboxViewModel @Inject constructor(
     val dropOffLongitude get() = _dropOffLongitude
     private var _pickUpLocationName = MutableLiveData<String>()
     val pickUpLocationName get() = _pickUpLocationName
-    private var _dropOffLocationName= MutableLiveData<String>()
+    private var _dropOffLocationName = MutableLiveData<String>()
     val dropOffLocationName get() = _dropOffLocationName
 
     fun geoCodeLocation(latitude: Double, longitude: Double) {
@@ -102,16 +103,16 @@ class MapboxViewModel @Inject constructor(
 
     }
 
-    fun saveCurrentLocationToDB(currentLocation:Location){
+    fun saveCurrentLocationToDB(currentLocation: Location) {
         launchOnBack {
-            locationUseCase.insertCurrentLocation(currentLocation)
+                locationUseCase.insertCurrentLocation(currentLocation)
         }
     }
 
-    fun setLatitudeAndLongitudeIfNoNetworkOrGPS(){
+    fun setLatitudeAndLongitudeIfNoNetworkOrGPS() {
         launchOnBack {
             val location = locationUseCase.getCurrentLocation()
-            if(location != null){
+            if (location != null) {
                 _pickUpLatitude = location.location.latitude
                 _pickUpLongitude = location.location.longitude
                 _dropOffLatitude = location.location.latitude
