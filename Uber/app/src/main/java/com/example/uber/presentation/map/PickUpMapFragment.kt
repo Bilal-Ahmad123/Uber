@@ -48,6 +48,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.abs
+import com.example.uber.data.local.entities.Location as CurrentLocation
 
 @AndroidEntryPoint
 class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
@@ -95,6 +96,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         editTextFocusChangeListener()
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync(this)
+        ifNetworkOrGPSDisabled()
 
         if (isAdded) {
             setUpCurrentLocationButton()
@@ -136,8 +138,6 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
             }
         }
         showUserCurrentLocation(locationComponentActivationOptions)
-
-
     }
 
     private fun requestLocationPermission() {
@@ -199,6 +199,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        storeLocationOffline()
         binding.mapView.onDestroy()
         cleanUpResources()
     }
@@ -322,7 +323,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         }
     }
 
-    private fun requestEditTextDropOffFocus(){
+    private fun requestEditTextDropOffFocus() {
         bottomSheetManager?.requestEditTextDropOffFocus()
     }
 
@@ -490,7 +491,25 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         createRoute(pickUpLatLng, dropOffLatLng)
     }
 
+    private fun storeLocationOffline() {
+        mapboxViewModel.saveCurrentLocationToDB(
+            CurrentLocation(
+                location = LatLng(
+                    map.locationComponent.lastKnownLocation!!.latitude,
+                    map.locationComponent.lastKnownLocation!!.longitude
+                )
+            )
+        )
+    }
 
+    private fun ifNetworkOrGPSDisabled() {
+        if (!SystemInfo.isLocationEnabled(requireContext()) || !SystemInfo.CheckInternetConnection(
+                requireContext()
+            )
+        ) {
+            mapboxViewModel.setLatitudeAndLongitudeIfNoNetworkOrGPS()
+        }
+    }
 }
 
 

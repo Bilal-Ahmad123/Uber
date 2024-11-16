@@ -1,14 +1,13 @@
-package com.example.uber.data.local.DataBase
+package com.example.uber.data.local.dataBase
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.example.uber.data.local.Dao.DropOffLocationDao
-import com.example.uber.data.local.Dao.PickUpLocationDao
-import com.example.uber.domain.model.DropOffLocation
-import com.example.uber.domain.model.PickUpLocation
+import androidx.room.TypeConverters
+import com.example.uber.data.local.dao.LocationDao
+import com.example.uber.data.local.entities.Location
 
-@Database(entities = [PickUpLocation::class, DropOffLocation::class], version = 1)
+@Database(entities = [Location::class], version = 1)
+@TypeConverters(LatLngJsonConverter::class)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun pickUpLocationDao(): PickUpLocationDao
-    abstract fun dropOffLocationDao(): DropOffLocationDao
+    abstract fun currentLocationDao(): LocationDao
 }

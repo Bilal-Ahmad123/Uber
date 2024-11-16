@@ -2,7 +2,10 @@ package com.example.uber.di.DataBase
 
 import android.content.Context
 import androidx.room.Room
-import com.example.uber.data.local.DataBase.AppDatabase
+import com.example.uber.data.local.dao.LocationDao
+import com.example.uber.data.local.dataBase.AppDatabase
+import com.example.uber.data.repository.ILocationRepository
+import com.example.uber.domain.repository.LocationRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,9 +24,12 @@ object DataBaseModule {
 
     @Provides
     @Singleton
-    fun providePickUpLocationDao(database: AppDatabase) = database.pickUpLocationDao()
+    fun currentLocationDao(database: AppDatabase) = database.currentLocationDao()
 
     @Provides
     @Singleton
-    fun provideDropOffLocationDao(database: AppDatabase) = database.dropOffLocationDao()
+    fun provideLocationRepositoryImpl(database: LocationDao): ILocationRepository {
+        return LocationRepositoryImpl(database)
+    }
+
 }

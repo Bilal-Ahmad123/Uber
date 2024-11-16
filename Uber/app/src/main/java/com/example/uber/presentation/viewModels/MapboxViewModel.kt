@@ -6,10 +6,13 @@ import com.example.uber.core.common.Resource
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.utils.FetchLocation
+import com.example.uber.data.local.entities.Location
 import com.example.uber.data.remote.models.mapbox.RetrieveSuggestedPlaceDetail.RetrieveSuggestResponse
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.SuggestionResponse
 import com.example.uber.data.remote.models.mapbox.geoCodeResponse.GeoCodingResponse
+import com.example.uber.domain.use_case.geocoding.LocationUseCase
 import com.example.uber.domain.use_case.geocoding.MapboxUseCase
+import com.mapbox.mapboxsdk.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Response
@@ -19,14 +22,13 @@ import javax.inject.Inject
 class MapboxViewModel @Inject constructor(
     private val mapboxUseCase: MapboxUseCase,
     private val dispatcher: IDispatchers,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val locationUseCase: LocationUseCase
 ) : BaseViewModel(dispatcher) {
     private val _locationNameGeoCoded = MutableLiveData<Resource<GeoCodingResponse>>()
     private val _placesSuggestion = MutableLiveData<Resource<SuggestionResponse>>()
     private var _retrieveSuggestedPlaceDetail = MutableLiveData<List<Double>>()
     private val _locationName = MutableLiveData<String>()
-    val locationName get() = _locationName
-    val locationNameGeoCoded get() = _locationNameGeoCoded
     val placesSuggestion get() = _placesSuggestion
     val retrieveSuggestedPlaceDetail get() = _retrieveSuggestedPlaceDetail
     private var _pickUpLatitude: Double = 0.0
@@ -82,6 +84,7 @@ class MapboxViewModel @Inject constructor(
 
     fun setPickUpLocationName(latitude: Double, longitude: Double) {
         launchOnBack {
+            locationUseCase.getCurrentLocation()
             val res = FetchLocation.getLocation(latitude, longitude, context)
             _pickUpLocationName.postValue(res)
         }
@@ -97,5 +100,23 @@ class MapboxViewModel @Inject constructor(
         this._dropOffLatitude = latitude
         this._dropOffLongitude = longitude
 
+    }
+
+    fun saveCurrentLocationToDB(currentLocation:Location){
+        launchOnBack {
+            locationUseCase.insertCurrentLocation(currentLocation)
+        }
+    }
+
+    fun setLatitudeAndLongitudeIfNoNetworkOrGPS(){
+        launchOnBack {
+            val location = locationUseCase.getCurrentLocation()
+            if(location != null){
+                _pickUpLatitude = location.location.latitude
+                _pickUpLongitude = location.location.longitude
+                _dropOffLatitude = location.location.latitude
+                _dropOffLongitude = location.location.longitude
+            }
+        }
     }
 }
