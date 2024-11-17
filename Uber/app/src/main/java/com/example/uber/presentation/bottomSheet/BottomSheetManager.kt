@@ -35,14 +35,13 @@ import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
 
-class BottomSheetManager(
+class BottomSheetManager private constructor(
     private val view: View,
     private val context: Context,
     private val pickUpMapFragmentActions: IActions,
     private val viewLifecycleOwner: LifecycleOwner,
     private val mapboxViewModel: MapboxViewModel,
-
-    ) {
+) {
     private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
     private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
     private val whereTo: LinearLayout by lazy { view.findViewById(R.id.cl_where_to) }
@@ -59,6 +58,42 @@ class BottomSheetManager(
     private val lineView: View by lazy { view.findViewById<View>(R.id.lineView) }
     private lateinit var placeSuggestionAdapter: PlaceSuggestionAdapter
 
+    companion object {
+        @Volatile
+        private var instance: BottomSheetManager? = null
+        fun initialize(
+            view: View,
+            context: Context,
+            pickUpMapFragmentActions: IActions,
+            viewLifecycleOwner: LifecycleOwner,
+            mapboxViewModel: MapboxViewModel,
+        ): BottomSheetManager? {
+            if (instance == null) {
+                synchronized(this) {
+                    if (instance == null) {
+                        instance = BottomSheetManager(
+                            view,
+                            context,
+                            pickUpMapFragmentActions,
+                            viewLifecycleOwner,
+                            mapboxViewModel
+                        )
+                    }
+                }
+            }
+            return instance
+        }
+
+        fun getInstance(): BottomSheetManager? {
+            return instance
+        }
+
+        fun destroyInstance(){
+            if(instance != null){
+                instance = null
+            }
+        }
+    }
 
     init {
         setUpBottomSheet()

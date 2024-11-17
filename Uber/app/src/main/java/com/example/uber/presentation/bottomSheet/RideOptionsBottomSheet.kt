@@ -8,12 +8,38 @@ import com.example.uber.presentation.map.RouteCreationHelper
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
-class RideOptionsBottomSheet(
+class RideOptionsBottomSheet private constructor(
     private val view: View, private val context: Context,
 ) {
     private val bottomSheet: View = view.findViewById(R.id.ride_options_bottom_sheet)
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
     private val shimmer: ShimmerFrameLayout by lazy { view.findViewById(R.id.shimmerLayout) }
+
+    companion object{
+        @Volatile
+        private var instance:RideOptionsBottomSheet? = null
+        fun initialize( view: View,context: Context):RideOptionsBottomSheet?{
+            if(instance == null){
+                synchronized(this){
+                    if(instance == null){
+                        instance = RideOptionsBottomSheet(view,context)
+                    }
+                }
+            }
+            return instance
+        }
+
+        fun getInstance():RideOptionsBottomSheet?{
+            return instance
+        }
+
+
+        fun cleanResources(){
+            if (instance != null){
+                instance = null
+            }
+        }
+    }
 
     init {
         setBottomSheetStyle()
@@ -37,11 +63,11 @@ class RideOptionsBottomSheet(
 
         when (newState) {
             BottomSheetBehavior.STATE_EXPANDED -> {
-                RouteCreationHelper.animateToRespectivePadding(1000)
+                RouteCreationHelper.getInstance()?.animateToRespectivePadding(1000)
             }
 
             BottomSheetBehavior.STATE_COLLAPSED -> {
-                RouteCreationHelper.animateToRespectivePadding()
+                RouteCreationHelper.getInstance()?.animateToRespectivePadding()
             }
         }
     }

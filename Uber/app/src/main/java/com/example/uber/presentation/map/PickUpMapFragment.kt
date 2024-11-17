@@ -108,16 +108,14 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
 
     private fun initializeBottomSheets(view: View) {
         bottomSheetManager =
-            BottomSheetManager(
+            BottomSheetManager.initialize(
                 view,
                 requireContext(),
                 this,
                 viewLifecycleOwner,
                 mapboxViewModel,
             )
-        _rideOptionsBottomSheet = RideOptionsBottomSheet(view, requireContext())
-
-
+        _rideOptionsBottomSheet = RideOptionsBottomSheet.initialize(view,requireContext())
     }
 
     private fun initializeBottomSheetViews() {
@@ -160,15 +158,20 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         mapboxMap.setStyle(getCurrentMapStyle())
         ifNetworkOrGPSDisabled()
         editTextFocusChangeListener()
-        RouteCreationHelper.initInstances(
-            WeakReference(binding.mapView),
-            WeakReference(mapboxMap),
-            WeakReference(requireContext()),
-            WeakReference(_rideOptionsBottomSheet),
+        initializeRouteHelper()
+    }
+
+    private fun initializeRouteHelper() {
+        RouteCreationHelper.initialize(
             WeakReference(bottomSheetManager),
+            WeakReference(_rideOptionsBottomSheet),
             WeakReference(this),
+            WeakReference(binding.mapView),
+            WeakReference(map),
+            WeakReference(requireContext()),
             WeakReference(mapboxViewModel)
         )
+        routeHelper = RouteCreationHelper.getInstance()
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
@@ -223,10 +226,12 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         loadedMapStyle = null
         onRemoveCameraAndMoveListener()
         _map = null
+        BottomSheetManager.destroyInstance()
         bottomSheetManager = null
         FetchLocation.cleanResources()
         routeHelper?.clearResources()
         routeHelper = null
+        RideOptionsBottomSheet.cleanResources()
         _rideOptionsBottomSheet = null
         _compositeDisposable.dispose()
     }
@@ -319,7 +324,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
                 bottomSheetManager?.showBottomSheet()
             }
             _rideOptionsBottomSheet?.hideBottomSheet()
-            if (RouteCreationHelper.doesLineManagerExist()) {
+            if (routeHelper!!.doesLineManagerExist()) {
                 deleteRoutes()
             }
             if (!_areListenersRegistered) {
@@ -442,7 +447,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
         hideLocationPickerMarker()
         onRemoveCameraAndMoveListener()
         lifecycleScope.launch(Dispatchers.IO) {
-            RouteCreationHelper.createRoute(
+            routeHelper?.createRoute(
                 Point.fromLngLat(
                     pickUp.longitude,
                     pickUp.latitude
@@ -466,7 +471,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     }
 
     private fun deleteRoutes() {
-        RouteCreationHelper.deleteRoute()
+        routeHelper?.deleteRoute()
         showLocationPickerMarker()
     }
 

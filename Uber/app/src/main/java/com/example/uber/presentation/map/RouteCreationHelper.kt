@@ -43,19 +43,56 @@ import retrofit2.Response
 import java.lang.ref.WeakReference
 
 
-object RouteCreationHelper {
-    private lateinit var bottomSheetManager: WeakReference<BottomSheetManager>
-    private lateinit var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>
-    private lateinit var pickUpMapFragment: WeakReference<PickUpMapFragment>
-    private lateinit var mapView: WeakReference<MapView>
-    private lateinit var map: WeakReference<MapboxMap>
-    private lateinit var context: WeakReference<Context>
+class RouteCreationHelper(
+    private var bottomSheetManager: WeakReference<BottomSheetManager>,
+    private var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
+    private var pickUpMapFragment: WeakReference<PickUpMapFragment>,
+    private var mapView: WeakReference<MapView>,
+    private var map: WeakReference<MapboxMap>,
+    private var context: WeakReference<Context>,
+    private var mapboxViewModel: WeakReference<MapboxViewModel>
+) {
+
     private var mCouroutineScope: CoroutineScope? = CoroutineScope(Dispatchers.IO)
     private var _duration: Int = 0
     private var lineManager: LineManager? = null
     private var symbolManager: SymbolManager? = null
     private var _geometry: String? = null
-    private lateinit var mapboxViewModel: WeakReference<MapboxViewModel>
+
+    companion object {
+        @Volatile
+        private var instance: RouteCreationHelper? = null
+        fun getInstance():RouteCreationHelper?{
+            return instance
+        }
+        fun initialize(
+            bottomSheetManager: WeakReference<BottomSheetManager>,
+            rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
+            pickUpMapFragment: WeakReference<PickUpMapFragment>,
+            mapView: WeakReference<MapView>,
+            map: WeakReference<MapboxMap>,
+            context: WeakReference<Context>,
+            mapboxViewModel: WeakReference<MapboxViewModel>
+        ): RouteCreationHelper? {
+            if (instance == null) {
+                synchronized(this) {
+                    if (instance == null) {
+                        instance = RouteCreationHelper(
+                            bottomSheetManager, rideOptionsBottomSheet, pickUpMapFragment,
+                            mapView, map, context, mapboxViewModel
+                        )
+                    }
+                }
+            }
+            return instance
+        }
+
+        fun destroyInstance() {
+            if (instance != null) {
+                instance = null
+            }
+        }
+    }
 
     fun initInstances(
         mapView: WeakReference<MapView>,
@@ -78,7 +115,7 @@ object RouteCreationHelper {
     fun createRoute(
         pickUpLocation: Point,
         dropOffLocation: Point,
-        ) {
+    ) {
 
         mCouroutineScope?.launch {
             val originPoint =
@@ -307,6 +344,7 @@ object RouteCreationHelper {
         mCouroutineScope = null
         lineManager = null
         symbolManager = null
+        destroyInstance()
     }
 
     private fun addAnnotationClickListener() {
@@ -346,8 +384,8 @@ object RouteCreationHelper {
 
     }
 
-    fun animateToRespectivePadding(padding: Int = 500){
-        if(map.get() != null && latLngBounds != null) {
+    fun animateToRespectivePadding(padding: Int = 500) {
+        if (map.get() != null && latLngBounds != null) {
             val paddingTop = 100
             val paddingLeft = 100
             val paddingRight = 100
@@ -363,8 +401,8 @@ object RouteCreationHelper {
         }
     }
 
-    private fun setMapZoomLevel(){
-        map.get()?.cameraPosition= CameraPosition.Builder().zoom(1.00).build()
+    private fun setMapZoomLevel() {
+        map.get()?.cameraPosition = CameraPosition.Builder().zoom(1.00).build()
     }
 
 
