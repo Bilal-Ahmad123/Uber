@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-<solid android:color="?attr/markerAnnotation" />
-    <size android:height="@dimen/_20sdp" android:width="@dimen/_39sdp"/>
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Bottom 2dp Shadow -->
+    <item>
+        <shape  android:shape="rectangle">
+            <solid android:color="?attr/annotationShadow" />
+            <corners android:radius="7dp" />
+
+        </shape>
+    </item>
+
+    <!-- White Top color -->
+    <item android:bottom="3px">
+
+        <shape  android:shape="rectangle">
+
+            <solid android:color="?attr/markerAnnotation" />
+            <corners android:radius="7dp" />
+
+
+        </shape>
+
+    </item>
+
+
+</layer-list>

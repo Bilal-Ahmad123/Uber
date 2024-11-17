@@ -296,7 +296,7 @@ class RouteCreationHelper(
     ): Bitmap {
         val shapeDrawable = ContextCompat.getDrawable(context, R.drawable.marker_annotations)!!
         val paint = Paint().apply {
-            color = if (CheckMode.isDarkMode(context)) Color.BLACK else Color.WHITE
+            color = if (CheckMode.isDarkMode(context)) Color.WHITE else Color.BLACK
             textSize = 30f
             isAntiAlias = true
             textAlign = Paint.Align.CENTER

@@ -12,6 +12,7 @@
     <attr name="confirmDestinationBtnText" format="reference"/>
     <attr name="planYourRide" format="reference"/>
     <attr name="markerAnnotation" format="reference"/>
+    <attr name="annotationShadow" format="reference"/>
     <attr name="textBlackAndWhite" format="reference"/>
     <attr name="bottomSheetIcons" format="reference"/>
     <attr name="dividers" format="reference"/>
