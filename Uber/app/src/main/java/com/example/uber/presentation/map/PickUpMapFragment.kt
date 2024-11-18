@@ -254,15 +254,16 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
 
     }
 
-    private val cameraPositionChangeListener = OnCameraIdleListener {
-        ifNetworkOrGPSDisabled {
-            if (!it) {
-                if (!isPopulatingLocation) {
 
-                    fetchLocation()
+
+    private val cameraPositionChangeListener = OnCameraIdleListener {
+            ifNetworkOrGPSDisabled {
+                if (!it) {
+                    if (!isPopulatingLocation) {
+                        fetchLocation()
+                    }
                 }
             }
-        }
     }
 
     private fun hideUserLocationButton() {
@@ -491,6 +492,7 @@ class PickUpMapFragment : Fragment(), OnMapReadyCallback, IActions {
     fun onRemoveCameraAndMoveListener() {
         if (_areListenersRegistered) {
             _areListenersRegistered = false
+            Log.d("onCameraIdle","removed")
             _map?.removeOnMoveListener(moveListener)
             _map?.removeOnCameraIdleListener(cameraPositionChangeListener)
         }

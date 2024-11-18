@@ -85,7 +85,6 @@ class MapboxViewModel @Inject constructor(
 
     fun setPickUpLocationName(latitude: Double, longitude: Double) {
         launchOnBack {
-            locationUseCase.getCurrentLocation()
             val res = FetchLocation.getLocation(latitude, longitude, context)
             _pickUpLocationName.postValue(res)
         }
