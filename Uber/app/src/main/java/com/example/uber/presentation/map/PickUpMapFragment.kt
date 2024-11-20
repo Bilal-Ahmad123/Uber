@@ -32,6 +32,8 @@ import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
+import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
@@ -42,7 +44,6 @@ import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener
 import com.mapbox.mapboxsdk.maps.Style
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -166,14 +167,14 @@ class PickUpMapFragment : Fragment(), IActions,
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
+        this.googleMap = googleMap
 //        _map = mapboxMap
-//        onAddCameraAndMoveListeners()
+        onAddCameraAndMoveListeners()
 //        mapboxMap.setStyle(getCurrentMapStyle())
 //        ifNetworkOrGPSDisabled()
-//        editTextFocusChangeListener()
+        editTextFocusChangeListener()
 //        initializeRouteHelper()
 
-        this.googleMap = googleMap
         googleMap.setOnMyLocationButtonClickListener(this)
         googleMap.setOnMyLocationClickListener(this)
         enableMyLocation()
@@ -261,6 +262,12 @@ class PickUpMapFragment : Fragment(), IActions,
         _compositeDisposable.dispose()
     }
 
+    private val cameraMoveListener = OnCameraMoveListener{
+        if (binding.currLocationBtn.visibility != View.VISIBLE) {
+            fadeInUserLocationButton()
+        }
+    }
+
     private val moveListener: MapboxMap.OnMoveListener = object : MapboxMap.OnMoveListener {
         override fun onMoveBegin(detector: MoveGestureDetector) {
             Log.d("onMoveBegin", "onMoveBegin")
@@ -280,7 +287,7 @@ class PickUpMapFragment : Fragment(), IActions,
 
     }
 
-    private val cameraPositionChangeListener = OnCameraIdleListener {
+    private val cameraIdleListener = OnCameraIdleListener {
         ifNetworkOrGPSDisabled {
             if (!it) {
                 if (!isPopulatingLocation) {
@@ -289,6 +296,16 @@ class PickUpMapFragment : Fragment(), IActions,
             }
         }
     }
+
+//    private val cameraPositionChangeListener = OnCameraIdleListener {
+//        NetworkOrGPSDisabled {
+//            if (!it) {
+//                if (!isPopulatingLocation) {
+//                    fetchLocation()
+//                }
+//            }
+//        }
+//    }
 
     private fun hideUserLocationButton() {
         floatingButtonFadeOutAnimation()
@@ -332,7 +349,7 @@ class PickUpMapFragment : Fragment(), IActions,
         }
     }
 
-    private fun showCurrentUserLocation(){
+    private fun showCurrentUserLocation() {
 
     }
 
@@ -389,13 +406,13 @@ class PickUpMapFragment : Fragment(), IActions,
                 try {
                     if (isPickupEtInFocus) {
                         mapboxViewModel.setPickUpLocationName(
-                            map.cameraPosition.target.latitude,
-                            map.cameraPosition.target.longitude
+                            googleMap.cameraPosition.target.latitude,
+                            googleMap.cameraPosition.target.longitude
                         )
                     } else if (isDropOffEtInFocus) {
                         mapboxViewModel.setDropOffLocationName(
-                            map.cameraPosition.target.latitude,
-                            map.cameraPosition.target.longitude
+                            googleMap.cameraPosition.target.latitude,
+                            googleMap.cameraPosition.target.longitude
                         )
                     }
                 } finally {
@@ -513,14 +530,15 @@ class PickUpMapFragment : Fragment(), IActions,
 
         if (!_areListenersRegistered) {
             _areListenersRegistered = true
-            _map?.addOnMoveListener(moveListener)
-            _map?.addOnCameraMoveListener(object : MapboxMap.OnCameraMoveListener {
-                override fun onCameraMove() {
-                    Log.d("onCameraMove", "onCameraMove")
-                }
-
-            })
-            _map?.addOnCameraIdleListener(cameraPositionChangeListener)
+//            _map?.addOnMoveListener(moveListener)
+//            _map?.addOnCameraMoveListener(object : MapboxMap.OnCameraMoveListener {
+//                override fun onCameraMove() {
+//                    Log.d("onCameraMove", "onCameraMove")
+//                }
+//
+//            })
+            googleMap.setOnCameraIdleListener(cameraIdleListener)
+            googleMap.setOnCameraMoveListener(cameraMoveListener)
         }
     }
 
@@ -528,7 +546,8 @@ class PickUpMapFragment : Fragment(), IActions,
         if (_areListenersRegistered) {
             _areListenersRegistered = false
             _map?.removeOnMoveListener(moveListener)
-            _map?.removeOnCameraIdleListener(cameraPositionChangeListener)
+            googleMap.setOnCameraIdleListener(null)
+            googleMap.setOnCameraMoveListener(null)
         }
     }
 
@@ -538,6 +557,7 @@ class PickUpMapFragment : Fragment(), IActions,
     ) {
         createRoute(pickUpLatLng, dropOffLatLng)
     }
+
 
     private fun storeLocationOffline() {
 //        lifecycleScope.launch {
