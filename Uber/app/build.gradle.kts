@@ -21,6 +21,10 @@ secrets {
     ignoreList.add("keyToIgnore") // Ignore the key "keyToIgnore"
     ignoreList.add("sdk.*")       // Ignore all keys matching the regexp "sdk.*"
 }
+
+
+
+
 android {
     namespace = "com.example.uber"
     compileSdk = 34
@@ -141,6 +145,7 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-maps:19.0.0")
 
+    implementation ("com.github.amalChandran:trail-android:v1.51")
 
 }
 

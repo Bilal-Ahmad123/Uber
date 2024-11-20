@@ -5,6 +5,7 @@ import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -18,6 +19,8 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.amalbit.trail.Route
+import com.amalbit.trail.RouteOverlayView.RouteType
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
@@ -48,11 +51,9 @@ import com.mapbox.mapboxsdk.maps.Style
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.abs
-import com.example.uber.data.local.entities.Location as CurrentLocation
 
 
 @AndroidEntryPoint
@@ -118,6 +119,18 @@ class PickUpMapFragment : Fragment(), IActions,
         mapFrag =
             childFragmentManager.findFragmentById(R.id.googleMap) as SupportMapFragment
         mapFrag.getMapAsync(this)
+    }
+
+    private fun createRoute(){
+
+        val normalOverlayPolyline: Route = Route.Builder(binding.mapOverlayView)
+            .setRouteType(RouteType.PATH)
+            .setCameraPosition(googleMap.cameraPosition)
+            .setProjection(googleMap.projection)
+            .setLatLngs(mRoute)
+            .setBottomLayerColor(Color.YELLOW)
+            .setTopLayerColor(Color.RED)
+            .create()
     }
 
     private fun initializeBottomSheets(view: View) {

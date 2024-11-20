@@ -29,6 +29,11 @@
         tools:context=".MainActivity"
 
         />
+
+    <com.amalbit.trail.RouteOverlayView
+        android:id="@+id/mapOverlayView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/back_fbn"
         android:layout_width="wrap_content"
