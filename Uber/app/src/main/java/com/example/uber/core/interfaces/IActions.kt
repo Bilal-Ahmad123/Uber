@@ -1,6 +1,7 @@
 package com.example.uber.core.interfaces
 
-import com.mapbox.mapboxsdk.geometry.LatLng
+import com.google.android.gms.maps.model.LatLng
+
 
 interface IActions {
     fun onBottomSheetSlide(slideOffset: Float)

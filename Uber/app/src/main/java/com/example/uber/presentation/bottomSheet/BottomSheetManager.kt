@@ -32,13 +32,14 @@ import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
 import com.mapbox.mapboxsdk.geometry.LatLng
 import rx.android.schedulers.AndroidSchedulers
+import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
 
 class BottomSheetManager private constructor(
     private val view: View,
-    private val context: Context,
-    private val pickUpMapFragmentActions: IActions,
+    private val context: WeakReference<Context>,
+    private val pickUpMapFragmentActions: WeakReference<IActions>,
     private val viewLifecycleOwner: LifecycleOwner,
     private val mapboxViewModel: MapboxViewModel,
 ) {
@@ -63,8 +64,8 @@ class BottomSheetManager private constructor(
         private var instance: BottomSheetManager? = null
         fun initialize(
             view: View,
-            context: Context,
-            pickUpMapFragmentActions: IActions,
+            context: WeakReference<Context>,
+            pickUpMapFragmentActions: WeakReference<IActions>,
             viewLifecycleOwner: LifecycleOwner,
             mapboxViewModel: MapboxViewModel,
         ): BottomSheetManager? {
@@ -131,7 +132,7 @@ class BottomSheetManager private constructor(
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                pickUpMapFragmentActions.onBottomSheetSlide(slideOffset)
+                pickUpMapFragmentActions.get()?.onBottomSheetSlide(slideOffset)
                 fadeInOutBottomSheetContent(slideOffset)
                 showPickUpDropOffContent(slideOffset)
             }
@@ -163,13 +164,13 @@ class BottomSheetManager private constructor(
         if (isPickupEtInFocus) {
             this.et_pickup?.let { view ->
                 val imm =
-                    context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    context.get()?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         } else {
             this.et_drop_off?.let { view ->
                 val imm =
-                    context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    context.get()?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         }
@@ -178,9 +179,9 @@ class BottomSheetManager private constructor(
 
     private fun setBottomSheetStyle() {
         bottomSheet.layoutParams.height =
-            (context.resources.displayMetrics.heightPixels * 0.95).toInt()
+            (context.get()!!.resources.displayMetrics.heightPixels * 0.95).toInt()
         bottomSheetBehavior.peekHeight =
-            (context.resources.displayMetrics.heightPixels * 0.32).toInt()
+            (context.get()!!.resources.displayMetrics.heightPixels * 0.32).toInt()
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         bottomSheetBehavior.isHideable = false
     }
@@ -261,7 +262,7 @@ class BottomSheetManager private constructor(
     }
 
     private fun checkInternetConnection(dispatcher: () -> Unit) {
-        if (SystemInfo.CheckInternetConnection(context)) {
+        if (SystemInfo.CheckInternetConnection(context.get()!!)) {
             try {
                 dispatcher.invoke()
             } catch (e: Exception) {
@@ -330,7 +331,7 @@ class BottomSheetManager private constructor(
         placeSuggestionAdapter = PlaceSuggestionAdapter { place ->
             executeSearchedPlace(place)
         }
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.layoutManager = LinearLayoutManager(context.get())
         recyclerView.adapter = placeSuggestionAdapter
         setItemRecyclerViewItemDivider()
     }
@@ -385,7 +386,7 @@ class BottomSheetManager private constructor(
     }
 
     private fun translateOnXAxis() {
-        AnimationManager.animateToEndOfScreenAndScale(lineView, context = context)
+        AnimationManager.animateToEndOfScreenAndScale(lineView, context = context.get()!!)
     }
 
     private fun pickUpLocationDebounce() {
@@ -414,7 +415,7 @@ class BottomSheetManager private constructor(
         pickUpLatLng: LatLng? = null,
         dropOffLatLng: LatLng? = null
     ) {
-        pickUpMapFragmentActions.createRouteAction(pickUpLatLng, dropOffLatLng)
+//        pickUpMapFragmentActions.get()?.createRouteAction(pickUpLatLng, dropOffLatLng)
     }
 
     private fun createRouteAndHideSheet(
@@ -457,7 +458,7 @@ class BottomSheetManager private constructor(
 
     private fun showKeyBoardOnBottomsheetExpand(editText: EditText = et_drop_off) {
         val imm =
-            context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            context.get()?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
 
     }

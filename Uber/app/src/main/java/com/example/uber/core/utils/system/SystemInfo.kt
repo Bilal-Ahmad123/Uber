@@ -29,4 +29,6 @@ object SystemInfo {
         )
         return (mode != Settings.Secure.LOCATION_MODE_OFF)
     }
+
+
 }
