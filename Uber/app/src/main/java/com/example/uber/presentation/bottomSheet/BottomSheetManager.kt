@@ -26,11 +26,12 @@ import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.Suggestion
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.animation.AnimationManager
+import com.example.uber.presentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
-import com.mapbox.mapboxsdk.geometry.LatLng
 import rx.android.schedulers.AndroidSchedulers
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
@@ -41,7 +42,7 @@ class BottomSheetManager private constructor(
     private val context: WeakReference<Context>,
     private val pickUpMapFragmentActions: WeakReference<IActions>,
     private val viewLifecycleOwner: LifecycleOwner,
-    private val mapboxViewModel: MapboxViewModel,
+    private val googleViewModel: GoogleViewModel,
 ) {
     private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
     private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
@@ -67,7 +68,7 @@ class BottomSheetManager private constructor(
             context: WeakReference<Context>,
             pickUpMapFragmentActions: WeakReference<IActions>,
             viewLifecycleOwner: LifecycleOwner,
-            mapboxViewModel: MapboxViewModel,
+            googleViewModel: GoogleViewModel,
         ): BottomSheetManager? {
             if (instance == null) {
                 synchronized(this) {
@@ -77,7 +78,7 @@ class BottomSheetManager private constructor(
                             context,
                             pickUpMapFragmentActions,
                             viewLifecycleOwner,
-                            mapboxViewModel
+                            googleViewModel
                         )
                     }
                 }
@@ -231,7 +232,7 @@ class BottomSheetManager private constructor(
     }
 
     private fun observePickUpLocationChanges() {
-        with(mapboxViewModel) {
+        with(googleViewModel) {
             pickUpLocationName.observe(viewLifecycleOwner) {
                 et_pickup.setText(it)
                 updateLocationText(it)
@@ -241,7 +242,7 @@ class BottomSheetManager private constructor(
     }
 
     private fun observeDropOffLocationChanges() {
-        with(mapboxViewModel) {
+        with(googleViewModel) {
             dropOffLocationName.observe(viewLifecycleOwner) {
                 et_drop_off.setText(it)
                 updateLocationText(it)
@@ -314,17 +315,17 @@ class BottomSheetManager private constructor(
 
 
     private fun getPlacesSuggestions(place: String) {
-        mapboxViewModel.getPlacesSuggestion(place)
+//        googleViewModel.getPlacesSuggestion(place)
     }
 
     private fun observePlacesSuggestions() {
-        with(mapboxViewModel) {
-            placesSuggestion.observe(viewLifecycleOwner) {
-                val searchedResults: MutableList<PlaceDetail> =
-                    extractSearchedResults(it.data?.suggestions)
-                showSuggestedPlacesOnBottomSheet(searchedResults)
-            }
-        }
+//        with(googleViewModel) {
+//            placesSuggestion.observe(viewLifecycleOwner) {
+//                val searchedResults: MutableList<PlaceDetail> =
+//                    extractSearchedResults(it.data?.suggestions)
+//                showSuggestedPlacesOnBottomSheet(searchedResults)
+//            }
+//        }
     }
 
     private fun setUpRecyclerViewAdapter() {
@@ -357,19 +358,19 @@ class BottomSheetManager private constructor(
     }
 
     private fun executeSearchedPlace(place: PlaceDetail) {
-        mapboxViewModel.retrieveSuggestedPlaceDetail(place.mapboxId)
+//        mapboxViewModel.retrieveSuggestedPlaceDetail(place.mapboxId)
     }
 
     private fun observeSuggestedPlaceDetail() {
-        mapboxViewModel.run {
-            retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
-                if (isPickupEtInFocus) {
-                    createRouteAndHideSheet(pickUpLatLng = LatLng(it[1], it[0]))
-                } else {
-                    createRouteAndHideSheet(dropOffLatLng = LatLng(it[1], it[0]))
-                }
-            }
-        }
+//        mapboxViewModel.run {
+//            retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
+//                if (isPickupEtInFocus) {
+//                    createRouteAndHideSheet(pickUpLatLng = LatLng(it[1], it[0]))
+//                } else {
+//                    createRouteAndHideSheet(dropOffLatLng = LatLng(it[1], it[0]))
+//                }
+//            }
+//        }
     }
 
     private fun setItemRecyclerViewItemDivider() {
@@ -415,7 +416,7 @@ class BottomSheetManager private constructor(
         pickUpLatLng: LatLng? = null,
         dropOffLatLng: LatLng? = null
     ) {
-//        pickUpMapFragmentActions.get()?.createRouteAction(pickUpLatLng, dropOffLatLng)
+        pickUpMapFragmentActions.get()?.createRouteAction(pickUpLatLng, dropOffLatLng)
     }
 
     private fun createRouteAndHideSheet(
@@ -433,10 +434,10 @@ class BottomSheetManager private constructor(
         dropOffLatLng: LatLng? = null
     ) {
         pickUpLatLng?.let {
-            mapboxViewModel.setPickUpLocationName(it.latitude, it.longitude)
+            googleViewModel.setPickUpLocationName(it.latitude, it.longitude)
         }
         dropOffLatLng?.let {
-            mapboxViewModel.setDropOffLocationName(it.latitude, it.longitude)
+            googleViewModel.setDropOffLocationName(it.latitude, it.longitude)
         }
     }
 

@@ -104,7 +104,7 @@ class MapboxViewModel @Inject constructor(
 
     fun saveCurrentLocationToDB(currentLocation: Location) {
         launchOnBack {
-                locationUseCase.insertCurrentLocation(currentLocation)
+            locationUseCase.insertCurrentLocation(currentLocation)
         }
     }
 

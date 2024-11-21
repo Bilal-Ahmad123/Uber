@@ -32,6 +32,7 @@ import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
+import com.example.uber.presentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -56,6 +57,7 @@ import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 
+
 @AndroidEntryPoint
 class PickUpMapFragment : Fragment(), IActions,
     GoogleMap.OnMyLocationButtonClickListener,
@@ -73,6 +75,7 @@ class PickUpMapFragment : Fragment(), IActions,
     private lateinit var pickupTextView: EditText
     private lateinit var dropOffTextView: EditText
     private val mapboxViewModel: MapboxViewModel by viewModels()
+    private val googleViewModel: GoogleViewModel by viewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = true
     private var routeHelper: RouteCreationHelper? = null
@@ -80,6 +83,7 @@ class PickUpMapFragment : Fragment(), IActions,
     private val _compositeDisposable = CompositeDisposable()
     private lateinit var mapFrag: SupportMapFragment
     private lateinit var googleMap: GoogleMap
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,14 +127,14 @@ class PickUpMapFragment : Fragment(), IActions,
 
     private fun createRoute(){
 
-        val normalOverlayPolyline: Route = Route.Builder(binding.mapOverlayView)
-            .setRouteType(RouteType.PATH)
-            .setCameraPosition(googleMap.cameraPosition)
-            .setProjection(googleMap.projection)
-            .setLatLngs(mRoute)
-            .setBottomLayerColor(Color.YELLOW)
-            .setTopLayerColor(Color.RED)
-            .create()
+//        val normalOverlayPolyline: Route = Route.Builder(binding.mapOverlayView)
+//            .setRouteType(RouteType.PATH)
+//            .setCameraPosition(googleMap.cameraPosition)
+//            .setProjection(googleMap.projection)
+//            .setLatLngs(mRoute)
+//            .setBottomLayerColor(Color.YELLOW)
+//            .setTopLayerColor(Color.RED)
+//            .create()
     }
 
     private fun initializeBottomSheets(view: View) {
@@ -140,7 +144,7 @@ class PickUpMapFragment : Fragment(), IActions,
                 WeakReference(requireContext()),
                 WeakReference(this),
                 viewLifecycleOwner,
-                mapboxViewModel,
+                googleViewModel,
             )
         _rideOptionsBottomSheet = RideOptionsBottomSheet.initialize(view, requireContext())
     }
@@ -186,7 +190,7 @@ class PickUpMapFragment : Fragment(), IActions,
 //        mapboxMap.setStyle(getCurrentMapStyle())
 //        ifNetworkOrGPSDisabled()
         editTextFocusChangeListener()
-//        initializeRouteHelper()
+        initializeRouteHelper()
 
         googleMap.setOnMyLocationButtonClickListener(this)
         googleMap.setOnMyLocationClickListener(this)
@@ -200,16 +204,17 @@ class PickUpMapFragment : Fragment(), IActions,
     }
 
     private fun initializeRouteHelper() {
-//        RouteCreationHelper.initialize(
-//            WeakReference(bottomSheetManager),
-//            WeakReference(_rideOptionsBottomSheet),
-//            WeakReference(this),
-//            WeakReference(binding.mapView),
-//            WeakReference(map),
-//            WeakReference(requireContext()),
-//            WeakReference(mapboxViewModel)
-//        )
-//        routeHelper = RouteCreationHelper.getInstance()
+        RouteCreationHelper.initialize(
+            WeakReference(bottomSheetManager),
+            WeakReference(_rideOptionsBottomSheet),
+            WeakReference(this),
+            WeakReference(googleMap),
+            WeakReference(requireContext()),
+            WeakReference(googleViewModel),
+            viewLifecycleOwner,
+            WeakReference(binding.mapOverlayView)
+        )
+        routeHelper = RouteCreationHelper.getInstance()
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
@@ -268,7 +273,7 @@ class PickUpMapFragment : Fragment(), IActions,
         BottomSheetManager.destroyInstance()
         bottomSheetManager = null
         FetchLocation.cleanResources()
-        routeHelper?.clearResources()
+//        routeHelper?.clearResources()
         routeHelper = null
         RideOptionsBottomSheet.cleanResources()
         _rideOptionsBottomSheet = null
@@ -383,9 +388,9 @@ class PickUpMapFragment : Fragment(), IActions,
                 bottomSheetManager?.showBottomSheet()
             }
             _rideOptionsBottomSheet?.hideBottomSheet()
-            if (routeHelper!!.doesLineManagerExist()) {
-                deleteRoutes()
-            }
+//            if (routeHelper!!.doesLineManagerExist()) {
+//                deleteRoutes()
+//            }
             if (!_areListenersRegistered) {
                 onAddCameraAndMoveListeners()
             }
@@ -418,12 +423,12 @@ class PickUpMapFragment : Fragment(), IActions,
             runCatching {
                 try {
                     if (isPickupEtInFocus) {
-                        mapboxViewModel.setPickUpLocationName(
+                        googleViewModel.setPickUpLocationName(
                             googleMap.cameraPosition.target.latitude,
                             googleMap.cameraPosition.target.longitude
                         )
                     } else if (isDropOffEtInFocus) {
-                        mapboxViewModel.setDropOffLocationName(
+                        googleViewModel.setDropOffLocationName(
                             googleMap.cameraPosition.target.latitude,
                             googleMap.cameraPosition.target.longitude
                         )
@@ -460,7 +465,7 @@ class PickUpMapFragment : Fragment(), IActions,
                 requireContext()
             ) { location ->
                 runCatching {
-                    mapboxViewModel.setPickUpLocationName(
+                    googleViewModel.setPickUpLocationName(
                         location!!.latitude, location.longitude
                     )
                 }
@@ -473,7 +478,7 @@ class PickUpMapFragment : Fragment(), IActions,
 
     private fun animateToPickUpLocation() {
         val locationMapper = FetchLocation.customLocationMapper(
-            mapboxViewModel.pickUpLatitude, mapboxViewModel.pickUpLongitude
+            googleViewModel.pickUpLatitude, googleViewModel.pickUpLongitude
         )
         runCatching { animateCameraToCurrentLocation(locationMapper) }
 
@@ -481,8 +486,8 @@ class PickUpMapFragment : Fragment(), IActions,
 
     private fun animateToDropOffLocation() {
         val locationMapper = FetchLocation.customLocationMapper(
-            mapboxViewModel.dropOffLatitude,
-            mapboxViewModel.dropOffLongitude
+            googleViewModel.dropOffLatitude,
+            googleViewModel.dropOffLongitude
         )
 
 
@@ -495,28 +500,26 @@ class PickUpMapFragment : Fragment(), IActions,
         dropOffLatLng: LatLng? = null
     ) {
         val pickUp = pickUpLatLng ?: LatLng(
-            mapboxViewModel.pickUpLatitude,
-            mapboxViewModel.pickUpLongitude,
+            googleViewModel.pickUpLatitude,
+            googleViewModel.pickUpLongitude,
         )
         val dropOff = dropOffLatLng ?: LatLng(
-            mapboxViewModel.dropOffLatitude,
-            mapboxViewModel.dropOffLongitude
+            googleViewModel.dropOffLatitude,
+            googleViewModel.dropOffLongitude
         )
 
         hideLocationPickerMarker()
         onRemoveCameraAndMoveListener()
-        lifecycleScope.launch(Dispatchers.IO) {
             routeHelper?.createRoute(
-                Point.fromLngLat(
+                LatLng(
                     pickUp.longitude,
                     pickUp.latitude
                 ),
-                Point.fromLngLat(
+                LatLng(
                     dropOff.longitude,
                     dropOff.latitude
                 )
             )
-        }
         showRideOptionsBottomSheet()
     }
 
@@ -530,7 +533,7 @@ class PickUpMapFragment : Fragment(), IActions,
     }
 
     private fun deleteRoutes() {
-        routeHelper?.deleteRoute()
+//        routeHelper?.deleteRoute()
         showLocationPickerMarker()
     }
 

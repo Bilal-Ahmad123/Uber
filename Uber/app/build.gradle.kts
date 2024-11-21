@@ -146,6 +146,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:19.0.0")
 
     implementation ("com.github.amalChandran:trail-android:v1.51")
+    implementation ("com.google.maps.android:android-maps-utils:3.9.0")
 
 }
 

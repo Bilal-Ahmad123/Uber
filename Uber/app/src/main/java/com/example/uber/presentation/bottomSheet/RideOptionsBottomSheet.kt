@@ -63,11 +63,11 @@ class RideOptionsBottomSheet private constructor(
 
         when (newState) {
             BottomSheetBehavior.STATE_EXPANDED -> {
-                RouteCreationHelper.getInstance()?.animateToRespectivePadding(1000)
+//                RouteCreationHelper.getInstance()?.animateToRespectivePadding(1000)
             }
 
             BottomSheetBehavior.STATE_COLLAPSED -> {
-                RouteCreationHelper.getInstance()?.animateToRespectivePadding()
+//                RouteCreationHelper.getInstance()?.animateToRespectivePadding()
             }
         }
     }
