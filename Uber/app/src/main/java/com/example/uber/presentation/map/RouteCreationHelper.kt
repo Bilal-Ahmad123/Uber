@@ -1,9 +1,11 @@
 package com.example.uber.presentation.map
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
-import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.amalbit.trail.Route
 import com.amalbit.trail.RouteOverlayView
@@ -12,16 +14,21 @@ import com.example.uber.R
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.GoogleViewModel
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.PolyUtil
-import com.mapbox.mapboxsdk.geometry.LatLngBounds
+import com.logicbeanzs.uberpolylineanimation.MapAnimator
 import com.mapbox.mapboxsdk.plugins.annotation.LineManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 
@@ -87,21 +94,14 @@ class RouteCreationHelper(
         googleViewModel.get()?.directionsRequest(pickUpLocation, dropOffLocation)
         observeDirectionsResponse()
 
-//        mCouroutineScope?.launch {
-//            val originPoint =
-//                Point.fromLngLat(pickUpLocation.longitude(), pickUpLocation.latitude())
-//            val destinationPoint =
-//                Point.fromLngLat(dropOffLocation.longitude(), dropOffLocation.latitude())
-//            requestRoute(originPoint, destinationPoint)
-//        }
-
-
     }
 
     private fun observeDirectionsResponse() {
         googleViewModel.get()?.run {
             directions.observe(viewLifecycleOwner) {
-                createAnimatedRoute(it.data!!.routes[0].overview_polyline!!.points)
+                if(it.data!!.routes.isNotEmpty()) {
+                    createAnimatedRoute(it.data!!.routes[0].overview_polyline!!.points)
+                }
             }
         }
     }
@@ -110,133 +110,33 @@ class RouteCreationHelper(
         return PolyUtil.decode(line)
     }
 
+    @SuppressLint("ResourceType")
     private fun createAnimatedRoute(line: String) {
+        val routePoints:List<LatLng> = decodePolyLine(line)
         addMarkerToRouteStartAndRouteEnd()
-        Route.Builder(mRouteOverlayView.get())
-            .setRouteType(RouteType.PATH)
-            .setCameraPosition(map.get()?.getCameraPosition())
-            .setProjection(map.get()?.getProjection())
-            .setLatLngs(decodePolyLine(line))
-            .setBottomLayerColor(Color.YELLOW)
-            .setTopLayerColor(Color.RED)
-            .create()
+        MapAnimator.animateRoute(map.get()!!, routePoints)
+        MapAnimator.setPrimaryLineColor(Color.parseColor("#000000"))
+        MapAnimator.setSecondaryLineColor(Color.parseColor("#ffffff"))
+        animateCameraToFillRoute(routePoints)
     }
 
-//    private fun requestRoute(originPoint: Point, destinationPoint: Point) {
-//        val directionsCall = MapboxDirections.builder()
-//            .origin(originPoint)
-//            .destination(destinationPoint)
-//            .overview(DirectionsCriteria.OVERVIEW_FULL)
-//            .profile(DirectionsCriteria.PROFILE_DRIVING)
-//            .accessToken(BuildConfig.MAPBOX_TOKEN)
-//            .build()
-//
-//        runCatching {
-//
-//            directionsCall.enqueueCall(object : Callback<DirectionsResponse> {
-//                override fun onResponse(
-//                    call: Call<DirectionsResponse>,
-//                    response: Response<DirectionsResponse>
-//                ) {
-//                    if (response.isSuccessful) {
-//                        val routes: MutableList<DirectionsRoute>? = response.body()?.routes()
-//                        Log.d("Route", "Response: ${response.body()}")
-//                        if (!routes.isNullOrEmpty()) {
-//                            val route = routes[0]
-//                            _geometry = route.geometry()
-//                            mCouroutineScope?.launch {
-//                                _duration = getDurationInMinutes(routes[0].duration()!!)
-//                                displayRoute(
-//                                    route,
-//                                    originPoint.latitude(),
-//                                    originPoint.longitude(),
-//                                    destinationPoint.latitude(),
-//                                    destinationPoint.longitude(),
-//                                )
-//                            }
-//                        } else {
-//                            Log.e("Route Error", "No routes found")
-//                        }
-//                    } else {
-//                        Log.e("Route Error", "Error: ${response.message()}")
-//                    }
-//                }
-//
-//                override fun onFailure(call: Call<DirectionsResponse>, t: Throwable) {
-//                }
-//
-//            })
-//        }.onFailure {
-//            Log.e("Route Error", "Error: ${it.message}")
-//        }
-//
-//    }
+    private fun animateCameraToFillRoute(routePoints:List<LatLng>){
+        val bounds = LatLngBounds.Builder()
+        CoroutineScope(Dispatchers.Default).launch{
+            routePoints.forEach {
+                bounds.include(it)
+            }
+            withContext(Dispatchers.Main) {
+                map.get()?.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 500))
+            }
+        }
+    }
 
-
-//    private suspend fun displayRoute(
-//        route: DirectionsRoute,
-//        pickUpLatitude: Double,
-//        pickUpLongitude: Double,
-//        dropOffLatitude: Double,
-//        dropOffLongitude: Double,
-//    ) {
-//        val lineString = LineString.fromPolyline(route.geometry()!!, 6)
-//
-//        withContext(Dispatchers.Main) {
-//            lineManager = LineManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
-//
-//
-//            addMarkerIconsToStyle(map.get()!!.style!!)
-//            addMarkerAnnotationToStyle(map.get()!!.style!!)
-//            val lineOptions = LineOptions()
-//                .withLineColor(Color.parseColor("#3887BE").toString())
-//                .withLineWidth(3f)
-//            lineManager?.create(lineOptions.withGeometry(lineString))
-//            addMarkerToRouteStartAndRouteEnd(
-//                pickUpLatitude,
-//                pickUpLongitude,
-//                dropOffLatitude,
-//                dropOffLongitude
-//            )
-//            addMarkerAnnotation(pickUpLatitude, pickUpLongitude, dropOffLatitude, dropOffLongitude)
-//            animateMapToFitRoutes()
-//        }
-//    }
 
     private fun addMarkerToRouteStartAndRouteEnd(
     ) {
-//        symbolManager = SymbolManager(mapView.get()!!, map.get()!!, map.get()!!.style!!)
-//        addAnnotationClickListener()
-//        val symbolOptionsPickUp = SymbolOptions()
-//            .withLatLng(LatLng(pickUpLatitude, pickUpLongitude))
-//            .withIconImage("pickup-marker")
-//            .withIconSize(1.3f)
-//        symbolManager?.create(symbolOptionsPickUp)
-//
-//        val symbolOptionsDropOff = SymbolOptions()
-//            .withLatLng(LatLng(dropOffLatitude, dropOffLongitude))
-//            .withIconImage("dropoff-marker")
-//            .withIconSize(1.3f)
-//        symbolManager?.create(symbolOptionsDropOff)
         pickUpMarker()
         dropOffMarker()
-
-
-    }
-
-    private fun pickUpMarker() {
-        map.get()?.addMarker(
-            MarkerOptions()
-                .position(
-                    LatLng(
-                        googleViewModel.get()!!.pickUpLatitude,
-                        googleViewModel.get()!!.pickUpLongitude
-                    )
-                )
-                .title("Melbourne")
-                .snippet("Population: 4,137,400")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.circle))
-        )
     }
 
     private fun dropOffMarker() {
@@ -250,8 +150,41 @@ class RouteCreationHelper(
                 )
                 .title("Melbourne")
                 .snippet("Population: 4,137,400")
-                .icon(BitmapDescriptorFactory.fromResource(BitmapFactory.decodeResource(context.get()!!.resources, R.drawable.box)))
+                .icon(bitmapDescriptorFromVector(context.get()!!, R.drawable.box))
         )
+    }
+
+    private fun pickUpMarker() {
+        map.get()?.addMarker(
+            MarkerOptions()
+                .position(
+                    LatLng(
+                        googleViewModel.get()!!.pickUpLatitude,
+                        googleViewModel.get()!!.pickUpLongitude
+                    )
+                )
+                .title("Melbourne")
+                .snippet("Population: 4,137,400")
+                .icon(bitmapDescriptorFromVector(context.get()!!, R.drawable.circle))
+        )
+    }
+
+    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
+        vectorDrawable!!.setBounds(
+            0,
+            0,
+            30,
+           30
+        )
+        val bitmap = Bitmap.createBitmap(
+           30,
+           30,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        vectorDrawable!!.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
 //    private fun addMarkerAnnotation(
@@ -278,41 +211,13 @@ class RouteCreationHelper(
 //    }
 
 
-//    private fun addMarkerIconsToStyle(style: Style) {
-//        val pickupIcon = BitmapUtils.getBitmapFromDrawable(
-//            ContextCompat.getDrawable(mapView.get()?.context!!, R.drawable.circle)
-//        )
-//        val dropoffIcon = BitmapUtils.getBitmapFromDrawable(
-//            ContextCompat.getDrawable(mapView.get()?.context!!, R.drawable.box)
-//        )
-//        if (pickupIcon != null && dropoffIcon != null) {
-//            style.addImage("pickup-marker", scaleBitMapImageSize(pickupIcon)!!)
-//            style.addImage("dropoff-marker", scaleBitMapImageSize(dropoffIcon)!!)
-//        }
-//    }
 
-//    private fun addMarkerAnnotationToStyle(style: Style) {
-//
-//        val pickupMarker =
-//            createTextMarkerDrawable(
-//                context.get()!!,
-//                "(${_duration} MIN) " + mapboxViewModel.get()?.pickUpLocationName?.value.toString() + "  >  "
-//            )
-//        val dropoffMarker = createTextMarkerDrawable(
-//            context.get()!!,
-//            mapboxViewModel.get()?.dropOffLocationName?.value.toString() + "  >  "
-//        )
-//        style.addImage("pickup-marker-annotation", pickupMarker)
-//        style.addImage("dropoff-marker-annotation", dropoffMarker)
-//
-//    }
-
-//    private fun scaleBitMapImageSize(icon: Bitmap): Bitmap? {
-//        val scaledIcon = icon?.let {
-//            Bitmap.createScaledBitmap(it, 20, 20, false)
-//        }
-//        return scaledIcon
-//    }
+    private fun scaleBitMapImageSize(icon: Bitmap): Bitmap? {
+        val scaledIcon = icon?.let {
+            Bitmap.createScaledBitmap(it, 20, 20, false)
+        }
+        return scaledIcon
+    }
 
 //    private fun createTextMarkerDrawable(
 //        context: Context,
@@ -352,19 +257,10 @@ class RouteCreationHelper(
 //        }
 //    }
 
-//    fun deleteRoute() {
-//        map.get()?.style?.removeImage("pickup-marker")
-//        map.get()?.style?.removeImage("dropoff-marker")
-//        map.get()?.style?.removeImage("pickup-marker-annotation")
-//        map.get()?.style?.removeImage("dropoff-marker-annotation")
-//        lineManager?.deleteAll()
-//        lineManager = null
-//        symbolManager?.deleteAll()
-//    }
+    fun deleteRoute() {
+        map.get()?.clear()
+    }
 
-//    fun doesLineManagerExist(): Boolean {
-//        return lineManager != null
-//    }
 
 //    fun clearResources() {
 //        mCouroutineScope = null

@@ -147,6 +147,8 @@ dependencies {
 
     implementation ("com.github.amalChandran:trail-android:v1.51")
     implementation ("com.google.maps.android:android-maps-utils:3.9.0")
+    implementation ("com.github.tintinscorpion:Dual-color-Polyline-Animation:1.2")
+
 
 }
 

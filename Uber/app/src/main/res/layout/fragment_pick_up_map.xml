@@ -19,9 +19,12 @@
 <!--        app:mapbox_cameraBearing="0.0"-->
 <!--        />-->
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/googleMap"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
@@ -34,6 +37,7 @@
         android:id="@+id/mapOverlayView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+    </FrameLayout>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/back_fbn"
         android:layout_width="wrap_content"
@@ -52,6 +56,7 @@
         android:backgroundTint="?attr/currentLocationBtnColor"
         android:padding="0dp"
         app:elevation="6dp"
+
         />
 
     <ImageView

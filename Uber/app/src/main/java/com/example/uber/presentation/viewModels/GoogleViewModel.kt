@@ -7,9 +7,11 @@ import com.example.uber.core.common.Resource
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.utils.FetchLocation
+import com.example.uber.data.local.entities.Location
 import com.example.uber.data.remote.models.google.directionsResponse.DirectionsResponse
 import com.example.uber.data.remote.models.google.geoCodeResponse.GeoCodingGoogleMapsResponse
 import com.example.uber.domain.use_case.geocoding.GoogleUseCase
+import com.example.uber.domain.use_case.geocoding.LocationUseCase
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -21,6 +23,7 @@ class GoogleViewModel @Inject constructor(
     private val googleUseCase: GoogleUseCase,
     private val dispatcher: IDispatchers,
     @ApplicationContext private val context: Context,
+    private val locationUseCase: LocationUseCase
 ) : BaseViewModel(dispatcher) {
 
     private val _locationName = MutableLiveData<Resource<GeoCodingGoogleMapsResponse>>()
@@ -83,4 +86,22 @@ class GoogleViewModel @Inject constructor(
         this._dropOffLongitude = longitude
 
     }
+
+    fun saveCurrentLocationToDB(currentLocation: Location) {
+        launchOnBack {
+            locationUseCase.insertCurrentLocation(currentLocation)
+        }
+    }
+    fun setLatitudeAndLongitudeIfNoNetworkOrGPS() {
+        launchOnBack {
+            val location = locationUseCase.getCurrentLocation()
+            if (location != null) {
+                _pickUpLatitude = location.location.latitude
+                _pickUpLongitude = location.location.longitude
+                _dropOffLatitude = location.location.latitude
+                _dropOffLongitude = location.location.longitude
+            }
+        }
+    }
+
 }

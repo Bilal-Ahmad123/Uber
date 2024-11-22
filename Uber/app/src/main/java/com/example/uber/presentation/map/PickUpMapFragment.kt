@@ -41,6 +41,7 @@ import com.google.android.gms.maps.GoogleMap.OnCameraMoveListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mapbox.android.gestures.MoveGestureDetector
 import com.mapbox.geojson.Point
@@ -57,14 +58,11 @@ import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 
-
 @AndroidEntryPoint
 class PickUpMapFragment : Fragment(), IActions,
     GoogleMap.OnMyLocationButtonClickListener,
     GoogleMap.OnMyLocationClickListener, OnMapReadyCallback,
     ActivityCompat.OnRequestPermissionsResultCallback {
-    private var _map: MapboxMap? = null
-    private val map get() = _map!!
     private var _binding: FragmentPickUpMapBinding? = null
     private val binding get() = _binding!!
     private var loadedMapStyle: Style? = null
@@ -108,9 +106,6 @@ class PickUpMapFragment : Fragment(), IActions,
         initializeBottomSheetViews()
         setBackButtonOnClickListener()
         setUpGoogleMap()
-//        binding.mapView.onCreate(savedInstanceState)
-//        binding.mapView.getMapAsync(this)
-
         if (isAdded) {
             setUpCurrentLocationButton()
             requestLocationPermission()
@@ -125,17 +120,6 @@ class PickUpMapFragment : Fragment(), IActions,
         mapFrag.getMapAsync(this)
     }
 
-    private fun createRoute(){
-
-//        val normalOverlayPolyline: Route = Route.Builder(binding.mapOverlayView)
-//            .setRouteType(RouteType.PATH)
-//            .setCameraPosition(googleMap.cameraPosition)
-//            .setProjection(googleMap.projection)
-//            .setLatLngs(mRoute)
-//            .setBottomLayerColor(Color.YELLOW)
-//            .setTopLayerColor(Color.RED)
-//            .create()
-    }
 
     private fun initializeBottomSheets(view: View) {
         bottomSheetManager =
@@ -156,39 +140,30 @@ class PickUpMapFragment : Fragment(), IActions,
     }
 
 
-    private fun showUserLocation(loadedMapStyle: Style?) {
-//        val locationComponentActivationOptions =
-//            LocationComponentActivationOptions.builder(requireContext(), loadedMapStyle)
-//                .useDefaultLocationEngine(true)
-//                .build()
+    private fun showUserLocation() {
         checkLocationPermission(null) {
             FetchLocation.getCurrentLocation(this@PickUpMapFragment, requireContext()) { location ->
                 animateCameraToCurrentLocation(location)
             }
         }
-//        showUserCurrentLocation(locationComponentActivationOptions)
     }
 
     private fun requestLocationPermission() {
         checkLocationPermission("Need Access to Location") {
-//            binding.mapView.getMapAsync { mapboxMap ->
-//                this@PickUpMapFragment._map = mapboxMap
-//                mapboxMap.setStyle(getCurrentMapStyle()) {
-//                    loadedMapStyle = it
-//                    showUserLocation(it)
-//                }
-//            }
-
+            showUserLocation()
         }
-
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
-//        _map = mapboxMap
         onAddCameraAndMoveListeners()
-//        mapboxMap.setStyle(getCurrentMapStyle())
-//        ifNetworkOrGPSDisabled()
+        googleMap.setMapStyle(
+            MapStyleOptions.loadRawResourceStyle(
+                requireContext(),
+                getCurrentMapStyle()
+            )
+        )
+      ifNetworkOrGPSDisabled()
         editTextFocusChangeListener()
         initializeRouteHelper()
 
@@ -221,46 +196,38 @@ class PickUpMapFragment : Fragment(), IActions,
         if (googleMap != null) {
             val userLatLng = lastKnownLocation?.let { LatLng(it.latitude, it.longitude) }
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng!!, 13.0f))
-//            userLatLng?.let { CameraUpdateFactory.newLatLngZoom(it, 13.0) }
-//                ?.let { map.moveCamera(it) }
         }
     }
 
     override fun onStart() {
         super.onStart()
-//        binding.mapView.onStart()
     }
 
     override fun onResume() {
         super.onResume()
-//        binding.mapView.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-//        binding.mapView.onPause()
     }
 
     override fun onStop() {
         super.onStop()
-//        binding.mapView.onStop()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-//        storeLocationOffline()
-//        binding.mapView.onDestroy()
-//        cleanUpResources()
+        storeLocationOffline()
+        cleanUpResources()
     }
 
     override fun onLowMemory() {
         super.onLowMemory()
-//        binding.mapView.onLowMemory()
     }
 
     private fun setUpCurrentLocationButton() {
         binding.currLocationBtn.setOnClickListener {
-            showUserLocation(loadedMapStyle)
+            showUserLocation()
             hideUserLocationButton()
         }
     }
@@ -269,18 +236,17 @@ class PickUpMapFragment : Fragment(), IActions,
         _binding = null
         loadedMapStyle = null
         onRemoveCameraAndMoveListener()
-        _map = null
         BottomSheetManager.destroyInstance()
         bottomSheetManager = null
         FetchLocation.cleanResources()
-//        routeHelper?.clearResources()
+        RouteCreationHelper.destroyInstance()
         routeHelper = null
         RideOptionsBottomSheet.cleanResources()
         _rideOptionsBottomSheet = null
         _compositeDisposable.dispose()
     }
 
-    private val cameraMoveListener = OnCameraMoveListener{
+    private val cameraMoveListener = OnCameraMoveListener {
         if (binding.currLocationBtn.visibility != View.VISIBLE) {
             fadeInUserLocationButton()
         }
@@ -352,19 +318,19 @@ class PickUpMapFragment : Fragment(), IActions,
         }
     }
 
-    private fun getCurrentMapStyle(): String =
-        if (CheckMode.isDarkMode(requireContext())) Style.DARK else Style.LIGHT
+    private fun getCurrentMapStyle(): Int =
+        if (CheckMode.isDarkMode(requireContext())) R.raw.night_map else R.raw.uber_style
 
     private fun showUserCurrentLocation(locationComponentActivationOptions: LocationComponentActivationOptions) {
-        checkLocationPermission(null) {
-            map.locationComponent.apply {
-                activateLocationComponent(locationComponentActivationOptions)
-                isLocationComponentEnabled = true
-                cameraMode = CameraMode.TRACKING
-                renderMode = RenderMode.COMPASS
-
-            }
-        }
+//        checkLocationPermission(null) {
+//            map.locationComponent.apply {
+//                activateLocationComponent(locationComponentActivationOptions)
+//                isLocationComponentEnabled = true
+//                cameraMode = CameraMode.TRACKING
+//                renderMode = RenderMode.COMPASS
+//
+//            }
+//        }
     }
 
     private fun showCurrentUserLocation() {
@@ -388,9 +354,8 @@ class PickUpMapFragment : Fragment(), IActions,
                 bottomSheetManager?.showBottomSheet()
             }
             _rideOptionsBottomSheet?.hideBottomSheet()
-//            if (routeHelper!!.doesLineManagerExist()) {
-//                deleteRoutes()
-//            }
+            routeHelper?.deleteRoute()
+            showLocationPickerMarker()
             if (!_areListenersRegistered) {
                 onAddCameraAndMoveListeners()
             }
@@ -510,16 +475,16 @@ class PickUpMapFragment : Fragment(), IActions,
 
         hideLocationPickerMarker()
         onRemoveCameraAndMoveListener()
-            routeHelper?.createRoute(
-                LatLng(
-                    pickUp.longitude,
-                    pickUp.latitude
-                ),
-                LatLng(
-                    dropOff.longitude,
-                    dropOff.latitude
-                )
+        routeHelper?.createRoute(
+            LatLng(
+                pickUp.longitude,
+                pickUp.latitude
+            ),
+            LatLng(
+                dropOff.longitude,
+                dropOff.latitude
             )
+        )
         showRideOptionsBottomSheet()
     }
 
@@ -532,13 +497,10 @@ class PickUpMapFragment : Fragment(), IActions,
         _rideOptionsBottomSheet?.showBottomSheet()
     }
 
-    private fun deleteRoutes() {
-//        routeHelper?.deleteRoute()
-        showLocationPickerMarker()
-    }
 
     fun showLocationPickerMarker() {
-        binding.activityMainCenterLocationPin.visibility = View.VISIBLE
+        if(binding.activityMainCenterLocationPin.visibility != View.VISIBLE)
+            binding.activityMainCenterLocationPin.visibility = View.VISIBLE
     }
 
 
@@ -561,7 +523,6 @@ class PickUpMapFragment : Fragment(), IActions,
     fun onRemoveCameraAndMoveListener() {
         if (_areListenersRegistered) {
             _areListenersRegistered = false
-            _map?.removeOnMoveListener(moveListener)
             googleMap.setOnCameraIdleListener(null)
             googleMap.setOnCameraMoveListener(null)
         }
@@ -597,7 +558,7 @@ class PickUpMapFragment : Fragment(), IActions,
                 !SystemInfo.CheckInternetConnection(requireContext())
 
         if (isNetworkOrGPSDisabled) {
-            mapboxViewModel.setLatitudeAndLongitudeIfNoNetworkOrGPS()
+            googleViewModel.setLatitudeAndLongitudeIfNoNetworkOrGPS()
             dispatcher(true)
         } else {
             dispatcher(false)
