@@ -1,30 +1,40 @@
 package com.example.uber.presentation.map
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Point
+import android.util.DisplayMetrics
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.amalbit.trail.Route
 import com.amalbit.trail.RouteOverlayView
-import com.amalbit.trail.RouteOverlayView.RouteType
 import com.example.uber.R
+import com.example.uber.core.enums.Markers
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.GoogleViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.maps.android.PolyUtil
 import com.logicbeanzs.uberpolylineanimation.MapAnimator
 import com.mapbox.mapboxsdk.plugins.annotation.LineManager
 import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
+import dagger.hilt.android.internal.managers.ViewComponentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,14 +50,10 @@ class RouteCreationHelper(
     private var context: WeakReference<Context>,
     private var googleViewModel: WeakReference<GoogleViewModel>,
     private val viewLifecycleOwner: LifecycleOwner,
-    private val mRouteOverlayView: WeakReference<RouteOverlayView>
-) {
+) : OnMarkerClickListener {
 
-    private var mCouroutineScope: CoroutineScope? = CoroutineScope(Dispatchers.IO)
-    private var _duration: Int = 0
-    private var lineManager: LineManager? = null
-    private var symbolManager: SymbolManager? = null
-    private var _geometry: String? = null
+    private var pickUpMarker: Marker? = null
+    private var dropOffMarker: Marker? = null
 
     companion object {
         @Volatile
@@ -64,14 +70,13 @@ class RouteCreationHelper(
             context: WeakReference<Context>,
             googleViewModel: WeakReference<GoogleViewModel>,
             viewLifecycleOwner: LifecycleOwner,
-            mRouteOverlayView: WeakReference<RouteOverlayView>
         ): RouteCreationHelper? {
             if (instance == null) {
                 synchronized(this) {
                     if (instance == null) {
                         instance = RouteCreationHelper(
                             bottomSheetManager, rideOptionsBottomSheet, pickUpMapFragment,
-                            map, context, googleViewModel, viewLifecycleOwner, mRouteOverlayView
+                            map, context, googleViewModel, viewLifecycleOwner
                         )
                     }
                 }
@@ -99,7 +104,7 @@ class RouteCreationHelper(
     private fun observeDirectionsResponse() {
         googleViewModel.get()?.run {
             directions.observe(viewLifecycleOwner) {
-                if(it.data!!.routes.isNotEmpty()) {
+                if (it.data!!.routes.isNotEmpty()) {
                     createAnimatedRoute(it.data!!.routes[0].overview_polyline!!.points)
                 }
             }
@@ -112,17 +117,18 @@ class RouteCreationHelper(
 
     @SuppressLint("ResourceType")
     private fun createAnimatedRoute(line: String) {
-        val routePoints:List<LatLng> = decodePolyLine(line)
+        val routePoints: List<LatLng> = decodePolyLine(line)
         addMarkerToRouteStartAndRouteEnd()
         MapAnimator.animateRoute(map.get()!!, routePoints)
         MapAnimator.setPrimaryLineColor(Color.parseColor("#000000"))
         MapAnimator.setSecondaryLineColor(Color.parseColor("#ffffff"))
         animateCameraToFillRoute(routePoints)
+        setUpMarkerClickListener()
     }
 
-    private fun animateCameraToFillRoute(routePoints:List<LatLng>){
+    private fun animateCameraToFillRoute(routePoints: List<LatLng>) {
         val bounds = LatLngBounds.Builder()
-        CoroutineScope(Dispatchers.Default).launch{
+        CoroutineScope(Dispatchers.Default).launch {
             routePoints.forEach {
                 bounds.include(it)
             }
@@ -140,6 +146,7 @@ class RouteCreationHelper(
     }
 
     private fun dropOffMarker() {
+
         map.get()?.addMarker(
             MarkerOptions()
                 .position(
@@ -148,9 +155,13 @@ class RouteCreationHelper(
                         googleViewModel.get()!!.dropOffLongitude
                     )
                 )
-                .title("Melbourne")
-                .snippet("Population: 4,137,400")
                 .icon(bitmapDescriptorFromVector(context.get()!!, R.drawable.box))
+        )
+        createAnnotation(
+            googleViewModel.get()?.dropOffLatitude!!,
+            googleViewModel.get()?.dropOffLongitude!!,
+            Markers.DROP_OFF,
+            googleViewModel.get()?.dropOffLocationName?.value.toString()
         )
     }
 
@@ -163,11 +174,17 @@ class RouteCreationHelper(
                         googleViewModel.get()!!.pickUpLongitude
                     )
                 )
-                .title("Melbourne")
-                .snippet("Population: 4,137,400")
                 .icon(bitmapDescriptorFromVector(context.get()!!, R.drawable.circle))
         )
+        createAnnotation(
+            googleViewModel.get()?.pickUpLatitude!!,
+            googleViewModel.get()?.pickUpLongitude!!,
+            Markers.PICK_UP,
+            googleViewModel.get()?.pickUpLocationName?.value.toString()
+        )
+
     }
+
 
     private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor {
         val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
@@ -175,11 +192,11 @@ class RouteCreationHelper(
             0,
             0,
             30,
-           30
+            30
         )
         val bitmap = Bitmap.createBitmap(
-           30,
-           30,
+            30,
+            30,
             Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
@@ -209,7 +226,6 @@ class RouteCreationHelper(
 //            .withIconOffset(arrayOf(0f, -30f))
 //        symbolManager?.create(symbolOptionsDropOffAnnotation)
 //    }
-
 
 
     private fun scaleBitMapImageSize(icon: Bitmap): Bitmap? {
@@ -257,8 +273,75 @@ class RouteCreationHelper(
 //        }
 //    }
 
-    fun deleteRoute() {
+    fun deleteEveryThingOnMap() {
         map.get()?.clear()
+        pickUpMarker = null
+        dropOffMarker = null
+    }
+
+    private fun createAnnotation(
+        latitude: Double,
+        longitude: Double,
+        marker: Markers,
+        text: String
+    ) {
+        val marker_view: View =
+            (context.get()
+                ?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(
+                R.layout.custom_marker,
+                null
+            )
+        val addressSrc =
+            marker_view.findViewById<View>(com.example.uber.R.id.addressTxt) as TextView
+        val etaTxt = marker_view.findViewById<View>(com.example.uber.R.id.etaTxt) as TextView
+        addressSrc.text = text
+        etaTxt.text = "10"
+        if (marker == Markers.PICK_UP) {
+            etaTxt.visibility = View.VISIBLE
+        }
+        val marker_opt_source = MarkerOptions().position(
+            LatLng(
+                latitude,
+                longitude
+            )
+        )
+        marker_opt_source.icon(
+            BitmapDescriptorFactory.fromBitmap(
+                createDrawableFromView(
+                    context.get()!!,
+                    marker_view
+                )
+            )
+        ).anchor(0.00f, 0.20f);
+        if (marker == Markers.PICK_UP) {
+            pickUpMarker = map.get()?.addMarker(marker_opt_source);
+            pickUpMarker?.tag = "pickUp"
+        } else {
+            dropOffMarker = map.get()?.addMarker(marker_opt_source);
+            dropOffMarker?.tag = "dropOff"
+        }
+    }
+
+    private fun createDrawableFromView(context: Context, view: View): Bitmap {
+        val mContext =
+            if (context is ViewComponentManager.FragmentContextWrapper) context.baseContext else context
+        val displayMetrics = DisplayMetrics()
+        (mContext as Activity).windowManager.defaultDisplay.getMetrics(displayMetrics)
+        view.layoutParams =
+            RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+            )
+        view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels)
+        view.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
+        view.buildDrawingCache()
+        val bitmap =
+            Bitmap.createBitmap(view.measuredWidth, view.measuredHeight, Bitmap.Config.ARGB_8888)
+
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+
+        return bitmap
     }
 
 
@@ -269,30 +352,18 @@ class RouteCreationHelper(
 //        destroyInstance()
 //    }
 
-//    private fun addAnnotationClickListener() {
-//        symbolManager?.addClickListener {
-//            if (it.iconImage == "pickup-marker-annotation") {
-//                bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
-//            } else {
-//                bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
-//            }
-//            rideOptionsBottomSheet.get()?.hideBottomSheet()
-//            deleteRoute()
-//            pickUpMapFragment.get()?.showLocationPickerMarker()
-//            pickUpMapFragment.get()?.onAddCameraAndMoveListeners()
-//        }
-//    }
+    private fun addAnnotationClickListener(marker: Marker) {
+        if (marker.tag?.equals(pickUpMarker?.tag)!!) {
+            bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
+        } else if (marker.tag?.equals(dropOffMarker?.tag)!!) {
+            bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
+        }
+        rideOptionsBottomSheet.get()?.hideBottomSheet()
+        deleteEveryThingOnMap()
+        pickUpMapFragment.get()?.showLocationPickerMarker()
+        pickUpMapFragment.get()?.onAddCameraAndMoveListeners()
+    }
 
-//    private fun decodeGeometryStringToRoutes(): LatLngBounds {
-//        val lineString = LineString.fromPolyline(_geometry!!, 6)
-//        val latLngList = lineString.coordinates().map { point ->
-//            LatLng(point.latitude(), point.longitude())
-//        }
-//        val latLngBounds = LatLngBounds.Builder()
-//            .includes(latLngList)
-//            .build()
-//        return latLngBounds
-//    }
 
     private var latLngBounds: LatLngBounds? = null
 
@@ -335,6 +406,47 @@ class RouteCreationHelper(
 
     }
 
+    private fun setUpMarkerClickListener() {
+        map.get()?.setOnMarkerClickListener(this)
+    }
+
+    private fun dpToPx(context: Context, dpValue: Int): Int {
+        val displayMetrics = context.resources.displayMetrics
+        return Math.round(dpValue * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT))
+    }
+
+    fun onCameraIdle() {
+        if (pickUpMarker != null && context.get() != null) {
+            val PickupPoint: Point = map.get()?.projection?.toScreenLocation(
+                LatLng(
+                    googleViewModel.get()?.pickUpLatitude!!,
+                    googleViewModel.get()?.pickUpLongitude!!
+                )
+            )!!
+            pickUpMarker!!.setAnchor(
+                if (PickupPoint.x < dpToPx(context.get()!!, 200)) 0.00f else 1.00f,
+                if (PickupPoint.y < dpToPx(context.get()!!, 100)) 0.20f else 1.20f
+            )
+        }
+        if (dropOffMarker != null && context.get() != null) {
+            val PickupPoint: Point = map.get()?.projection?.toScreenLocation(
+                LatLng(
+                    googleViewModel.get()?.dropOffLatitude!!,
+                    googleViewModel.get()?.dropOffLongitude!!
+                )
+            )!!
+            dropOffMarker!!.setAnchor(
+                if (PickupPoint.x < dpToPx(context.get()!!, 200)) 0.00f else 1.00f,
+                if (PickupPoint.y < dpToPx(context.get()!!, 100)) 0.20f else 1.20f
+            )
+        }
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        addAnnotationClickListener(marker)
+
+        return true
+    }
 
 }
 

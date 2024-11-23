@@ -53,15 +53,14 @@ import com.mapbox.mapboxsdk.maps.Style
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
 
 @AndroidEntryPoint
-class PickUpMapFragment : Fragment(), IActions,
-    GoogleMap.OnMyLocationButtonClickListener,
-    GoogleMap.OnMyLocationClickListener, OnMapReadyCallback,
+class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     ActivityCompat.OnRequestPermissionsResultCallback {
     private var _binding: FragmentPickUpMapBinding? = null
     private val binding get() = _binding!!
@@ -81,14 +80,11 @@ class PickUpMapFragment : Fragment(), IActions,
     private val _compositeDisposable = CompositeDisposable()
     private lateinit var mapFrag: SupportMapFragment
     private lateinit var googleMap: GoogleMap
+    private var currentLocation: Location? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        Mapbox.getInstance(
-//            requireContext(),
-//            BuildConfig.MAPBOX_TOKEN
-//        );
     }
 
     override fun onCreateView(
@@ -143,6 +139,7 @@ class PickUpMapFragment : Fragment(), IActions,
     private fun showUserLocation() {
         checkLocationPermission(null) {
             FetchLocation.getCurrentLocation(this@PickUpMapFragment, requireContext()) { location ->
+                currentLocation = location
                 animateCameraToCurrentLocation(location)
             }
         }
@@ -163,12 +160,10 @@ class PickUpMapFragment : Fragment(), IActions,
                 getCurrentMapStyle()
             )
         )
-      ifNetworkOrGPSDisabled()
+        ifNetworkOrGPSDisabled()
         editTextFocusChangeListener()
         initializeRouteHelper()
 
-        googleMap.setOnMyLocationButtonClickListener(this)
-        googleMap.setOnMyLocationClickListener(this)
         enableMyLocation()
     }
 
@@ -187,7 +182,6 @@ class PickUpMapFragment : Fragment(), IActions,
             WeakReference(requireContext()),
             WeakReference(googleViewModel),
             viewLifecycleOwner,
-            WeakReference(binding.mapOverlayView)
         )
         routeHelper = RouteCreationHelper.getInstance()
     }
@@ -252,25 +246,6 @@ class PickUpMapFragment : Fragment(), IActions,
         }
     }
 
-    private val moveListener: MapboxMap.OnMoveListener = object : MapboxMap.OnMoveListener {
-        override fun onMoveBegin(detector: MoveGestureDetector) {
-            Log.d("onMoveBegin", "onMoveBegin")
-            if (binding.currLocationBtn.visibility != View.VISIBLE) {
-                fadeInUserLocationButton()
-            }
-        }
-
-        override fun onMove(detector: MoveGestureDetector) {
-
-            Log.d("onMove", "onMove")
-        }
-
-        override fun onMoveEnd(detector: MoveGestureDetector) {
-            Log.d("onMoveEnd", "onMoveEnd")
-        }
-
-    }
-
     private val cameraIdleListener = OnCameraIdleListener {
         ifNetworkOrGPSDisabled {
             if (!it) {
@@ -279,17 +254,10 @@ class PickUpMapFragment : Fragment(), IActions,
                 }
             }
         }
+        if (routeHelper != null) {
+            routeHelper?.onCameraIdle()
+        }
     }
-
-//    private val cameraPositionChangeListener = OnCameraIdleListener {
-//        NetworkOrGPSDisabled {
-//            if (!it) {
-//                if (!isPopulatingLocation) {
-//                    fetchLocation()
-//                }
-//            }
-//        }
-//    }
 
     private fun hideUserLocationButton() {
         floatingButtonFadeOutAnimation()
@@ -321,21 +289,6 @@ class PickUpMapFragment : Fragment(), IActions,
     private fun getCurrentMapStyle(): Int =
         if (CheckMode.isDarkMode(requireContext())) R.raw.night_map else R.raw.uber_style
 
-    private fun showUserCurrentLocation(locationComponentActivationOptions: LocationComponentActivationOptions) {
-//        checkLocationPermission(null) {
-//            map.locationComponent.apply {
-//                activateLocationComponent(locationComponentActivationOptions)
-//                isLocationComponentEnabled = true
-//                cameraMode = CameraMode.TRACKING
-//                renderMode = RenderMode.COMPASS
-//
-//            }
-//        }
-    }
-
-    private fun showCurrentUserLocation() {
-
-    }
 
     private fun checkLocationPermission(rationale: String?, onGranted: () -> Unit) {
         PermissionManagers.requestPermission(
@@ -354,7 +307,7 @@ class PickUpMapFragment : Fragment(), IActions,
                 bottomSheetManager?.showBottomSheet()
             }
             _rideOptionsBottomSheet?.hideBottomSheet()
-            routeHelper?.deleteRoute()
+            routeHelper?.deleteEveryThingOnMap()
             showLocationPickerMarker()
             if (!_areListenersRegistered) {
                 onAddCameraAndMoveListeners()
@@ -499,7 +452,7 @@ class PickUpMapFragment : Fragment(), IActions,
 
 
     fun showLocationPickerMarker() {
-        if(binding.activityMainCenterLocationPin.visibility != View.VISIBLE)
+        if (binding.activityMainCenterLocationPin.visibility != View.VISIBLE)
             binding.activityMainCenterLocationPin.visibility = View.VISIBLE
     }
 
@@ -508,13 +461,6 @@ class PickUpMapFragment : Fragment(), IActions,
 
         if (!_areListenersRegistered) {
             _areListenersRegistered = true
-//            _map?.addOnMoveListener(moveListener)
-//            _map?.addOnCameraMoveListener(object : MapboxMap.OnCameraMoveListener {
-//                override fun onCameraMove() {
-//                    Log.d("onCameraMove", "onCameraMove")
-//                }
-//
-//            })
             googleMap.setOnCameraIdleListener(cameraIdleListener)
             googleMap.setOnCameraMoveListener(cameraMoveListener)
         }
@@ -537,20 +483,18 @@ class PickUpMapFragment : Fragment(), IActions,
 
 
     private fun storeLocationOffline() {
-//        lifecycleScope.launch {
-//            async {
-//                if (map.locationComponent.lastKnownLocation != null) {
-//                    mapboxViewModel.saveCurrentLocationToDB(
-//                        CurrentLocation(
-//                            location = LatLng(
-//                                map.locationComponent.lastKnownLocation!!.latitude,
-//                                map.locationComponent.lastKnownLocation!!.longitude
-//                            )
-//                        )
-//                    )
-//                }
-//            }.await()
-//        }
+        lifecycleScope.launch {
+            async {
+                mapboxViewModel.saveCurrentLocationToDB(
+                    com.example.uber.data.local.entities.Location(
+                        location = LatLng(
+                            currentLocation?.latitude!!,
+                            currentLocation?.longitude!!
+                        )
+                    )
+                )
+            }.await()
+        }
     }
 
     private inline fun ifNetworkOrGPSDisabled(dispatcher: (Boolean) -> Unit = {}) {
@@ -563,19 +507,6 @@ class PickUpMapFragment : Fragment(), IActions,
         } else {
             dispatcher(false)
         }
-    }
-
-    override fun onMyLocationButtonClick(): Boolean {
-        Toast.makeText(requireContext(), "MyLocation button clicked", Toast.LENGTH_SHORT)
-            .show()
-        // Return false so that we don't consume the event and the default behavior still occurs
-        // (the camera animates to the user's current position).
-        return false
-    }
-
-    override fun onMyLocationClick(location: Location) {
-        Toast.makeText(requireContext(), "Current location:\n$location", Toast.LENGTH_LONG)
-            .show()
     }
 
 

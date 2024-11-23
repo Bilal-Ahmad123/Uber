@@ -1,12 +1,22 @@
 package com.example.uber.core.utils
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineProvider
@@ -21,7 +31,8 @@ import java.util.Locale
 
 object FetchLocation {
     private val mCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main)
-    private var locationEngine: LocationEngine? = null;
+    private var locationCallback: LocationCallback? = null
+    private var fusedLocationClient: FusedLocationProviderClient? = null
     suspend fun getLocation(latitude: Double, longitude: Double, context: Context): String {
         var addresses: List<Address> = emptyList()
             val geocoder = Geocoder(context, Locale.getDefault())
@@ -48,20 +59,52 @@ object FetchLocation {
         lazyInitializeLocationEngine(context)
         mCoroutineScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
-                val lastLocation: Unit = locationEngine!!.getLastLocation(object :
-                    LocationEngineCallback<LocationEngineResult> {
-                    override fun onSuccess(result: LocationEngineResult?) {
-                        runCatching {
-                            dispatcher.invoke(result?.locations?.get(0))
+                val locationRequest = LocationRequest.create().apply {
+                    interval = 5000 // Check every 5 seconds
+                    fastestInterval = 2000 // Fastest time interval
+                    priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+                }
+
+                locationCallback = object : LocationCallback() {
+                    override fun onLocationResult(locationResult: LocationResult) {
+                        Log.d("getCurrentLocation", "helo")
+
+                        val location = locationResult.lastLocation
+                        if (location != null) {
+                            fusedLocationClient?.removeLocationUpdates(this)
+                            dispatcher.invoke(location) // Pass the location to the callback
                         }
                     }
+                }
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    return@launch
+                }
+                fusedLocationClient?.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback!!,
+                    Looper.getMainLooper()
+                )
 
-                    override fun onFailure(exception: Exception) {
-                        Toast.makeText(context, exception.message, Toast.LENGTH_SHORT)
-                            .show()
-                    }
+               fusedLocationClient!!.lastLocation.addOnSuccessListener {
+                   runCatching {
+                       if (it != null) {
+                           dispatcher.invoke(Location("Custom").apply {
+                               this.latitude = it.latitude
+                               this.longitude = it.longitude
+                           })
+                       }
+                   }
+               }.addOnFailureListener { exception ->
+                   exception.printStackTrace()
 
-                })
+               }
             }catch (it:Exception) {
                 Log.e("getCurrentLocation", it.message.toString())
             }
@@ -71,8 +114,8 @@ object FetchLocation {
     }
 
     private fun lazyInitializeLocationEngine(context: Context) {
-        if (locationEngine == null) {
-            locationEngine = LocationEngineProvider.getBestLocationEngine(context)
+        if (fusedLocationClient == null) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         }
     }
 
@@ -83,7 +126,7 @@ object FetchLocation {
     }
 
     fun cleanResources() {
-        locationEngine = null;
+        fusedLocationClient = null;
     }
 
     fun customLocationMapper(latitude: Double, longitude: Double): Location {

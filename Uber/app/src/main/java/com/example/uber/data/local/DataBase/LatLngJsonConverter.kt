@@ -1,7 +1,7 @@
 package com.example.uber.data.local.dataBase
 import androidx.room.TypeConverter
+import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
-import com.mapbox.mapboxsdk.geometry.LatLng
 
 class LatLngJsonConverter {
 
