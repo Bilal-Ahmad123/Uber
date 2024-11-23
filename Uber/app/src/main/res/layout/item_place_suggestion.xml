@@ -26,6 +26,7 @@
             android:layout_height="wrap_content"
             android:text="Place Name"
             android:textColor="?attr/textBlackAndWhite"
+            android:maxLines="1"
             android:textSize="@dimen/_11ssp"
             android:textStyle="bold" />
 

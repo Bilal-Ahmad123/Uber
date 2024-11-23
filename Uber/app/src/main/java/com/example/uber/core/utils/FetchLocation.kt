@@ -60,14 +60,13 @@ object FetchLocation {
         mCoroutineScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
             try {
                 val locationRequest = LocationRequest.create().apply {
-                    interval = 5000 // Check every 5 seconds
-                    fastestInterval = 2000 // Fastest time interval
+                    interval = 5000
+                    fastestInterval = 2000
                     priority = LocationRequest.PRIORITY_HIGH_ACCURACY
                 }
 
                 locationCallback = object : LocationCallback() {
                     override fun onLocationResult(locationResult: LocationResult) {
-                        Log.d("getCurrentLocation", "helo")
 
                         val location = locationResult.lastLocation
                         if (location != null) {
@@ -106,7 +105,6 @@ object FetchLocation {
 
                }
             }catch (it:Exception) {
-                Log.e("getCurrentLocation", it.message.toString())
             }
 
 

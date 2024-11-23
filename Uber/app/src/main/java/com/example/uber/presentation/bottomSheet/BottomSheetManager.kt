@@ -16,22 +16,32 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.uber.BuildConfig
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.utils.system.SystemInfo
+import com.example.uber.data.remote.models.google.SuggetionsResponse.Prediction
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.Suggestion
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.animation.AnimationManager
 import com.example.uber.presentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
+import com.google.android.libraries.places.api.model.PlaceTypes
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
+import kotlinx.coroutines.runBlocking
 import rx.android.schedulers.AndroidSchedulers
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
@@ -90,8 +100,8 @@ class BottomSheetManager private constructor(
             return instance
         }
 
-        fun destroyInstance(){
-            if(instance != null){
+        fun destroyInstance() {
+            if (instance != null) {
                 instance = null
             }
         }
@@ -165,13 +175,15 @@ class BottomSheetManager private constructor(
         if (isPickupEtInFocus) {
             this.et_pickup?.let { view ->
                 val imm =
-                    context.get()?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    context.get()
+                        ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         } else {
             this.et_drop_off?.let { view ->
                 val imm =
-                    context.get()?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    context.get()
+                        ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         }
@@ -315,17 +327,17 @@ class BottomSheetManager private constructor(
 
 
     private fun getPlacesSuggestions(place: String) {
-//        googleViewModel.getPlacesSuggestion(place)
+        googleViewModel.getPlacesSuggestion(place)
     }
 
     private fun observePlacesSuggestions() {
-//        with(googleViewModel) {
-//            placesSuggestion.observe(viewLifecycleOwner) {
-//                val searchedResults: MutableList<PlaceDetail> =
-//                    extractSearchedResults(it.data?.suggestions)
-//                showSuggestedPlacesOnBottomSheet(searchedResults)
-//            }
-//        }
+        with(googleViewModel) {
+            placesSuggestion.observe(viewLifecycleOwner) {
+                val searchedResults: MutableList<PlaceDetail> =
+                    extractSearchedResults(it.data?.predictions)
+                showSuggestedPlacesOnBottomSheet(searchedResults)
+            }
+        }
     }
 
     private fun setUpRecyclerViewAdapter() {
@@ -343,14 +355,14 @@ class BottomSheetManager private constructor(
         this.searchedResults = searchedResults
     }
 
-    private fun extractSearchedResults(suggestions: List<Suggestion>?): MutableList<PlaceDetail> {
+    private fun extractSearchedResults(suggestions: List<Prediction>?): MutableList<PlaceDetail> {
         val searchedResults: MutableList<PlaceDetail> = mutableListOf()
         suggestions?.forEach {
             searchedResults.add(
                 PlaceDetail(
-                    name = it.name,
-                    fullAddress = it.place_formatted,
-                    mapboxId = it.mapbox_id
+                    name = it.description,
+                    fullAddress = it.structured_formatting.main_text,
+                    googleId = it.place_id
                 )
             )
         }
@@ -358,19 +370,19 @@ class BottomSheetManager private constructor(
     }
 
     private fun executeSearchedPlace(place: PlaceDetail) {
-//        mapboxViewModel.retrieveSuggestedPlaceDetail(place.mapboxId)
+        googleViewModel.retrieveSuggestedPlaceDetail(place.googleId)
     }
 
     private fun observeSuggestedPlaceDetail() {
-//        mapboxViewModel.run {
-//            retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
-//                if (isPickupEtInFocus) {
-//                    createRouteAndHideSheet(pickUpLatLng = LatLng(it[1], it[0]))
-//                } else {
-//                    createRouteAndHideSheet(dropOffLatLng = LatLng(it[1], it[0]))
-//                }
-//            }
-//        }
+        googleViewModel.run {
+            retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
+                if (isPickupEtInFocus) {
+                    createRouteAndHideSheet(pickUpLatLng = LatLng(it[0], it[1]))
+                } else {
+                    createRouteAndHideSheet(dropOffLatLng = LatLng(it[0], it[1]))
+                }
+            }
+        }
     }
 
     private fun setItemRecyclerViewItemDivider() {
@@ -393,6 +405,7 @@ class BottomSheetManager private constructor(
     private fun pickUpLocationDebounce() {
         RxTextView.textChanges(et_pickup).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
+                googleViewModel.getPlacesSuggestion(it.toString())
                 getPlacesSuggestions(it.toString())
                 translateOnXAxis()
             }
@@ -470,6 +483,27 @@ class BottomSheetManager private constructor(
 
     private fun EditText.placeCursorAtEnd() {
         Selection.setSelection(this.text, this.text.length);
+
+    }
+
+    private fun suggestions(query: String) {
+        val sessionToken = AutocompleteSessionToken.newInstance()
+        val request =
+            FindAutocompletePredictionsRequest.builder()
+                .setCountries("AU", "NZ")
+                .setTypesFilter(listOf(PlaceTypes.ADDRESS))
+                .setSessionToken(sessionToken)
+                .setQuery(query)
+                .build()
+        Places.initialize(context.get(),BuildConfig.GOOGLE_API_KEY)
+        val placesClient: PlacesClient = Places.createClient(context.get()!!)
+            placesClient.findAutocompletePredictions(request)
+                .addOnSuccessListener { response: FindAutocompletePredictionsResponse ->
+                    Log.i("TAG", "Place suggestions: $response")
+                }.addOnFailureListener { exception: Exception? ->
+                    if (exception is ApiException) {
+                    }
+                }
 
     }
 

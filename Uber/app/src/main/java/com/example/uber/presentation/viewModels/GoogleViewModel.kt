@@ -8,8 +8,12 @@ import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.utils.FetchLocation
 import com.example.uber.data.local.entities.Location
+import com.example.uber.data.remote.models.google.SuggetionsResponse.SuggestionsResponse
 import com.example.uber.data.remote.models.google.directionsResponse.DirectionsResponse
 import com.example.uber.data.remote.models.google.geoCodeResponse.GeoCodingGoogleMapsResponse
+import com.example.uber.data.remote.models.google.placeDetails.PlaceDetails
+import com.example.uber.data.remote.models.mapbox.RetrieveSuggestedPlaceDetail.RetrieveSuggestResponse
+import com.example.uber.data.remote.models.mapbox.SuggestionResponse.SuggestionResponse
 import com.example.uber.domain.use_case.geocoding.GoogleUseCase
 import com.example.uber.domain.use_case.geocoding.LocationUseCase
 import com.google.android.gms.maps.model.LatLng
@@ -42,6 +46,11 @@ class GoogleViewModel @Inject constructor(
     val pickUpLocationName get() = _pickUpLocationName
     private var _dropOffLocationName = MutableLiveData<String>()
     val dropOffLocationName get() = _dropOffLocationName
+    private val _placesSuggestion = MutableLiveData<Resource<SuggestionsResponse>>()
+    val placesSuggestion get() = _placesSuggestion
+    private var _retrieveSuggestedPlaceDetail = MutableLiveData<List<Double>>()
+    val retrieveSuggestedPlaceDetail get() = _retrieveSuggestedPlaceDetail
+
 
     fun geoCodeLocation(latitude: Double, longitude: Double) {
         launchOnBack {
@@ -64,6 +73,7 @@ class GoogleViewModel @Inject constructor(
     fun directionsRequest(origin: LatLng, destination: LatLng) {
         launchOnBack {
             val response = googleUseCase.directionsRequest(origin, destination)
+            Log.d("directionsRequest", "directionsRequest: $response")
             _directions.postValue(handleResponse<DirectionsResponse>(response))
         }
     }
@@ -92,6 +102,7 @@ class GoogleViewModel @Inject constructor(
             locationUseCase.insertCurrentLocation(currentLocation)
         }
     }
+
     fun setLatitudeAndLongitudeIfNoNetworkOrGPS() {
         launchOnBack {
             val location = locationUseCase.getCurrentLocation()
@@ -104,4 +115,25 @@ class GoogleViewModel @Inject constructor(
         }
     }
 
+    fun getPlacesSuggestion(place: String) {
+        launchOnBack {
+            _placesSuggestion.postValue(Resource.Loading())
+            val response = googleUseCase.suggestionsResponse(place)
+            _placesSuggestion.postValue(handleResponse<SuggestionsResponse>(response))
+        }
+    }
+
+    fun retrieveSuggestedPlaceDetail(placeId: String) {
+        launchOnBack {
+            var response = googleUseCase.getDetails(placeId)
+            val handledResponse = handleResponse<PlaceDetails>(response)
+            _retrieveSuggestedPlaceDetail.postValue(
+                listOf(
+                    handledResponse?.data?.result?.geometry?.location!!.lat,
+                    handledResponse?.data?.result?.geometry?.location!!.lng
+                )
+            )
+
+        }
+    }
 }

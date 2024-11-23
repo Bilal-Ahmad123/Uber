@@ -105,6 +105,7 @@ class RouteCreationHelper(
         googleViewModel.get()?.run {
             directions.observe(viewLifecycleOwner) {
                 if (it.data!!.routes.isNotEmpty()) {
+
                     createAnimatedRoute(it.data!!.routes[0].overview_polyline!!.points)
                 }
             }

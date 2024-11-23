@@ -9,7 +9,7 @@ import com.google.android.gms.maps.model.LatLng
 import retrofit2.Response
 import javax.inject.Inject
 
-class GoogleRepositoryImpl @Inject constructor(private val googleApi: IGoogleMapService) :
+ class GoogleRepositoryImpl @Inject constructor(private val googleApi: IGoogleMapService) :
     IGoogleRepository {
     override suspend fun geoCodeLocation(
         latitude: Double,
@@ -27,4 +27,8 @@ class GoogleRepositoryImpl @Inject constructor(private val googleApi: IGoogleMap
             "${destination.longitude},${destination.latitude}"
         )
     }
+
+    override suspend fun suggestionsResponse(input: String) = googleApi.suggestionsResponse(input)
+
+    override suspend fun getDetails(placeId: String) = googleApi.placeDetails(placeId)
 }

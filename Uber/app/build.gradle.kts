@@ -82,6 +82,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.places)
     var nav_version = "2.3.5"
     var room_version = "2.2.3"
 
@@ -148,7 +149,7 @@ dependencies {
     implementation ("com.github.amalChandran:trail-android:v1.51")
     implementation ("com.google.maps.android:android-maps-utils:3.9.0")
     implementation ("com.github.tintinscorpion:Dual-color-Polyline-Animation:1.2")
-
+    implementation ("com.github.gsanthosh91:Google-Map-Floating-Info-Window-Uber:0.1.5")
 
 }
 
