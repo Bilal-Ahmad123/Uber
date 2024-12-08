@@ -15,7 +15,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.amalbit.trail.RouteOverlayView
 import com.example.uber.R
 import com.example.uber.core.enums.Markers
 import com.example.uber.presentation.bottomSheet.BottomSheetManager
@@ -26,20 +25,23 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.Dash
+import com.google.android.gms.maps.model.Gap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.PolyUtil
+import com.google.maps.android.SphericalUtil
 import com.logicbeanzs.uberpolylineanimation.MapAnimator
-import com.mapbox.mapboxsdk.plugins.annotation.LineManager
-import com.mapbox.mapboxsdk.plugins.annotation.SymbolManager
 import dagger.hilt.android.internal.managers.ViewComponentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
+import java.util.Arrays
 
 
 class RouteCreationHelper(
@@ -103,10 +105,23 @@ class RouteCreationHelper(
 
     private fun observeDirectionsResponse() {
         googleViewModel.get()?.run {
+
             directions.observe(viewLifecycleOwner) {
+                deleteEveryThingOnMap()
+                Log.d("observeDirectionsResponse", "observeDirectionsResponse: ${it.data}")
                 if (it.data!!.routes.isNotEmpty()) {
 
                     createAnimatedRoute(it.data!!.routes[0].overview_polyline!!.points)
+                } else {
+                    showCurvedPolyline(
+                        LatLng(
+                            googleViewModel.get()!!.pickUpLatitude,
+                            googleViewModel.get()!!.pickUpLongitude
+                        ), LatLng(
+                            googleViewModel.get()!!.dropOffLatitude,
+                            googleViewModel.get()!!.dropOffLongitude
+                        ), 0.5
+                    )
                 }
             }
         }
@@ -116,9 +131,11 @@ class RouteCreationHelper(
         return PolyUtil.decode(line)
     }
 
+    private var latLngBounds:List<LatLng>? = null
     @SuppressLint("ResourceType")
     private fun createAnimatedRoute(line: String) {
         val routePoints: List<LatLng> = decodePolyLine(line)
+        latLngBounds = routePoints
         addMarkerToRouteStartAndRouteEnd()
         MapAnimator.animateRoute(map.get()!!, routePoints)
         MapAnimator.setPrimaryLineColor(Color.parseColor("#000000"))
@@ -127,14 +144,16 @@ class RouteCreationHelper(
         setUpMarkerClickListener()
     }
 
+    private var bounds:LatLngBounds.Builder? = LatLngBounds.Builder()
+
     private fun animateCameraToFillRoute(routePoints: List<LatLng>) {
-        val bounds = LatLngBounds.Builder()
+        bounds = LatLngBounds.Builder()
         CoroutineScope(Dispatchers.Default).launch {
             routePoints.forEach {
-                bounds.include(it)
+                bounds!!.include(it)
             }
             withContext(Dispatchers.Main) {
-                map.get()?.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 500))
+                map.get()?.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds!!.build(), 500))
             }
         }
     }
@@ -236,44 +255,6 @@ class RouteCreationHelper(
         return scaledIcon
     }
 
-//    private fun createTextMarkerDrawable(
-//        context: Context,
-//        text: String
-//    ): Bitmap {
-//        val shapeDrawable = ContextCompat.getDrawable(context, R.drawable.marker_annotations)!!
-//        val paint = Paint().apply {
-//            color = if (CheckMode.isDarkMode(context)) Color.WHITE else Color.BLACK
-//            textSize = 30f
-//            isAntiAlias = true
-//            textAlign = Paint.Align.CENTER
-//            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-//        }
-//        val rect = Rect();
-//        paint.getTextBounds(text, 0, text.length, rect)
-//        val height = 80
-//        shapeDrawable.setBounds(0, 0, rect.width() + 20, height)
-//
-//        val bitmap = Bitmap.createBitmap(rect.width() + 20, height, Bitmap.Config.ARGB_8888)
-//        val canvas = Canvas(bitmap)
-//
-//        shapeDrawable.draw(canvas)
-//
-//        val xPos = canvas.width / 2f
-//        val yPos = (canvas.height / 2f) - (paint.descent() + paint.ascent()) / 2
-//        canvas.drawText(text, xPos, yPos, paint)
-//
-//        return bitmap
-//    }
-
-//    private fun getDurationInMinutes(seconds: Double): Int {
-//        val minutes = (seconds % 3600) / 60
-//        return if (minutes.toInt() == 0) {
-//            1
-//        } else {
-//            minutes.toInt()
-//        }
-//    }
-
     fun deleteEveryThingOnMap() {
         map.get()?.clear()
         pickUpMarker = null
@@ -366,8 +347,7 @@ class RouteCreationHelper(
     }
 
 
-    private var latLngBounds: LatLngBounds? = null
-
+//
 //    private fun animateMapToFitRoutes() {
 //        mCouroutineScope?.launch(Dispatchers.IO) {
 //            latLngBounds = decodeGeometryStringToRoutes()
@@ -378,22 +358,17 @@ class RouteCreationHelper(
 //
 //    }
 
-//    fun animateToRespectivePadding(padding: Int = 500) {
-//        if (map.get() != null && latLngBounds != null) {
-//            val paddingTop = 100
-//            val paddingLeft = 100
-//            val paddingRight = 100
-//            map.get()!!.animateCamera(
-//                CameraUpdateFactory.newLatLngBounds(
-//                    latLngBounds!!,
-//                    paddingLeft,
-//                    paddingTop,
-//                    paddingRight,
-//                    padding
-//                )
-//            )
-//        }
-//    }
+    fun animateToRespectivePadding(padding: Int = 500) {
+        if (map.get() != null && latLngBounds != null) {
+            val paddingTop = 100
+            val paddingLeft = 100
+            val paddingRight = 100
+            val builder = LatLngBounds.Builder()
+            val width:Int? = context.get()?.resources?.displayMetrics?.widthPixels;
+           val height:Int? = context.get()?.resources?.displayMetrics?.heightPixels;
+            map.get()?.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds!!.build(),width!!,height!!, 900))
+        }
+    }
 
 //    private fun setMapZoomLevel() {
 //        map.get()?.cameraPosition = CameraPosition.Builder().zoom(1.00).build()
@@ -447,6 +422,41 @@ class RouteCreationHelper(
         addAnnotationClickListener(marker)
 
         return true
+    }
+
+    private fun showCurvedPolyline(p1: LatLng, p2: LatLng, k: Double) {
+        //Calculate distance and heading between two points
+        val d = SphericalUtil.computeDistanceBetween(p1, p2)
+        val h = SphericalUtil.computeHeading(p1, p2)
+
+        //Midpoint position
+        val p = SphericalUtil.computeOffset(p1, d * 0.5, h)
+
+        //Apply some mathematics to calculate position of the circle center
+        val x = (1 - k * k) * d * 0.5 / (2 * k)
+        val r = (1 + k * k) * d * 0.5 / (2 * k)
+
+        val c = SphericalUtil.computeOffset(p, x, h + 90.0)
+
+        //Polyline options
+        val options: PolylineOptions = PolylineOptions()
+        val pattern = Arrays.asList(Dash(30f), Gap(20f))
+
+        //Calculate heading between circle center and two points
+        val h1 = SphericalUtil.computeHeading(c, p1)
+        val h2 = SphericalUtil.computeHeading(c, p2)
+
+        //Calculate positions of points on circle border and add them to polyline options
+        val numpoints = 100
+        val step = (h2 - h1) / numpoints
+
+        for (i in 0 until numpoints) {
+            val pi = SphericalUtil.computeOffset(c, r, h1 + i * step)
+            options.add(pi)
+        }
+
+        map.get()
+            ?.addPolyline(options.width(10F).color(Color.MAGENTA).geodesic(false).pattern(pattern))
     }
 
 }

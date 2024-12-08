@@ -34,6 +34,7 @@ import com.example.uber.presentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.viewModels.MapboxViewModel
+import com.example.uber.presentation.viewModels.SocketViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -73,6 +74,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private lateinit var dropOffTextView: EditText
     private val mapboxViewModel: MapboxViewModel by viewModels()
     private val googleViewModel: GoogleViewModel by viewModels()
+    private val socketViewModel: SocketViewModel by viewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = true
     private var routeHelper: RouteCreationHelper? = null
@@ -102,6 +104,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         initializeBottomSheetViews()
         setBackButtonOnClickListener()
         setUpGoogleMap()
+        socketViewModel.connectToSocket("wss://localhost:5001/LocationHub")
         if (isAdded) {
             setUpCurrentLocationButton()
             requestLocationPermission()
@@ -244,6 +247,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         if (binding.currLocationBtn.visibility != View.VISIBLE) {
             fadeInUserLocationButton()
         }
+        socketViewModel.sendMessage("hello")
+
     }
 
     private val cameraIdleListener = OnCameraIdleListener {

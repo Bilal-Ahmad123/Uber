@@ -4,8 +4,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import javax.inject.Inject
 
-class SocketManager {
+class SocketManager @Inject constructor() {
     private var socket: WebSocket? = null
     fun connect(url:String,listener:WebSocketListener){
         val client = OkHttpClient()
