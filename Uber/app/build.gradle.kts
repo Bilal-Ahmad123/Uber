@@ -150,6 +150,8 @@ dependencies {
     implementation ("com.google.maps.android:android-maps-utils:3.9.0")
     implementation ("com.github.tintinscorpion:Dual-color-Polyline-Animation:1.2")
     implementation ("com.github.gsanthosh91:Google-Map-Floating-Info-Window-Uber:0.1.5")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    implementation ("com.microsoft.signalr:signalr:7.0.0")
 
 }
 
