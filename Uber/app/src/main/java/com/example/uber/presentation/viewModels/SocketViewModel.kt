@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
+import com.example.uber.data.local.entities.Location
 import com.example.uber.domain.use_case.socket.ConnectSocketUseCase
 import com.example.uber.domain.use_case.socket.DisconnectSocketUseCase
 import com.example.uber.domain.use_case.socket.SendMessageUseCase
@@ -37,7 +38,7 @@ class SocketViewModel @Inject constructor(
     fun disconnectFromSocket() {
         disconnectFromSocketUseCase()
     }
-    fun sendMessage(message: String) {
-        sendMessageUseCase(message)
+    fun sendMessage(location:Location) {
+        sendMessageUseCase(location)
     }
 }

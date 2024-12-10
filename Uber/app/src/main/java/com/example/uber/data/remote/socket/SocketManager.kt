@@ -1,6 +1,7 @@
 package com.example.uber.data.remote.socket
 
 import android.util.Log
+import com.example.uber.data.local.entities.Location
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
@@ -28,9 +29,9 @@ class SocketManager @Inject constructor() {
             Log.d("SocketManager", "Error connecting to socket: ${it.message}")
         }
     }
-    fun send(method: String){
+    fun send(location: Location){
         kotlin.runCatching {
-            hubConnection.send("SendMessage", "Hello, SignalR!")
+            hubConnection.send("SendMessage", location)
         }.onFailure {
             Log.d("SocketManager", "Error sending message: ${it.message}")
         }

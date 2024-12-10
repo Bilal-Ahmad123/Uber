@@ -104,13 +104,16 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         initializeBottomSheetViews()
         setBackButtonOnClickListener()
         setUpGoogleMap()
-        socketViewModel.connectToSocket("ws://192.168.18.65:5000/LocationHub")
         if (isAdded) {
             setUpCurrentLocationButton()
             requestLocationPermission()
             getInitialPickUpLocation()
         }
 
+    }
+
+    private fun connectToSocket(){
+        socketViewModel.connectToSocket("ws://192.168.18.65:5000/LocationHub")
     }
 
     private fun setUpGoogleMap() {

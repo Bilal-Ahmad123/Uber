@@ -1,5 +1,6 @@
 package com.example.uber.domain.repository
 
+import com.example.uber.data.local.entities.Location
 import com.example.uber.data.remote.socket.SocketManager
 import com.example.uber.data.repository.ISocketRepository
 import okhttp3.WebSocketListener
@@ -9,8 +10,8 @@ class SocketRepositoryImpl(private val socketManager: SocketManager): ISocketRep
         socketManager.connect(url, listener)
     }
 
-    override fun send(message: String) {
-        socketManager.send(message)
+    override fun send(location: Location) {
+        socketManager.send(location)
     }
 
     override fun disconnect() {
