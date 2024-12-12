@@ -109,6 +109,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             requestLocationPermission()
             getInitialPickUpLocation()
         }
+        FetchLocation.getContinuousLocation(requireContext())
 
     }
 
@@ -250,7 +251,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         if (binding.currLocationBtn.visibility != View.VISIBLE) {
             fadeInUserLocationButton()
         }
-        socketViewModel.sendMessage("hello")
+//        socketViewModel.sendMessage("hello")
 
     }
 
@@ -370,7 +371,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     @SuppressLint("CheckResult")
     private fun editTextFocusChangeListener() {
-
         _compositeDisposable.add(
             RxBus.listen(RxEvent.EventEditTextFocus::class.java).subscribe {
                 if (it.isPickUpEditTextFocus) {
