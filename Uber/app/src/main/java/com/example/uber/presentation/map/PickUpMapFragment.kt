@@ -109,7 +109,12 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             requestLocationPermission()
             getInitialPickUpLocation()
         }
-        FetchLocation.getContinuousLocation(requireContext())
+        connectToSocket()
+        lifecycleScope.launch {
+            FetchLocation.getLocationUpdates(requireContext()).collect {
+                Log.d("Location", it.toString())
+            }
+        }
 
     }
 

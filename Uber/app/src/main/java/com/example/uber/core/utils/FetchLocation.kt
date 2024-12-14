@@ -19,6 +19,9 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -27,19 +30,20 @@ object FetchLocation {
     private var locationCallback: LocationCallback? = null
     private var fusedLocationClient: FusedLocationProviderClient? = null
     private var locationRequest: LocationRequest? = null
+    private var locationCallback2: LocationCallback? = null
     suspend fun getLocation(latitude: Double, longitude: Double, context: Context): String {
         var addresses: List<Address> = emptyList()
         val geocoder = Geocoder(context, Locale.getDefault())
-                try {
-                    addresses = geocoder.getFromLocation(
-                        latitude,
-                        longitude,
-                        1
-                    )!!
+        try {
+            addresses = geocoder.getFromLocation(
+                latitude,
+                longitude,
+                1
+            )!!
 
-                } catch (e: Exception) {
-                    Log.e("getLocation", e.message.toString())
-                }
+        } catch (e: Exception) {
+            Log.e("getLocation", e.message.toString())
+        }
         return if (addresses.isNotEmpty()) addresses[0].getAddressLine(0).split(",")[1] else ""
     }
 
@@ -83,20 +87,20 @@ object FetchLocation {
                     Looper.getMainLooper()
                 )
 
-               fusedLocationClient!!.lastLocation.addOnSuccessListener {
-                   runCatching {
-                       if (it != null) {
-                           dispatcher.invoke(Location("Custom").apply {
-                               this.latitude = it.latitude
-                               this.longitude = it.longitude
-                           })
-                       }
-                   }
-               }.addOnFailureListener { exception ->
-                   exception.printStackTrace()
+                fusedLocationClient!!.lastLocation.addOnSuccessListener {
+                    runCatching {
+                        if (it != null) {
+                            dispatcher.invoke(Location("Custom").apply {
+                                this.latitude = it.latitude
+                                this.longitude = it.longitude
+                            })
+                        }
+                    }
+                }.addOnFailureListener { exception ->
+                    exception.printStackTrace()
 
-               }
-            }catch (it:Exception) {
+                }
+            } catch (it: Exception) {
             }
 
 
@@ -108,7 +112,6 @@ object FetchLocation {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         }
     }
-
 
 
     val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
@@ -126,22 +129,33 @@ object FetchLocation {
         }
         return locationMapper
     }
+
     fun getContinuousLocation(context: Context) {
         val continuousLocation = LocationRequest.create().apply {
             setInterval(5000)
             setFastestInterval(5000)
             setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
         }
-        checkLocationPermission(context){
-            fusedLocationClient?.requestLocationUpdates(continuousLocation,locationCallBack(),Looper.getMainLooper())
+        checkLocationPermission(context) {
+            fusedLocationClient?.requestLocationUpdates(
+                continuousLocation,
+                locationCallback2!!, Looper.getMainLooper()
+            )
         }
 
     }
-    private fun locationCallBack():LocationCallback{
-        return object :LocationCallback(){
-            override fun onLocationResult(p0: LocationResult) {
-                Log.d("LocationContinuous", "onLocationResult: ${p0.lastLocation}")
+
+    fun getLocationUpdates(context: Context): Flow<Location> = callbackFlow {
+        locationCallback2 = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult.locations.forEach { location ->
+                    trySend(location)
+                }
             }
+        }
+        getContinuousLocation(context)
+        awaitClose {
+            fusedLocationClient?.removeLocationUpdates(locationCallback2!!)
         }
     }
 
