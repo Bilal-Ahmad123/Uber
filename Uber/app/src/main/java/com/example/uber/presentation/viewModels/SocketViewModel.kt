@@ -38,7 +38,7 @@ class SocketViewModel @Inject constructor(
     fun disconnectFromSocket() {
         disconnectFromSocketUseCase()
     }
-    fun sendMessage(location:Location) {
+    fun sendMessage(location:com.example.uber.data.local.models.Location) {
         sendMessageUseCase(location)
     }
 }

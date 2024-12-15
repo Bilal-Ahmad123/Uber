@@ -148,9 +148,7 @@ object FetchLocation {
     fun getLocationUpdates(context: Context): Flow<Location> = callbackFlow {
         locationCallback2 = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                locationResult.locations.forEach { location ->
-                    trySend(location)
-                }
+                trySend(locationResult.lastLocation!!)
             }
         }
         getContinuousLocation(context)

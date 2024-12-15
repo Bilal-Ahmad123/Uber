@@ -29,7 +29,7 @@ class SocketManager @Inject constructor() {
             Log.d("SocketManager", "Error connecting to socket: ${it.message}")
         }
     }
-    fun send(location: Location){
+    fun send(location: com.example.uber.data.local.models.Location){
         kotlin.runCatching {
             hubConnection.send("SendMessage", location)
         }.onFailure {

@@ -5,6 +5,6 @@ import okhttp3.WebSocketListener
 
 interface ISocketRepository {
     fun connect(url:String,listener: WebSocketListener)
-    fun send(location:Location)
+    fun send(location:com.example.uber.data.local.models.Location)
     fun disconnect()
 }

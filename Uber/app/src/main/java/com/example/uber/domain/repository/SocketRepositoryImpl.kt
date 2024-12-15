@@ -10,7 +10,7 @@ class SocketRepositoryImpl(private val socketManager: SocketManager): ISocketRep
         socketManager.connect(url, listener)
     }
 
-    override fun send(location: Location) {
+    override fun send(location: com.example.uber.data.local.models.Location) {
         socketManager.send(location)
     }
 
