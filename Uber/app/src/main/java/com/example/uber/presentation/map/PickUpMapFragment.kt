@@ -110,6 +110,10 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             getInitialPickUpLocation()
         }
         connectToSocket()
+        sendContinuousLocationUpdates()
+    }
+
+    private fun sendContinuousLocationUpdates(){
         lifecycleScope.launch {
             FetchLocation.getLocationUpdates(requireContext()).collect {
                 socketViewModel.sendMessage(com.example.uber.data.local.models.Location(it.latitude,it.longitude))
