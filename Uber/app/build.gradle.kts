@@ -82,7 +82,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.places)
+    implementation("com.google.android.libraries.places:places:3.2.0") // Replace with the desired version
     var nav_version = "2.3.5"
     var room_version = "2.2.3"
 
