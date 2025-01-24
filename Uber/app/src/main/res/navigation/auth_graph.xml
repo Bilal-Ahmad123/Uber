@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/auth_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.uber.presentation.auth.login.ui.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_registerDetailsFragment"
+            app:destination="@id/registerDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerDetailsFragment"
+        android:name="com.example.uber.presentation.auth.register.ui.RegisterDetailsFragment"
+        android:label="fragment_register_details"
+        tools:layout="@layout/fragment_register_details" >
+        <action
+            android:id="@+id/action_registerDetailsFragment_to_termsAndReviewFragment"
+            app:destination="@id/termsAndReviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/termsAndReviewFragment"
+        android:name="com.example.uber.presentation.auth.register.ui.TermsAndReviewFragment"
+        android:label="fragment_terms_and_review"
+        tools:layout="@layout/fragment_terms_and_review" />
+</navigation>

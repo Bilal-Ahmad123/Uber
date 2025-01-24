@@ -152,6 +152,7 @@ dependencies {
     implementation ("com.github.gsanthosh91:Google-Map-Floating-Info-Window-Uber:0.1.5")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
     implementation ("com.microsoft.signalr:signalr:7.0.0")
+    implementation ("com.github.Ajinkrishnak:CountryCodePicker:1.0.2")
 
 }
 
