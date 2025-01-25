@@ -9,5 +9,4 @@ interface IMapBoxRepository {
     suspend fun geoCodeLocation(latitude:Double,longitude:Double): Response<GeoCodingResponse>
     suspend fun getSuggestions(place:String): Response<SuggestionResponse>
     suspend fun retrieveSuggestedPlaceDetail(mapboxId:String): Response<RetrieveSuggestResponse>
-
 }

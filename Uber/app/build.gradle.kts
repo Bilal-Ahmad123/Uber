@@ -4,6 +4,7 @@ plugins {
     id ("com.google.dagger.hilt.android")
     id ("kotlin-kapt")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 secrets {
     // To add your Maps API key to this project:
@@ -82,7 +83,8 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.libraries.places:places:3.2.0") // Replace with the desired version
+    implementation("com.google.android.libraries.places:places:3.2.0")
+    implementation(libs.firebase.auth.ktx)
     var nav_version = "2.3.5"
     var room_version = "2.2.3"
 
@@ -152,7 +154,20 @@ dependencies {
     implementation ("com.github.gsanthosh91:Google-Map-Floating-Info-Window-Uber:0.1.5")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
     implementation ("com.microsoft.signalr:signalr:7.0.0")
-    implementation ("com.github.Ajinkrishnak:CountryCodePicker:1.0.2")
+    implementation (libs.countrycodepicker)
+
+    implementation ("com.github.garretyoder:Colorful:2.3.4")
+
+
+    implementation ("androidx.credentials:credentials:1.3.0")
+    implementation ("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation ("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation ("com.google.android.gms:play-services-measurement-api:22.2.0")  // Update to the latest compatible version if necessary
 
 }
 
