@@ -6,8 +6,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android) apply false
     id("com.google.dagger.hilt.android") version "2.46.1" apply false
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1"
-
-
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 

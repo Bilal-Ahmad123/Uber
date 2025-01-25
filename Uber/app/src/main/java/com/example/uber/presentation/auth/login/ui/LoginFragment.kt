@@ -9,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.databinding.FragmentLoginBinding
 import com.example.uber.presentation.MainActivity
@@ -27,6 +29,7 @@ class LoginFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var _binding: FragmentLoginBinding
     private val _loginViewModel: LoginViewModel by viewModels()
+    private lateinit var navController: NavController
 
 
     companion object {
@@ -49,7 +52,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        navController = findNavController()
         _binding.signInWithGoogle.setOnClickListener {
             signIn()
         }
@@ -96,7 +99,11 @@ class LoginFragment : Fragment() {
                         "Signed in as ${it.data?.displayName}",
                         Toast.LENGTH_SHORT
                     ).show()
-                    startActivity(Intent(requireContext(), MainActivity::class.java))
+                    if (it.data != null && it.data.metadata?.creationTimestamp?.equals(it.data.metadata!!.lastSignInTimestamp)!!) {
+                        navController.navigate(R.id.action_loginFragment_to_registerDetailsFragment)
+                    } else {
+                        startActivity(Intent(requireContext(), MainActivity::class.java))
+                    }
                 } else {
                     Toast.makeText(requireContext(), "Authentication failed", Toast.LENGTH_SHORT)
                         .show()
