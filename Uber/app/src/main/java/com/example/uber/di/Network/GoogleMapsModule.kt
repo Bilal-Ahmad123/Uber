@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object GoogleMapsModule {
+class GoogleMapsModule {
     @Provides
     @Singleton
     fun provideGoogleMapsGeoCodingService(): IGoogleMapService {

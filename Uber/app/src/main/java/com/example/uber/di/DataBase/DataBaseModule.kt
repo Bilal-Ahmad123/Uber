@@ -1,5 +1,6 @@
 package com.example.uber.di.DataBase
 
+import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.example.uber.data.local.dao.LocationDao
@@ -15,7 +16,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DataBaseModule {
+class DataBaseModule {
+
     @Singleton
     @Provides
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {

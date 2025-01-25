@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object CoroutineDispatcherModule {
+class CoroutineDispatcherModule {
     @Provides
     @Singleton
     fun provideDispatchers(): IDispatchers = AppDispatcher()

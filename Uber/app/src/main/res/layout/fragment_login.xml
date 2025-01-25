@@ -1,14 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/_10sdp"
     tools:context=".presentation.auth.login.ui.LoginFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/enter_your_mobile_number" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:text="@string/enter_your_mobile_number"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_15ssp"
+        android:textStyle="bold" />
 
-</FrameLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:orientation="horizontal">
+
+        <com.ak.ui.CountryCodePicker
+            android:id="@+id/ccp_phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            app:arrowSize="@dimen/_20sdp"
+            app:contentColor="@color/black"
+            app:defaultNameCode="in"
+            app:excludedCountries="ad,ae"
+            app:fontFamily="@font/montserrat_medium"
+            app:showArrowDown="true"
+            app:showFlag="true"
+            app:showNameCode="false"
+            app:textSize="@dimen/_12ssp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:boxCornerRadiusBottomEnd="5dp"
+            app:boxCornerRadiusBottomStart="5dp"
+            app:boxCornerRadiusTopEnd="5dp"
+            app:boxCornerRadiusTopStart="5dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:ignore="KeyboardInaccessibleWidget" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:background="@drawable/confirm_destination_btn"
+        android:text="Continue"
+        android:textAllCaps="false"
+        android:textColor="?attr/confirmDestinationBtnText"
+        android:textSize="@dimen/_14ssp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/left_line"
+            android:layout_width="@dimen/_130sdp"
+            android:layout_height="@dimen/_1sdp"
+            android:layout_marginRight="@dimen/_3sdp"
+            android:background="@color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="or" />
+
+        <View
+            android:id="@+id/right_line"
+            android:layout_width="@dimen/_150sdp"
+            android:layout_height="@dimen/_1sdp"
+            android:layout_marginLeft="@dimen/_3sdp"
+            android:background="@color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:orientation="vertical">
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:id="@+id/sign_in_with_google"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:background="@drawable/confirm_destination_btn"
+            android:text="Continue with Google"
+            android:textAllCaps="false"
+            android:textColor="@color/common_google_signin_btn_text_dark_focused"
+            android:textSize="@dimen/_15ssp"
+            android:textStyle="bold"
+            app:icon="@drawable/googleg_standard_color_18"
+            app:backgroundTint="@color/platinum"
+            app:iconTint="@null"
+            android:letterSpacing="0"
+            app:iconPadding="0dp"
+            app:rippleColor="@color/common_google_signin_btn_text_light_pressed"
+        />
+
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_marginBottom="@dimen/_10sdp"
+            android:background="@drawable/confirm_destination_btn"
+            android:text="Continue with Email"
+            android:textAllCaps="false"
+            android:textColor="@color/common_google_signin_btn_text_dark_focused"
+            android:textSize="@dimen/_15ssp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/platinum"
+            app:icon="@drawable/baseline_email_24"
+            android:letterSpacing="0"
+            app:rippleColor="@color/common_google_signin_btn_text_light_pressed"
+            app:iconTint="@color/black" />
+    </LinearLayout>
+</LinearLayout>

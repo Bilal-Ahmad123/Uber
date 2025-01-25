@@ -1,7 +1,8 @@
 [versions]
 agp = "8.5.2"
+countrycodepicker = "1.0.2"
 hiltAndroidCompiler = "2.28-alpha"
-kotlin = "1.9.23"
+kotlin = "2.1.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -15,9 +16,12 @@ playServicesMaps = "19.0.0"
 navigationFragmentKtx = "2.8.2"
 navigationUiKtx = "2.8.2"
 shimmer = "0.5.0"
+firebaseAuthKtx = "23.1.0"
+firebaseAuthCommon = "9.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+countrycodepicker = { module = "com.github.Ajinkrishnak:CountryCodePicker", version.ref = "countrycodepicker" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -32,6 +36,8 @@ play-services-maps = { group = "com.google.android.gms", name = "play-services-m
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 shimmer = { module = "com.facebook.shimmer:shimmer", version.ref = "shimmer" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+firebase-auth-common = { group = "com.google.firebase", name = "firebase-auth-common", version.ref = "firebaseAuthCommon" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -11,7 +11,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object SocketModule {
+class SocketModule {
     @Provides
     @Singleton
     fun provideSocketRepositoryImpl(socketManager: SocketManager):ISocketRepository{
