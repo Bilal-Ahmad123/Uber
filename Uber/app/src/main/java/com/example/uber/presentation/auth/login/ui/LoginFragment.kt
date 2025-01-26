@@ -15,48 +15,46 @@ import com.example.uber.R
 import com.example.uber.databinding.FragmentLoginBinding
 import com.example.uber.presentation.MainActivity
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var oneTapClient: SignInClient
     private lateinit var _binding: FragmentLoginBinding
-    private val _loginViewModel: LoginViewModel by viewModels()
+    private lateinit var signInRequest: BeginSignInRequest
+    private val RC_SIGN_IN = 2
     private lateinit var navController: NavController
-
-
-    companion object {
-        private const val RC_SIGN_IN = 9001
-    }
+    private val _loginViewModel: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(requireContext());
+        FirebaseApp.initializeApp(requireContext())
         auth = FirebaseAuth.getInstance()
         val currentUser = auth.currentUser
-
         if (currentUser != null) {
             val intent = Intent(requireContext(), MainActivity::class.java)
             startActivity(intent)
             requireActivity().finish()
         }
-
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        navController = findNavController()
-        _binding.signInWithGoogle.setOnClickListener {
-            signIn()
-        }
-        observeUserLogin()
+        oneTapClient = Identity.getSignInClient(requireContext())
+        signInRequest = BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(getString(R.string.default_web_client_id))
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            .setAutoSelectEnabled(true)
+            .build()
     }
 
     override fun onCreateView(
@@ -67,28 +65,55 @@ class LoginFragment : Fragment() {
         return _binding.root
     }
 
-    private fun signIn() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
 
-        val googleSignInClient = GoogleSignIn.getClient(requireContext(), gso)
-        googleSignInClient.signOut().addOnCompleteListener {
-            val signInIntent = googleSignInClient.signInIntent
-            startActivityForResult(signInIntent, RC_SIGN_IN)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        navController = findNavController()
+        _binding.signInWithGoogle.setOnClickListener {
+            signInWithOneTap()
         }
+        observeUserLogin()
+    }
 
+    private fun signInWithOneTap() {
+        oneTapClient.beginSignIn(signInRequest)
+            .addOnSuccessListener { result ->
+                try {
+                    startIntentSenderForResult(
+                        result.pendingIntent.intentSender,
+                        RC_SIGN_IN,
+                        null,
+                        0,
+                        0,
+                        0,
+                        null
+                    )
+                } catch (e: Exception) {
+                    Log.e("OneTap", "Error starting One Tap Sign-In", e)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("OneTap", "One Tap Sign-In failed: ${e.localizedMessage}")
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            _loginViewModel.signIn(task)
+            try {
+                val credential = oneTapClient.getSignInCredentialFromIntent(data)
+                if (credential != null) {
+                    _loginViewModel.signIn(credential)
+                } else {
+                    Log.e("OneTap", "No ID token found!")
+                }
+            } catch (e: ApiException) {
+                Log.e("OneTap", "One Tap Sign-In failed: ${e.localizedMessage}")
+            }
         }
     }
+
 
     private fun observeUserLogin() {
         _loginViewModel.apply {
