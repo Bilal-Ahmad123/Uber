@@ -5,6 +5,7 @@ plugins {
     id ("kotlin-kapt")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("com.google.gms.google-services")
+    id("com.apollographql.apollo") version "4.1.1"
 }
 secrets {
     // To add your Maps API key to this project:
@@ -167,7 +168,9 @@ dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation ("com.google.android.gms:play-services-measurement-api:22.2.0")  // Update to the latest compatible version if necessary
+    implementation ("com.google.android.gms:play-services-measurement-api:22.2.0")
+
+    implementation("com.apollographql.apollo:apollo-runtime:4.1.1")
 
 }
 
