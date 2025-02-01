@@ -109,8 +109,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             requestLocationPermission()
             getInitialPickUpLocation()
         }
-        connectToSocket()
-        sendContinuousLocationUpdates()
+//        connectToSocket()
+//        sendContinuousLocationUpdates()
     }
 
     private fun sendContinuousLocationUpdates(){

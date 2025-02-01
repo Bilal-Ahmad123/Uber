@@ -9,16 +9,16 @@
         android:id="@+id/loginFragment"
         android:name="com.example.uber.presentation.auth.login.ui.LoginFragment"
         android:label="fragment_login"
-        tools:layout="@layout/fragment_login" >
+        tools:layout="@layout/fragment_login">
         <action
-            android:id="@+id/action_loginFragment_to_registerDetailsFragment"
-            app:destination="@id/registerDetailsFragment" />
+            android:id="@+id/action_loginFragment_to_splash"
+            app:destination="@id/splash" />
     </fragment>
     <fragment
         android:id="@+id/registerDetailsFragment"
         android:name="com.example.uber.presentation.auth.register.ui.RegisterDetailsFragment"
         android:label="fragment_register_details"
-        tools:layout="@layout/fragment_register_details" >
+        tools:layout="@layout/fragment_register_details">
         <action
             android:id="@+id/action_registerDetailsFragment_to_termsAndReviewFragment"
             app:destination="@id/termsAndReviewFragment" />
@@ -27,5 +27,19 @@
         android:id="@+id/termsAndReviewFragment"
         android:name="com.example.uber.presentation.auth.register.ui.TermsAndReviewFragment"
         android:label="fragment_terms_and_review"
-        tools:layout="@layout/fragment_terms_and_review" />
+        tools:layout="@layout/fragment_terms_and_review">
+        <action
+            android:id="@+id/action_termsAndReviewFragment_to_splash"
+            app:destination="@id/splash" />
+    </fragment>
+    <fragment
+        android:id="@+id/splash"
+        android:name="com.example.uber.presentation.auth.splashscreen.splash"
+        android:label="fragment_splash"
+        tools:layout="@layout/fragment_splash">
+        <action
+            android:id="@+id/action_splash_to_registerDetailsFragment"
+            app:destination="@id/registerDetailsFragment"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
 </navigation>

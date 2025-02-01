@@ -1,14 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingHorizontal="@dimen/_10sdp"
     tools:context=".presentation.auth.register.ui.TermsAndReviewFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/_10sdp"
+        android:orientation="vertical">
 
-</FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_40sdp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/_80sdp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="@dimen/_10sdp"
+                android:src="@drawable/inventory_48px" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="@dimen/_10sdp"
+                android:text="Accept Uber's Terms &amp; Review Privacy Notice"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_25ssp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:lineSpacingExtra="@dimen/_5sdp"
+            android:text="By selecting 'I Agree' below', I have reviewed and agree to the terms Terms of Use and acknowledge the Privacy Notice. I am at least 18 years of age."
+            android:textColor="@color/black"
+            android:textSize="@dimen/_12ssp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_1sdp"
+        android:layout_above="@id/checkbox_lll"
+        android:layout_marginBottom="@dimen/_5sdp"
+        android:background="@android:color/darker_gray">
+
+    </View>
+
+    <LinearLayout
+        android:id="@+id/checkbox_lll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottom_ll">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I agree"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_13ssp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/black"
+            android:scaleX="1.3"
+            android:scaleY="1.3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottom_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_weight="0"
+            android:backgroundTint="@color/anti_flash_white"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="30dp"
+            app:icon="@drawable/baseline_arrow_back"
+            app:iconTint="@color/black" />
+        <!-- Left Button -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/filledTonalButton"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:backgroundTint="@color/black"
+            android:paddingVertical="@dimen/_12sdp"
+            android:paddingLeft="@dimen/_10sdp"
+            android:paddingRight="@dimen/_10sdp"
+            android:text="Next"
+            android:textSize="@dimen/_12ssp"
+            app:icon="@drawable/baseline_arrow_forward"
+            app:iconGravity="end" /> <!-- No weight, left aligned by default -->
+
+    </LinearLayout>
+
+</RelativeLayout>
