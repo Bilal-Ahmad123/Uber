@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Start Over?"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="@dimen/_15ssp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_1sdp"
+        android:layout_above="@id/checkbox_lll"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_5sdp"
+        android:background="@android:color/darker_gray" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/_10sdp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/_10sdp"
+            android:text="Are you sure you want to start from the beginning?"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_12ssp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/black"
+            android:elevation="0dp"
+            android:padding="12dp"
+            android:text="Yes"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:backgroundTint="@color/platinum"
+            android:elevation="0dp"
+            android:padding="12dp"
+            android:text="No"
+            android:textAllCaps="false"
+            android:layout_marginBottom="@dimen/_10sdp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+</LinearLayout>
