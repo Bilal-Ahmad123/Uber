@@ -12,7 +12,6 @@ import com.example.uber.data.remote.models.mapbox.SuggestionResponse.SuggestionR
 import com.example.uber.data.remote.models.mapbox.geoCodeResponse.GeoCodingResponse
 import com.example.uber.domain.use_case.geocoding.LocationUseCase
 import com.example.uber.domain.use_case.geocoding.MapboxUseCase
-import com.mapbox.mapboxsdk.geometry.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.async

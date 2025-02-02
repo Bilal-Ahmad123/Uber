@@ -21,8 +21,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
         android:layout_marginTop="@dimen/_10sdp"
+        android:gravity="center"
         android:orientation="horizontal">
 
         <com.ak.ui.CountryCodePicker
@@ -41,14 +41,13 @@
             app:textSize="@dimen/_12ssp" />
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:boxCornerRadiusBottomEnd="5dp"
             app:boxCornerRadiusBottomStart="5dp"
             app:boxCornerRadiusTopEnd="5dp"
-            app:boxCornerRadiusTopStart="5dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            >
+            app:boxCornerRadiusTopStart="5dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editText"
@@ -107,23 +106,22 @@
         android:orientation="vertical">
 
         <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
             android:id="@+id/sign_in_with_google"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_10sdp"
             android:background="@drawable/confirm_destination_btn"
+            android:letterSpacing="0"
             android:text="Continue with Google"
             android:textAllCaps="false"
             android:textColor="@color/common_google_signin_btn_text_dark_focused"
             android:textSize="@dimen/_15ssp"
             android:textStyle="bold"
-            app:icon="@drawable/googleg_standard_color_18"
             app:backgroundTint="@color/platinum"
-            app:iconTint="@null"
-            android:letterSpacing="0"
+            app:icon="@drawable/googleg_standard_color_18"
             app:iconPadding="0dp"
-            app:rippleColor="@color/common_google_signin_btn_text_light_pressed"
-        />
+            app:iconTint="@null"
+            app:rippleColor="@color/common_google_signin_btn_text_light_pressed" />
 
 
         <com.google.android.material.button.MaterialButton
@@ -132,15 +130,16 @@
             android:layout_marginTop="@dimen/_10sdp"
             android:layout_marginBottom="@dimen/_10sdp"
             android:background="@drawable/confirm_destination_btn"
+            android:letterSpacing="0"
             android:text="Continue with Email"
+            android:id="@+id/mb_email"
             android:textAllCaps="false"
             android:textColor="@color/common_google_signin_btn_text_dark_focused"
             android:textSize="@dimen/_15ssp"
             android:textStyle="bold"
             app:backgroundTint="@color/platinum"
             app:icon="@drawable/baseline_email_24"
-            android:letterSpacing="0"
-            app:rippleColor="@color/common_google_signin_btn_text_light_pressed"
-            app:iconTint="@color/black" />
+            app:iconTint="@color/black"
+            app:rippleColor="@color/common_google_signin_btn_text_light_pressed" />
     </LinearLayout>
 </LinearLayout>

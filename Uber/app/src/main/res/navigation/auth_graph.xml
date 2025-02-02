@@ -22,6 +22,9 @@
         <action
             android:id="@+id/action_registerDetailsFragment_to_termsAndReviewFragment"
             app:destination="@id/termsAndReviewFragment" />
+        <action
+            android:id="@+id/action_registerDetailsFragment_to_getStarted"
+            app:destination="@id/getStarted" />
     </fragment>
     <fragment
         android:id="@+id/termsAndReviewFragment"
@@ -40,6 +43,11 @@
         <action
             android:id="@+id/action_splash_to_registerDetailsFragment"
             app:destination="@id/registerDetailsFragment"
-            app:exitAnim="@anim/fade_out" />
+            app:exitAnim="@anim/fade_in" />
     </fragment>
+    <fragment
+        android:id="@+id/getStarted"
+        android:name="com.example.uber.presentation.auth.getstarted.GetStarted"
+        android:label="fragment_get_started"
+        tools:layout="@layout/fragment_get_started" />
 </navigation>

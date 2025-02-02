@@ -12,6 +12,7 @@
         android:textColor="@color/white"
         android:textSize="@dimen/_70ssp"
         android:layout_gravity="center"
+        android:fontFamily="@font/custom_font"
         android:text="Uber" />
 
 </FrameLayout>

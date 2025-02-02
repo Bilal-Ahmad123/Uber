@@ -33,9 +33,9 @@
             android:weightSum="2">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/et_first_name"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:id="@+id/et_first_name"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="@dimen/_5sdp"
                 android:layout_weight="1"
@@ -44,7 +44,8 @@
                 app:boxCornerRadiusBottomStart="5dp"
                 app:boxCornerRadiusTopEnd="5dp"
                 app:boxCornerRadiusTopStart="5dp"
-                app:placeholderText="Please enter first">
+                app:placeholderText="First name"
+                app:placeholderTextAppearance="@style/PlaceholderTextAppearance">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -59,6 +60,7 @@
 
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/et_last_name"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -69,8 +71,8 @@
                 app:boxCornerRadiusBottomStart="5dp"
                 app:boxCornerRadiusTopEnd="5dp"
                 app:boxCornerRadiusTopStart="5dp"
-                android:id="@+id/et_last_name"
-                app:placeholderText="Please enter surn">
+                app:placeholderText="Surname"
+                app:placeholderTextAppearance="@style/PlaceholderTextAppearance">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -108,6 +110,7 @@
 
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/et_contatc_no"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -116,13 +119,15 @@
                 app:boxCornerRadiusBottomEnd="5dp"
                 app:boxCornerRadiusBottomStart="5dp"
                 app:boxCornerRadiusTopEnd="5dp"
+                app:boxCornerRadiusTopStart="5dp"
                 app:placeholderText="Mobile Number"
-                app:boxCornerRadiusTopStart="5dp">
+                app:placeholderTextAppearance="@style/PlaceholderTextAppearance">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
+                    android:inputType="phone"
                     android:maxLines="1"
                     tools:ignore="KeyboardInaccessibleWidget" />
 
@@ -143,6 +148,7 @@
         <com.google.android.material.button.MaterialButton
             style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
             android:layout_width="48dp"
+            android:id="@+id/mb_back"
             android:layout_height="48dp"
             android:layout_weight="0"
             android:backgroundTint="@color/anti_flash_white"

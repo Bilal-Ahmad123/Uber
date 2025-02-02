@@ -110,8 +110,6 @@ dependencies {
     implementation("com.intuit.sdp:sdp-android:1.1.1")
     implementation("com.intuit.ssp:ssp-android:1.0.6")
     implementation ("com.google.android.gms:play-services-location:17.0.0")
-    implementation(libs.mapbox.android.navigation.ui)
-    implementation (libs.mapbox.android.navigation)
 
     implementation ("io.reactivex.rxjava3:rxjava:3.1.0")
     implementation ("com.jakewharton.rxbinding:rxbinding:0.4.0")
@@ -122,7 +120,6 @@ dependencies {
 
 
 
-    implementation ("com.mapbox.mapboxsdk:mapbox-android-sdk:8.6.2")
     implementation ("com.google.android.gms:play-services-location:17.0.0")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 
@@ -171,6 +168,8 @@ dependencies {
     implementation ("com.google.android.gms:play-services-measurement-api:22.2.0")
 
     implementation("com.apollographql.apollo:apollo-runtime:4.1.1")
+    implementation ("com.mobsandgeeks:android-saripaar:2.0.3")
+
 
 }
 

@@ -44,13 +44,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.mapbox.android.gestures.MoveGestureDetector
-import com.mapbox.geojson.Point
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
-import com.mapbox.mapboxsdk.location.modes.CameraMode
-import com.mapbox.mapboxsdk.location.modes.RenderMode
-import com.mapbox.mapboxsdk.maps.MapboxMap
-import com.mapbox.mapboxsdk.maps.Style
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +58,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     ActivityCompat.OnRequestPermissionsResultCallback {
     private var _binding: FragmentPickUpMapBinding? = null
     private val binding get() = _binding!!
-    private var loadedMapStyle: Style? = null
     private var bottomSheetManager: BottomSheetManager? = null
     private var _rideOptionsBottomSheet: RideOptionsBottomSheet? = null
     private var isPopulatingLocation = false
@@ -243,7 +235,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private fun cleanUpResources() {
         _binding = null
-        loadedMapStyle = null
         onRemoveCameraAndMoveListener()
         BottomSheetManager.destroyInstance()
         bottomSheetManager = null
