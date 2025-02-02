@@ -26,6 +26,8 @@ import com.mobsandgeeks.saripaar.annotation.NotEmpty
 class RegisterDetailsFragment : Fragment(), ValidationListener {
     private var _binding: FragmentRegisterDetailsBinding? = null
     private lateinit var navController: NavController
+    private lateinit var button: MaterialButton
+    private var _bottomSheet: GenericBottomSheet? = null
 
     @NotEmpty(message = "First Name is required")
     private lateinit var _etFirstName: TextInputLayout
@@ -45,6 +47,7 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
         super.onDestroyView()
         validator = null
         _binding = null
+        _bottomSheet = null
     }
 
     override fun onCreateView(
@@ -146,21 +149,22 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
         })
     }
 
-    private fun backBtnClickListener(){
+    private fun backBtnClickListener() {
         _binding?.mbBack?.setOnClickListener {
-            val customView = LayoutInflater.from(requireContext()).inflate(R.layout.bottom_sheet_start_over_content,null)
-            val button = customView.findViewById<MaterialButton>(R.id.mb_yes)
-            button.setOnClickListener {
-                navController.navigate(R.id.action_registerDetailsFragment_to_getStarted)
-            }
-
-            val bottomSheet = GenericBottomSheet.newInstance(customView)
-            bottomSheet.show(parentFragmentManager,bottomSheet.tag)
+            val customView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.bottom_sheet_start_over_content, null)
+            button = customView.findViewById<MaterialButton>(R.id.mb_yes)
+            yesBtnClickListener()
+            _bottomSheet = GenericBottomSheet.newInstance(customView)
+            _bottomSheet?.show(parentFragmentManager, _bottomSheet?.tag)
         }
     }
 
-    private fun yesBtnClickListener(){
-
+    private fun yesBtnClickListener() {
+        button.setOnClickListener {
+            _bottomSheet?.dismiss()
+            navController.navigate(R.id.action_registerDetailsFragment_to_getStarted)
+        }
     }
 
 }

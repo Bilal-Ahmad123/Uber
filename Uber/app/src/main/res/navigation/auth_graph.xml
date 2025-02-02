@@ -34,6 +34,9 @@
         <action
             android:id="@+id/action_termsAndReviewFragment_to_splash"
             app:destination="@id/splash" />
+        <action
+            android:id="@+id/action_termsAndReviewFragment_to_getStarted"
+            app:destination="@id/getStarted" />
     </fragment>
     <fragment
         android:id="@+id/splash"
@@ -49,5 +52,9 @@
         android:id="@+id/getStarted"
         android:name="com.example.uber.presentation.auth.getstarted.GetStarted"
         android:label="fragment_get_started"
-        tools:layout="@layout/fragment_get_started" />
+        tools:layout="@layout/fragment_get_started" >
+        <action
+            android:id="@+id/action_getStarted_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
 </navigation>
