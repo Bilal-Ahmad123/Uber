@@ -8,8 +8,11 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -32,15 +35,22 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(0, 0, 0, 0)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val navBarHeight = systemBarsInsets.bottom
+            if (binding.bottomNavigationView.visibility == View.VISIBLE) {
+                view.setPadding(0, 0, 0, 0)
+            } else {
+                view.setPadding(0, 0, 0, navBarHeight)
+            }
+
             insets
         }
-
+        currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         registerGPSListener()
         registerNetworkListener()
         createNavigation()

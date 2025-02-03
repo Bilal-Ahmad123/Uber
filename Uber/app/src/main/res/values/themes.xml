@@ -3,7 +3,6 @@
     <style name="Theme.Uber"  parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/purple_500</item>
-        <item name="android:windowLightStatusBar">true</item>  <!-- Dark icons -->
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="android:fontFamily">@font/custom_font</item>

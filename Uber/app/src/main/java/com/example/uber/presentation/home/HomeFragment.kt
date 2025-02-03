@@ -34,7 +34,6 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
     }
 
     private fun setUpWhereToClickListener() {
