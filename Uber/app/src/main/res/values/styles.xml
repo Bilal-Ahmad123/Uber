@@ -10,8 +10,7 @@
         <item name="tint">@color/gothicNoir</item>
     </style>
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowFullscreen">false</item>
     </style>
 
     <style name="Widget.Theme.Uber.ActionBar.Fullscreen" parent="Widget.AppCompat.ActionBar">
