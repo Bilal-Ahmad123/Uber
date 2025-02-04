@@ -1,34 +1,46 @@
 package com.example.uber.presentation.auth.register.ui
 
 import android.os.Bundle
+import android.transition.Fade
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
+import com.example.uber.data.remote.api.backend.authentication.models.RequestModels.RiderRequest
 import com.example.uber.databinding.FragmentTermsAndReviewBinding
+import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
+import com.example.uber.presentation.auth.register.viewmodels.RegisterViewModel
 import com.example.uber.presentation.bottomSheet.GenericBottomSheet
 import com.google.android.material.button.MaterialButton
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@AndroidEntryPoint
 class TermsAndReviewFragment : Fragment() {
 
     private var _binding: FragmentTermsAndReviewBinding? = null
     private lateinit var navController: NavController
     private lateinit var button: MaterialButton
+    private lateinit var noButton: MaterialButton
     private var _bottomSheet: GenericBottomSheet? = null
+    private val _registerViewModel: RegisterViewModel by viewModels()
+    private val _loginViewModel: LoginViewModel by activityViewModels<LoginViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
     }
 
     override fun onCreateView(
@@ -45,6 +57,8 @@ class TermsAndReviewFragment : Fragment() {
         backBtnClickListener()
         runLopperHandler()
         checkBoxListener()
+        nextBtnClickListener()
+        observerCreateRiderResponse()
     }
 
     override fun onDestroyView() {
@@ -59,7 +73,9 @@ class TermsAndReviewFragment : Fragment() {
             val customView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.bottom_sheet_start_over_content, null)
             button = customView.findViewById<MaterialButton>(R.id.mb_yes)
+            noButton = customView.findViewById<MaterialButton>(R.id.mb_no)
             yesBtnClickListener()
+            noBtnClickListener()
             _bottomSheet = GenericBottomSheet.newInstance(customView)
             _bottomSheet?.show(parentFragmentManager, _bottomSheet?.tag)
         }
@@ -88,6 +104,53 @@ class TermsAndReviewFragment : Fragment() {
             _bottomSheet?.dismiss()
             navController.navigate(R.id.action_termsAndReviewFragment_to_getStarted)
         }
+    }
+
+    private fun noBtnClickListener(){
+        noButton.setOnClickListener {
+            _bottomSheet?.dismiss()
+        }
+    }
+
+    private fun nextBtnClickListener(){
+        _binding?.filledTonalButton?.setOnClickListener {
+            createRider()
+        }
+    }
+
+    private fun createRider(){
+        showProgressBar()
+        _registerViewModel.createRider(createRiderRequestObject())
+    }
+
+    private fun showProgressBar(){
+        _binding?.progressBarCyclic?.visibility = View.VISIBLE
+        _binding?.rlMain?.visibility = View.GONE
+    }
+
+    private fun hideProgressBar(){
+        _binding?.progressBarCyclic?.visibility = View.GONE
+    }
+
+
+
+    private fun observerCreateRiderResponse(){
+        with(_registerViewModel){
+            rider.observe(viewLifecycleOwner){
+                if(it.data != null){
+                    hideProgressBar()
+                    navController.navigate(R.id.action_termsAndReviewFragment_to_splash)
+                }
+            }
+        }
+    }
+
+    private fun createRiderRequestObject():RiderRequest{
+        val contactNo = arguments?.getString("contactNo")
+        val country = arguments?.getString("country")
+        val user = _loginViewModel.user.value?.data
+        val (firstName,lastName) = user?.displayName?.split(" ")!!
+        return RiderRequest(user.email!!, firstName,lastName,country!!,contactNo!!)
     }
 
 

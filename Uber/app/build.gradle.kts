@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id ("com.google.dagger.hilt.android")
-    id ("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
+    id("kotlin-kapt")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("com.google.gms.google-services")
     id("com.apollographql.apollo") version "4.1.1"
@@ -47,9 +47,9 @@ android {
             val MAPBOX_DOWNLOADS_TOKEN = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
             val GOOGLE_API_KEY = providers.gradleProperty("GOOGLE_API_KEY").get()
             val SESSION_TOKEN = providers.gradleProperty("SESSION_TOKEN").get()
-            buildConfigField("String","MAPBOX_TOKEN","\"${MAPBOX_DOWNLOADS_TOKEN}\"")
-            buildConfigField("String","GOOGLE_API_KEY","\"${GOOGLE_API_KEY}\"")
-            buildConfigField("String","SESSION_TOKEN","\"${SESSION_TOKEN}\"")
+            buildConfigField("String", "MAPBOX_TOKEN", "\"${MAPBOX_DOWNLOADS_TOKEN}\"")
+            buildConfigField("String", "GOOGLE_API_KEY", "\"${GOOGLE_API_KEY}\"")
+            buildConfigField("String", "SESSION_TOKEN", "\"${SESSION_TOKEN}\"")
 
 
         }
@@ -57,9 +57,9 @@ android {
             val MAPBOX_DOWNLOADS_TOKEN = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").get()
             val GOOGLE_API_KEY = providers.gradleProperty("GOOGLE_API_KEY").get()
             val SESSION_TOKEN = providers.gradleProperty("SESSION_TOKEN").get()
-            buildConfigField("String","MAPBOX_TOKEN","\"${MAPBOX_DOWNLOADS_TOKEN}\"")
-            buildConfigField("String","GOOGLE_API_KEY","\"${GOOGLE_API_KEY}\"")
-            buildConfigField("String","SESSION_TOKEN","\"${SESSION_TOKEN}\"")
+            buildConfigField("String", "MAPBOX_TOKEN", "\"${MAPBOX_DOWNLOADS_TOKEN}\"")
+            buildConfigField("String", "GOOGLE_API_KEY", "\"${GOOGLE_API_KEY}\"")
+            buildConfigField("String", "SESSION_TOKEN", "\"${SESSION_TOKEN}\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -74,7 +74,7 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    viewBinding{
+    viewBinding {
         enable = true
     }
     buildFeatures {
@@ -98,7 +98,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation ("com.karumi:dexter:6.2.3")
+    implementation("com.karumi:dexter:6.2.3")
 
 // Navigation Component
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
@@ -109,66 +109,69 @@ dependencies {
 
     implementation("com.intuit.sdp:sdp-android:1.1.1")
     implementation("com.intuit.ssp:ssp-android:1.0.6")
-    implementation ("com.google.android.gms:play-services-location:17.0.0")
+    implementation("com.google.android.gms:play-services-location:17.0.0")
 
-    implementation ("io.reactivex.rxjava3:rxjava:3.1.0")
-    implementation ("com.jakewharton.rxbinding:rxbinding:0.4.0")
-
-
-    implementation (libs.shimmer)
+    implementation("io.reactivex.rxjava3:rxjava:3.1.0")
+    implementation("com.jakewharton.rxbinding:rxbinding:0.4.0")
 
 
+    implementation(libs.shimmer)
 
 
-    implementation ("com.google.android.gms:play-services-location:17.0.0")
+
+
+    implementation("com.google.android.gms:play-services-location:17.0.0")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 
     implementation("androidx.appcompat:appcompat")
     implementation("com.google.android.material:material:1.1.0")
     implementation("androidx.constraintlayout:constraintlayout:2.0.0-beta4")
 
-    implementation ("com.android.support:design:27.1.0")
+    implementation("com.android.support:design:27.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
 
-    implementation ("com.squareup.retrofit2:retrofit:2.7.2")
-    implementation ("com.squareup.retrofit2:converter-gson:2.7.2")
+    implementation("com.squareup.retrofit2:retrofit:2.7.2")
+    implementation("com.squareup.retrofit2:converter-gson:2.7.2")
 
     val lifecycle_version = "2.6.2"
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
-    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version")
 
     implementation("com.google.dagger:hilt-android:2.46.1")
 
-    kapt ("com.google.dagger:hilt-compiler:2.46.1")
+    kapt("com.google.dagger:hilt-compiler:2.46.1")
 
-    implementation ("androidx.room:room-runtime:$room_version")
-    kapt ("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
 
     implementation("com.google.android.gms:play-services-maps:19.0.0")
 
-    implementation ("com.github.amalChandran:trail-android:v1.51")
-    implementation ("com.google.maps.android:android-maps-utils:3.9.0")
-    implementation ("com.github.tintinscorpion:Dual-color-Polyline-Animation:1.2")
-    implementation ("com.github.gsanthosh91:Google-Map-Floating-Info-Window-Uber:0.1.5")
+    implementation("com.github.amalChandran:trail-android:v1.51")
+    implementation("com.google.maps.android:android-maps-utils:3.9.0")
+    implementation("com.github.tintinscorpion:Dual-color-Polyline-Animation:1.2")
+    implementation("com.github.gsanthosh91:Google-Map-Floating-Info-Window-Uber:0.1.5")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
-    implementation ("com.microsoft.signalr:signalr:7.0.0")
-    implementation (libs.countrycodepicker)
+    implementation("com.microsoft.signalr:signalr:7.0.0")
+    implementation(libs.countrycodepicker)
 
-    implementation ("com.github.garretyoder:Colorful:2.3.4")
+    implementation("com.github.garretyoder:Colorful:2.3.4")
 
 
-    implementation ("androidx.credentials:credentials:1.3.0")
-    implementation ("androidx.credentials:credentials-play-services-auth:1.3.0")
-    implementation ("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     implementation("com.google.android.gms:play-services-auth:21.3.0")
 
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-analytics")
-    implementation ("com.google.android.gms:play-services-measurement-api:22.2.0")
+    implementation("com.google.android.gms:play-services-measurement-api:22.2.0")
 
     implementation("com.apollographql.apollo:apollo-runtime:4.1.1")
-    implementation ("com.mobsandgeeks:android-saripaar:2.0.3")
+    implementation("com.mobsandgeeks:android-saripaar:2.0.3")
+
+    implementation("io.michaelrocks:libphonenumber-android:8.12.44")
+    implementation("com.github.joielechong:countrycodepicker:2.4.2")
 
 
 }

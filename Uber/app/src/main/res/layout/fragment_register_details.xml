@@ -93,20 +93,13 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <com.ak.ui.CountryCodePicker
-                android:id="@+id/ccp_phone"
+            <com.rilixtech.widget.countrycodepicker.CountryCodePicker
+                android:id="@+id/ccp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                app:arrowSize="@dimen/_20sdp"
-                app:contentColor="@color/black"
-                app:defaultNameCode="in"
-                app:excludedCountries="ad,ae"
-                app:fontFamily="@font/montserrat_medium"
-                app:showArrowDown="true"
-                app:showFlag="true"
-                app:showNameCode="false"
-                app:textSize="@dimen/_12ssp" />
+                android:backgroundTint="@color/royal_blue"
+                app:ccp_defaultCode="81"
+                app:ccp_hidePhoneCode="true" />
 
 
             <com.google.android.material.textfield.TextInputLayout
@@ -146,9 +139,9 @@
         android:weightSum="1">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/mb_back"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
             android:layout_width="48dp"
-            android:id="@+id/mb_back"
             android:layout_height="48dp"
             android:layout_weight="0"
             android:backgroundTint="@color/anti_flash_white"

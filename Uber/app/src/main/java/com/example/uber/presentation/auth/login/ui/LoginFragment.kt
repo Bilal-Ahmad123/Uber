@@ -1,5 +1,7 @@
 package com.example.uber.presentation.auth.login.ui
 import android.os.Bundle
+import android.transition.Fade
+import android.transition.Slide
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View

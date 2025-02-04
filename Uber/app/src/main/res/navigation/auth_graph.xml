@@ -11,6 +11,7 @@
         android:label="fragment_login"
         tools:layout="@layout/fragment_login">
         <action
+            app:enterAnim="@anim/nav_default_enter_anim"
             android:id="@+id/action_loginFragment_to_splash"
             app:destination="@id/splash" />
     </fragment>
@@ -44,9 +45,10 @@
         android:label="fragment_splash"
         tools:layout="@layout/fragment_splash">
         <action
+            app:exitAnim="@anim/slide_in_left"
             android:id="@+id/action_splash_to_registerDetailsFragment"
             app:destination="@id/registerDetailsFragment"
-            app:exitAnim="@anim/fade_in" />
+            />
     </fragment>
     <fragment
         android:id="@+id/getStarted"

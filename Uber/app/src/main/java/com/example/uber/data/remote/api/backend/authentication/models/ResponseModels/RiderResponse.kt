@@ -2,4 +2,4 @@ package com.example.uber.data.remote.api.backend.authentication.models.ResponseM
 
 import java.util.UUID
 
-data class RiderResponse(val guid: UUID);
+data class RiderResponse(val id: UUID);

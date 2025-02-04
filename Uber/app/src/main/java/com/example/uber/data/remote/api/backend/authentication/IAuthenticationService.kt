@@ -1,5 +1,6 @@
 package com.example.uber.data.remote.api.backend.authentication
 
+import com.example.uber.data.remote.api.backend.authentication.models.RequestModels.RiderDetailsRequest
 import com.example.uber.data.remote.api.backend.authentication.models.RequestModels.RiderRequest
 import com.example.uber.data.remote.api.backend.authentication.models.ResponseModels.CheckRiderExistsResponse
 import com.example.uber.data.remote.api.backend.authentication.models.ResponseModels.RiderResponse
@@ -12,7 +13,7 @@ import retrofit2.http.Query
 interface IAuthenticationService {
     @POST("api/create/rider")
     suspend fun registerRider(
-        @Body rider: RiderRequest
+        @Body Rider: RiderDetailsRequest
     ):Response<RiderResponse>
 
     @GET("api/rider/exists")

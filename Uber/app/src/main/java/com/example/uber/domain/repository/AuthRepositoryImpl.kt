@@ -2,6 +2,7 @@ package com.example.uber.domain.repository
 
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.data.remote.api.backend.authentication.IAuthenticationService
+import com.example.uber.data.remote.api.backend.authentication.models.RequestModels.RiderDetailsRequest
 import com.example.uber.data.remote.api.backend.authentication.models.RequestModels.RiderRequest
 import com.example.uber.data.remote.api.backend.authentication.models.ResponseModels.CheckRiderExistsResponse
 import com.example.uber.data.remote.api.backend.authentication.models.ResponseModels.RiderResponse
@@ -43,7 +44,7 @@ class AuthRepositoryImpl(private val api: IAuthenticationService):IAuthRepositor
 
     override suspend fun registerRider(rider: RiderRequest):Response<RiderResponse> {
         return try{
-            api.registerRider(rider)
+            api.registerRider(RiderDetailsRequest(rider))
         }
         catch (e:Exception){
             Response.error(500,ResponseBody.create(null, "Network error: ${e.localizedMessage}"))

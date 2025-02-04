@@ -8,7 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
@@ -22,6 +24,8 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class splash : Fragment() {
@@ -31,10 +35,11 @@ class splash : Fragment() {
     private var signInRequest: BeginSignInRequest? = null
     private val RC_SIGN_IN = 2
     private lateinit var navController: NavController
-    private val _loginViewModel: LoginViewModel by viewModels()
+    private val _loginViewModel: LoginViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Thread.sleep(1000)
         FirebaseApp.initializeApp(requireContext())
         auth = FirebaseAuth.getInstance()
         val currentUser = auth?.currentUser
@@ -68,6 +73,12 @@ class splash : Fragment() {
         oneTapClient = null
         signInRequest = null
         super.onDestroyView()
+    }
+
+    private fun showSplashScreenForSomeTime(){
+       lifecycleScope.launch {
+           delay(10000)
+       }
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -140,6 +151,7 @@ class splash : Fragment() {
                         val data = resource.data
                         data?.let {
                             if (data.userExists) {
+                                Log.i("User Exesis",data.userExists.toString())
                                 startActivity(Intent(requireContext(), MainActivity::class.java))
                             } else {
                                 val bundle = Bundle()

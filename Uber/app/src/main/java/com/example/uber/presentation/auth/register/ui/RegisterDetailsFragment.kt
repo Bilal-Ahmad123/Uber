@@ -28,6 +28,8 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
     private lateinit var navController: NavController
     private lateinit var button: MaterialButton
     private var _bottomSheet: GenericBottomSheet? = null
+    private lateinit var noButton: MaterialButton
+    private var country: String? = null
 
     @NotEmpty(message = "First Name is required")
     private lateinit var _etFirstName: TextInputLayout
@@ -73,6 +75,7 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
         lastNameEditTextListener()
         contactNoEditTextListener()
         backBtnClickListener()
+        setCountryPickerChangeListener()
     }
 
     private fun populateNameFields() {
@@ -83,7 +86,10 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
     }
 
     override fun onValidationSucceeded() {
-        navController.navigate(R.id.action_registerDetailsFragment_to_termsAndReviewFragment)
+        val bundle = Bundle()
+        bundle.putString("contactNo", _binding?.etContatcNo?.editText?.text.toString())
+        bundle.putString("country",country)
+        navController.navigate(R.id.action_registerDetailsFragment_to_termsAndReviewFragment,bundle)
     }
 
     override fun onValidationFailed(errors: MutableList<ValidationError>?) {
@@ -154,7 +160,9 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
             val customView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.bottom_sheet_start_over_content, null)
             button = customView.findViewById<MaterialButton>(R.id.mb_yes)
+            noButton = customView.findViewById<MaterialButton>(R.id.mb_no)
             yesBtnClickListener()
+            noBtnClickListener()
             _bottomSheet = GenericBottomSheet.newInstance(customView)
             _bottomSheet?.show(parentFragmentManager, _bottomSheet?.tag)
         }
@@ -166,5 +174,18 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
             navController.navigate(R.id.action_registerDetailsFragment_to_getStarted)
         }
     }
+
+    private fun noBtnClickListener(){
+        noButton.setOnClickListener {
+            _bottomSheet?.dismiss()
+        }
+    }
+
+    private fun setCountryPickerChangeListener(){
+        _binding?.ccp?.setOnCountryChangeListener {
+            country = it.name
+        }
+    }
+
 
 }
