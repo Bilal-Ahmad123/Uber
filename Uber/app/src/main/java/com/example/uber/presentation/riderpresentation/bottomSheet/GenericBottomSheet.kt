@@ -1,13 +1,11 @@
-package com.example.uber.presentation.bottomSheet
+package com.example.uber.presentation.riderpresentation.bottomSheet
 
 import android.app.Dialog
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.GridView
 import com.example.uber.R
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog

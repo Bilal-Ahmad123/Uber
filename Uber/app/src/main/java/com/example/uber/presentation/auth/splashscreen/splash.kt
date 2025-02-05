@@ -9,13 +9,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.core.common.Resource
-import com.example.uber.presentation.MainActivity
+import com.example.uber.presentation.riderpresentation.MainActivity
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
@@ -24,8 +22,6 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class splash : Fragment() {
@@ -39,7 +35,9 @@ class splash : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Thread.sleep(1000)
+    }
+
+    private fun startIdentityIntent(){
         FirebaseApp.initializeApp(requireContext())
         auth = FirebaseAuth.getInstance()
         val currentUser = auth?.currentUser
@@ -75,14 +73,10 @@ class splash : Fragment() {
         super.onDestroyView()
     }
 
-    private fun showSplashScreenForSomeTime(){
-       lifecycleScope.launch {
-           delay(10000)
-       }
-    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = findNavController()
+        startIdentityIntent()
         signInWithOneTap()
         observeUserLogin()
         observerUserExistsStatus()

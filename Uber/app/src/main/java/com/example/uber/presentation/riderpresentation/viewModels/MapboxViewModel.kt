@@ -1,4 +1,4 @@
-package com.example.uber.presentation.viewModels
+package com.example.uber.presentation.riderpresentation.viewModels
 
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
@@ -14,7 +14,6 @@ import com.example.uber.domain.use_case.geocoding.LocationUseCase
 import com.example.uber.domain.use_case.geocoding.MapboxUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.async
 import retrofit2.Response
 import javax.inject.Inject
 

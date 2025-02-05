@@ -1,13 +1,12 @@
 package com.example.uber.presentation.auth.register.ui
 
+import android.content.Intent
 import android.os.Bundle
-import android.transition.Fade
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.CheckBox
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -18,14 +17,15 @@ import com.example.uber.data.remote.api.backend.authentication.models.RequestMod
 import com.example.uber.databinding.FragmentTermsAndReviewBinding
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.example.uber.presentation.auth.register.viewmodels.RegisterViewModel
-import com.example.uber.presentation.bottomSheet.GenericBottomSheet
+import com.example.uber.presentation.riderpresentation.MainActivity
+import com.example.uber.presentation.riderpresentation.bottomSheet.GenericBottomSheet
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 @AndroidEntryPoint
 class TermsAndReviewFragment : Fragment() {
@@ -138,8 +138,11 @@ class TermsAndReviewFragment : Fragment() {
         with(_registerViewModel){
             rider.observe(viewLifecycleOwner){
                 if(it.data != null){
-                    hideProgressBar()
-                    navController.navigate(R.id.action_termsAndReviewFragment_to_splash)
+                    val intent = Intent(
+                        requireContext(),
+                        MainActivity::class.java
+                    )
+                    startActivity(intent)
                 }
             }
         }

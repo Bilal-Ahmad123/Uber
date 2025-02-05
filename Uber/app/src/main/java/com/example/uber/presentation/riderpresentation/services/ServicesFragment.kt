@@ -1,4 +1,4 @@
-package com.example.uber.presentation.services
+package com.example.uber.presentation.riderpresentation.services
 
 import android.os.Bundle
 import android.view.LayoutInflater

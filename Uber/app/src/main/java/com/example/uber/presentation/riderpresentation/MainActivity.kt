@@ -1,4 +1,4 @@
-package com.example.uber.presentation
+package com.example.uber.presentation.riderpresentation
 
 import android.content.Intent
 import android.content.IntentFilter
@@ -6,15 +6,11 @@ import android.content.res.Configuration
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -91,6 +87,9 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.pickUpMapFragment -> {
+                    binding.bottomNavigationView.visibility = View.GONE
+                }
+                R.id.blankSplash ->{
                     binding.bottomNavigationView.visibility = View.GONE
                 }
 

@@ -1,4 +1,4 @@
-package com.example.uber.presentation.viewModels
+package com.example.uber.presentation.riderpresentation.viewModels
 
 import android.util.Log
 import androidx.lifecycle.LiveData

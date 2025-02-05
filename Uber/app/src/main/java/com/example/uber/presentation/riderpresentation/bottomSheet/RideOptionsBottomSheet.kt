@@ -1,10 +1,8 @@
-package com.example.uber.presentation.bottomSheet
+package com.example.uber.presentation.riderpresentation.bottomSheet
 
-import android.app.Activity
 import android.content.Context
 import android.view.View
 import com.example.uber.R
-import com.example.uber.presentation.map.RouteCreationHelper
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
@@ -17,8 +15,8 @@ class RideOptionsBottomSheet private constructor(
 
     companion object{
         @Volatile
-        private var instance:RideOptionsBottomSheet? = null
-        fun initialize( view: View,context: Context):RideOptionsBottomSheet?{
+        private var instance: RideOptionsBottomSheet? = null
+        fun initialize( view: View,context: Context): RideOptionsBottomSheet?{
             if(instance == null){
                 synchronized(this){
                     if(instance == null){
@@ -29,7 +27,7 @@ class RideOptionsBottomSheet private constructor(
             return instance
         }
 
-        fun getInstance():RideOptionsBottomSheet?{
+        fun getInstance(): RideOptionsBottomSheet?{
             return instance
         }
 

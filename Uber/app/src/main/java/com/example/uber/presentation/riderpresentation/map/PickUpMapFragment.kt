@@ -1,11 +1,10 @@
-package com.example.uber.presentation.map
+package com.example.uber.presentation.riderpresentation.map
 
 
 import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -14,13 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.amalbit.trail.Route
-import com.amalbit.trail.RouteOverlayView.RouteType
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
@@ -30,11 +26,11 @@ import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
-import com.example.uber.presentation.bottomSheet.BottomSheetManager
-import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
-import com.example.uber.presentation.viewModels.GoogleViewModel
-import com.example.uber.presentation.viewModels.MapboxViewModel
-import com.example.uber.presentation.viewModels.SocketViewModel
+import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
+import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
+import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.MapboxViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -46,7 +42,6 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference

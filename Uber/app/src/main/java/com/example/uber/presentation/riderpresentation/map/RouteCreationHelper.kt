@@ -1,4 +1,4 @@
-package com.example.uber.presentation.map
+package com.example.uber.presentation.riderpresentation.map
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -17,9 +17,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.example.uber.R
 import com.example.uber.core.enums.Markers
-import com.example.uber.presentation.bottomSheet.BottomSheetManager
-import com.example.uber.presentation.bottomSheet.RideOptionsBottomSheet
-import com.example.uber.presentation.viewModels.GoogleViewModel
+import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
+import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
+import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener

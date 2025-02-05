@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/my_nav"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/blankSplash">
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.uber.presentation.home.HomeFragment"
+        android:name="com.example.uber.presentation.riderpresentation.home.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
@@ -19,7 +19,7 @@
     </fragment>
     <fragment
         android:id="@+id/servicesFragment"
-        android:name="com.example.uber.presentation.services.ServicesFragment"
+        android:name="com.example.uber.presentation.riderpresentation.services.ServicesFragment"
         android:label="fragment_services"
         tools:layout="@layout/fragment_services" >
         <action
@@ -42,16 +42,19 @@
         tools:layout="@layout/fragment_account" />
     <fragment
         android:id="@+id/pickUpMapFragment"
-        android:name="com.example.uber.presentation.map.PickUpMapFragment"
+        android:name="com.example.uber.presentation.riderpresentation.map.PickUpMapFragment"
         android:label="fragment_pick_up_map"
         tools:layout="@layout/fragment_pick_up_map" >
-        <action
-            android:id="@+id/action_pickUpMapFragment_to_fullscreenFragment"
-            app:destination="@id/fullscreenFragment" />
+
     </fragment>
     <fragment
-        android:id="@+id/fullscreenFragment"
-        android:name="com.example.uber.ui.fragments.FullscreenFragment"
-        android:label="fragment_fullscreen"
-        tools:layout="@layout/fragment_fullscreen" />
+        android:id="@+id/blankSplash"
+        android:name="com.example.uber.presentation.riderpresentation.splash.BlankSplash"
+        android:label="fragment_blank_splash"
+        tools:layout="@layout/fragment_blank_splash" >
+        <action
+            app:exitAnim="@anim/slide_out"
+            android:id="@+id/action_blankSplash_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
 </navigation>

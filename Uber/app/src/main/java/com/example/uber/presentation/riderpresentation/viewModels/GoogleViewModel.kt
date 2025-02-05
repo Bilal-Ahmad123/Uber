@@ -1,4 +1,4 @@
-package com.example.uber.presentation.viewModels
+package com.example.uber.presentation.riderpresentation.viewModels
 
 import android.content.Context
 import android.util.Log
@@ -12,8 +12,6 @@ import com.example.uber.data.remote.models.google.SuggetionsResponse.Suggestions
 import com.example.uber.data.remote.models.google.directionsResponse.DirectionsResponse
 import com.example.uber.data.remote.models.google.geoCodeResponse.GeoCodingGoogleMapsResponse
 import com.example.uber.data.remote.models.google.placeDetails.PlaceDetails
-import com.example.uber.data.remote.models.mapbox.RetrieveSuggestedPlaceDetail.RetrieveSuggestResponse
-import com.example.uber.data.remote.models.mapbox.SuggestionResponse.SuggestionResponse
 import com.example.uber.domain.use_case.geocoding.GoogleUseCase
 import com.example.uber.domain.use_case.geocoding.LocationUseCase
 import com.google.android.gms.maps.model.LatLng

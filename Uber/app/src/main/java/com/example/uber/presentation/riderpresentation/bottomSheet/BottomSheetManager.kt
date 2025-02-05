@@ -1,10 +1,8 @@
-package com.example.uber.presentation.bottomSheet
+package com.example.uber.presentation.riderpresentation.bottomSheet
 
 import android.app.Activity
 import android.content.Context
-import android.text.Editable
 import android.text.Selection
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -12,7 +10,6 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,11 +22,9 @@ import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.data.remote.models.google.SuggetionsResponse.Prediction
 import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
-import com.example.uber.data.remote.models.mapbox.SuggestionResponse.Suggestion
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.animation.AnimationManager
-import com.example.uber.presentation.viewModels.GoogleViewModel
-import com.example.uber.presentation.viewModels.MapboxViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.Places
@@ -41,7 +36,6 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
-import kotlinx.coroutines.runBlocking
 import rx.android.schedulers.AndroidSchedulers
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingHorizontal="@dimen/_10sdp"
-    tools:context=".presentation.home.HomeFragment">
+    tools:context=".presentation.riderpresentation.home.HomeFragment">
 
     <!-- TODO: Update blank fragment layout -->
 <LinearLayout

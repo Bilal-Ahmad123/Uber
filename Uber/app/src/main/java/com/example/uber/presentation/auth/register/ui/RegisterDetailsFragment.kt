@@ -6,7 +6,6 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -14,7 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.databinding.FragmentRegisterDetailsBinding
 import com.example.uber.presentation.auth.validation.TextInputLayoutAdapter
-import com.example.uber.presentation.bottomSheet.GenericBottomSheet
+import com.example.uber.presentation.riderpresentation.bottomSheet.GenericBottomSheet
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 import com.mobsandgeeks.saripaar.ValidationError
@@ -29,16 +28,17 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
     private lateinit var button: MaterialButton
     private var _bottomSheet: GenericBottomSheet? = null
     private lateinit var noButton: MaterialButton
-    private var country: String? = null
+    private var country: String? = "Pakistan"
+
 
     @NotEmpty(message = "First Name is required")
-    private lateinit var _etFirstName: TextInputLayout
+    private var _etFirstName: TextInputLayout? = null
 
     @NotEmpty(message = "Last Name is required")
-    private lateinit var _etLastName: TextInputLayout
+    private var _etLastName: TextInputLayout? = null
 
     @NotEmpty(message = "Contact no is required")
-    private lateinit var _etContactNo: TextInputLayout
+    private  var _etContactNo: TextInputLayout ? = null
     private var validator: Validator? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +50,12 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
         validator = null
         _binding = null
         _bottomSheet = null
+        _etFirstName = null
+        _etLastName = null
+        _etContactNo = null
+        _etFirstName?.editText?.removeTextChangedListener(firstNameTextWatcher)
+        _etLastName?.editText?.removeTextChangedListener(lastNameTextWatcher)
+        _etContactNo?.editText?.removeTextChangedListener(contactNoTextWatcher)
     }
 
     override fun onCreateView(
@@ -71,11 +77,15 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
         validator?.setValidationListener(this);
         populateNameFields()
         setNextButtonClickListener()
-        firstNameEditTextListener()
-        lastNameEditTextListener()
-        contactNoEditTextListener()
         backBtnClickListener()
         setCountryPickerChangeListener()
+        addTextWatchers()
+    }
+
+    private fun addTextWatchers(){
+        _binding?.etFirstName?.editText?.addTextChangedListener(firstNameTextWatcher)
+        _binding?.etLastName?.editText?.addTextChangedListener(lastNameTextWatcher)
+        _binding?.etContatcNo?.editText?.addTextChangedListener(contactNoTextWatcher)
     }
 
     private fun populateNameFields() {
@@ -110,49 +120,28 @@ class RegisterDetailsFragment : Fragment(), ValidationListener {
         }
     }
 
-    private fun firstNameEditTextListener() {
-        _binding?.etFirstName?.editText?.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                _binding?.etFirstName?.error = null
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-            }
-
-        })
+    private val firstNameTextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            _binding?.etFirstName?.error = null
+        }
+        override fun afterTextChanged(s: Editable?) {}
     }
 
-    private fun lastNameEditTextListener() {
-        _binding?.etLastName?.editText?.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                _binding?.etLastName?.error = null
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-            }
-
-        })
+    private val lastNameTextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            _binding?.etLastName?.error = null
+        }
+        override fun afterTextChanged(s: Editable?) {}
     }
 
-    private fun contactNoEditTextListener() {
-        _binding?.etContatcNo?.editText?.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                _binding?.etContatcNo?.error = null
-            }
-
-            override fun afterTextChanged(p0: Editable?) {
-            }
-
-        })
+    private val contactNoTextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            _binding?.etContatcNo?.error = null
+        }
+        override fun afterTextChanged(s: Editable?) {}
     }
 
     private fun backBtnClickListener() {

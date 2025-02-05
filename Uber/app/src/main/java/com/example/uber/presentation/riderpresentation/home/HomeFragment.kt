@@ -1,4 +1,4 @@
-package com.example.uber.presentation.home
+package com.example.uber.presentation.riderpresentation.home
 
 import android.content.Context
 import android.os.Bundle
