@@ -19,6 +19,7 @@ import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.example.uber.presentation.auth.register.viewmodels.RegisterViewModel
 import com.example.uber.presentation.riderpresentation.MainActivity
 import com.example.uber.presentation.riderpresentation.bottomSheet.GenericBottomSheet
+import com.example.uber.presentation.splash.SplashActivity
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -140,9 +141,10 @@ class TermsAndReviewFragment : Fragment() {
                 if(it.data != null){
                     val intent = Intent(
                         requireContext(),
-                        MainActivity::class.java
+                        SplashActivity::class.java
                     )
                     startActivity(intent)
+                    requireActivity().finish()
                 }
             }
         }

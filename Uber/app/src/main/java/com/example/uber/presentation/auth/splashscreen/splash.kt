@@ -15,6 +15,7 @@ import com.example.uber.R
 import com.example.uber.core.common.Resource
 import com.example.uber.presentation.riderpresentation.MainActivity
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
+import com.example.uber.presentation.splash.SplashActivity
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -39,13 +40,6 @@ class splash : Fragment() {
 
     private fun startIdentityIntent(){
         FirebaseApp.initializeApp(requireContext())
-        auth = FirebaseAuth.getInstance()
-        val currentUser = auth?.currentUser
-        if (currentUser != null) {
-            val intent = Intent(requireContext(), MainActivity::class.java)
-            startActivity(intent)
-            requireActivity().finish()
-        }
         oneTapClient = Identity.getSignInClient(requireContext())
         signInRequest = BeginSignInRequest.builder()
             .setGoogleIdTokenRequestOptions(
@@ -145,8 +139,8 @@ class splash : Fragment() {
                         val data = resource.data
                         data?.let {
                             if (data.userExists) {
-                                Log.i("User Exesis",data.userExists.toString())
-                                startActivity(Intent(requireContext(), MainActivity::class.java))
+                                startActivity(Intent(requireContext(), SplashActivity::class.java))
+                                requireActivity().finish()
                             } else {
                                 val bundle = Bundle()
                                 bundle.putString("displayName",_loginViewModel.user.value?.data?.displayName)

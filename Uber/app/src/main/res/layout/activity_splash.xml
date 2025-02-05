@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".presentation.riderpresentation.splash.BlankSplash">
+    android:id="@+id/splash_activity"
+    tools:context=".presentation.splash.SplashActivity">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,6 +13,6 @@
         android:textColor="@color/white"
         android:textSize="@dimen/_70ssp"
         android:layout_gravity="center"
+        android:fontFamily="@font/custom_font"
         android:text="Uber" />
-
 </FrameLayout>

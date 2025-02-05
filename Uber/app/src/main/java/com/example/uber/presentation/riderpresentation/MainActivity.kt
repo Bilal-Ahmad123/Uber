@@ -89,9 +89,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.pickUpMapFragment -> {
                     binding.bottomNavigationView.visibility = View.GONE
                 }
-                R.id.blankSplash ->{
-                    binding.bottomNavigationView.visibility = View.GONE
-                }
 
                 else -> binding.bottomNavigationView.visibility = View.VISIBLE
             }
