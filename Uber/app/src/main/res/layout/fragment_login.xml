@@ -7,8 +7,6 @@
     android:orientation="vertical"
     android:paddingHorizontal="@dimen/_10sdp"
     tools:context=".presentation.auth.login.ui.LoginFragment">
-
-    <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

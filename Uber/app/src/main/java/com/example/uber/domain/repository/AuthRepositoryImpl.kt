@@ -35,7 +35,7 @@ class AuthRepositoryImpl(private val api: IAuthenticationService):IAuthRepositor
 
     override suspend fun checkIfUserExists(email:String): Response<CheckRiderExistsResponse> {
         return try {
-           api.checkUserExists(email)
+           api.checkUserExists(email).body().toDomain()
         }catch (e:Exception){
             Response.error(500,ResponseBody.create(null, "Network error: ${e.localizedMessage}"))
         }

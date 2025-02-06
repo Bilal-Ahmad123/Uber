@@ -17,7 +17,6 @@ import com.example.uber.data.remote.api.backend.authentication.models.RequestMod
 import com.example.uber.databinding.FragmentTermsAndReviewBinding
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.example.uber.presentation.auth.register.viewmodels.RegisterViewModel
-import com.example.uber.presentation.riderpresentation.MainActivity
 import com.example.uber.presentation.riderpresentation.bottomSheet.GenericBottomSheet
 import com.example.uber.presentation.splash.SplashActivity
 import com.google.android.material.button.MaterialButton
@@ -107,38 +106,37 @@ class TermsAndReviewFragment : Fragment() {
         }
     }
 
-    private fun noBtnClickListener(){
+    private fun noBtnClickListener() {
         noButton.setOnClickListener {
             _bottomSheet?.dismiss()
         }
     }
 
-    private fun nextBtnClickListener(){
+    private fun nextBtnClickListener() {
         _binding?.filledTonalButton?.setOnClickListener {
             createRider()
         }
     }
 
-    private fun createRider(){
+    private fun createRider() {
         showProgressBar()
         _registerViewModel.createRider(createRiderRequestObject())
     }
 
-    private fun showProgressBar(){
+    private fun showProgressBar() {
         _binding?.progressBarCyclic?.visibility = View.VISIBLE
         _binding?.rlMain?.visibility = View.GONE
     }
 
-    private fun hideProgressBar(){
+    private fun hideProgressBar() {
         _binding?.progressBarCyclic?.visibility = View.GONE
     }
 
 
-
-    private fun observerCreateRiderResponse(){
-        with(_registerViewModel){
-            rider.observe(viewLifecycleOwner){
-                if(it.data != null){
+    private fun observerCreateRiderResponse() {
+        with(_registerViewModel) {
+            rider.observe(viewLifecycleOwner) {
+                if (it.data != null) {
                     val intent = Intent(
                         requireContext(),
                         SplashActivity::class.java
@@ -150,13 +148,11 @@ class TermsAndReviewFragment : Fragment() {
         }
     }
 
-    private fun createRiderRequestObject():RiderRequest{
+    private fun createRiderRequestObject(): RiderRequest {
         val contactNo = arguments?.getString("contactNo")
         val country = arguments?.getString("country")
         val user = _loginViewModel.user.value?.data
-        val (firstName,lastName) = user?.displayName?.split(" ")!!
-        return RiderRequest(user.email!!, firstName,lastName,country!!,contactNo!!)
+        val (firstName, lastName) = user?.displayName?.split(" ")!!
+        return RiderRequest(user.email!!, firstName, lastName, country!!, contactNo!!)
     }
-
-
 }
