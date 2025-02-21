@@ -96,21 +96,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             requestLocationPermission()
             getInitialPickUpLocation()
         }
-//        connectToSocket()
-//        sendContinuousLocationUpdates()
     }
 
-    private fun sendContinuousLocationUpdates(){
-        lifecycleScope.launch {
-            FetchLocation.getLocationUpdates(requireContext()).collect {
-                socketViewModel.sendMessage(com.example.uber.data.local.models.Location(it.latitude,it.longitude))
-            }
-        }
-    }
-
-    private fun connectToSocket(){
-        socketViewModel.connectToSocket("ws://192.168.18.65:5000/LocationHub")
-    }
 
     private fun setUpGoogleMap() {
         mapFrag =

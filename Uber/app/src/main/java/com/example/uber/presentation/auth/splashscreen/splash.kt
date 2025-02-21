@@ -13,7 +13,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.core.common.Resource
-import com.example.uber.presentation.riderpresentation.MainActivity
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.example.uber.presentation.splash.SplashActivity
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
@@ -38,7 +37,7 @@ class splash : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
-    private fun startIdentityIntent(){
+    private fun startIdentityIntent() {
         FirebaseApp.initializeApp(requireContext())
         oneTapClient = Identity.getSignInClient(requireContext())
         signInRequest = BeginSignInRequest.builder()
@@ -138,18 +137,26 @@ class splash : Fragment() {
                     is Resource.Success -> {
                         val data = resource.data
                         data?.let {
-                            if (data.userExists) {
+                            if (data.riderExists) {
                                 startActivity(Intent(requireContext(), SplashActivity::class.java))
                                 requireActivity().finish()
                             } else {
                                 val bundle = Bundle()
-                                bundle.putString("displayName",_loginViewModel.user.value?.data?.displayName)
-                                navController.navigate(R.id.action_splash_to_registerDetailsFragment,bundle)
+                                if (navController.currentDestination?.id == R.id.splash) {
+                                    bundle.putString(
+                                        "displayName",
+                                        _loginViewModel.user.value?.data?.displayName
+                                    )
+                                    navController.navigate(
+                                        R.id.action_splash_to_registerDetailsFragment,
+                                        bundle
+                                    )
+                                }
                             }
                         }
                     }
-                    else -> {
-                    }
+
+                    else -> Unit
                 }
             }
         }

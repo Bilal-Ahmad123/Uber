@@ -1,6 +1,6 @@
 package com.example.uber.domain.use_case.auth
 
-import com.example.uber.data.repository.IAuthRepository
+import com.example.uber.data.remote.api.backend.authentication.repository.IAuthRepository
 import com.google.android.gms.auth.api.identity.SignInCredential
 import com.google.firebase.auth.FirebaseUser
 import javax.inject.Inject

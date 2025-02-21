@@ -1,4 +1,4 @@
-package com.example.uber.presentation.account
+package com.example.uber.presentation.riderpresentation.activity
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,11 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.uber.R
 
-class AccountFragment : Fragment() {
+class ActivityFragment : Fragment() {
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
     }
 
     override fun onCreateView(
@@ -19,6 +19,6 @@ class AccountFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_account, container, false)
+        return inflater.inflate(R.layout.fragment_activity, container, false)
     }
 }

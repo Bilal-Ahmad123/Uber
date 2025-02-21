@@ -99,6 +99,7 @@ object FetchLocation {
                 }.addOnFailureListener { exception ->
                     exception.printStackTrace()
 
+
                 }
             } catch (it: Exception) {
             }
@@ -136,12 +137,10 @@ object FetchLocation {
             setFastestInterval(5000)
             setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
         }
-        checkLocationPermission(context) {
             fusedLocationClient?.requestLocationUpdates(
                 continuousLocation,
                 locationCallback2!!, Looper.getMainLooper()
             )
-        }
 
     }
 
@@ -151,6 +150,7 @@ object FetchLocation {
                 trySend(locationResult.lastLocation!!)
             }
         }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         getContinuousLocation(context)
         awaitClose {
             fusedLocationClient?.removeLocationUpdates(locationCallback2!!)

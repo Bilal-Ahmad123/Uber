@@ -1,8 +1,8 @@
 package com.example.uber.di.Network
 
 import com.example.uber.core.common.Constants_API
-import com.example.uber.data.remote.api.backend.authentication.IAuthenticationService
-import com.example.uber.data.repository.IAuthRepository
+import com.example.uber.data.remote.api.backend.authentication.api.IAuthenticationService
+import com.example.uber.data.remote.api.backend.authentication.repository.IAuthRepository
 import com.example.uber.domain.repository.AuthRepositoryImpl
 import dagger.Module
 import dagger.Provides
@@ -17,13 +17,13 @@ import javax.inject.Singleton
 class AuthModule {
     @Provides
     @Singleton
-    fun provideAuthRepositoryImpl(api:IAuthenticationService): IAuthRepository {
+    fun provideAuthRepositoryImpl(api: IAuthenticationService): IAuthRepository {
         return AuthRepositoryImpl(api)
     }
 
     @Provides
     @Singleton
-    fun provideAuthApiService():IAuthenticationService{
+    fun provideAuthApiService(): IAuthenticationService {
         return Retrofit.Builder().baseUrl(Constants_API.BACKEND_API)
             .addConverterFactory(GsonConverterFactory.create()).build()
             .create(IAuthenticationService::class.java)

@@ -4,8 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.common.Resource
-import com.example.uber.data.remote.api.backend.authentication.models.RequestModels.RiderRequest
-import com.example.uber.data.remote.api.backend.authentication.models.ResponseModels.RiderResponse
+import com.example.uber.data.remote.api.backend.authentication.models.requestModels.RiderRequest
+import com.example.uber.data.remote.api.backend.authentication.models.responseModels.RiderResponse
 import com.example.uber.domain.use_case.auth.CreateRiderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import retrofit2.Response

@@ -13,7 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
-import com.example.uber.data.remote.api.backend.authentication.models.RequestModels.RiderRequest
+import com.example.uber.data.remote.api.backend.authentication.models.requestModels.RiderRequest
 import com.example.uber.databinding.FragmentTermsAndReviewBinding
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.example.uber.presentation.auth.register.viewmodels.RegisterViewModel

@@ -4,7 +4,8 @@ import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.common.Resource
-import com.example.uber.data.remote.api.backend.authentication.models.ResponseModels.CheckRiderExistsResponse
+import com.example.uber.data.remote.api.backend.authentication.models.responseModels.CheckRiderExistsResponse
+import com.example.uber.domain.remote.authentication.model.response.CheckRiderExists
 import com.example.uber.domain.use_case.auth.CheckIfUserExistsUseCase
 import com.example.uber.domain.use_case.auth.SignInUseCase
 import com.google.android.gms.auth.api.identity.SignInCredential
@@ -21,7 +22,7 @@ class LoginViewModel @Inject constructor(
 ) : BaseViewModel(dispatcher) {
     private val _user = MutableLiveData<Resource<FirebaseUser>>()
     val user get() = _user
-    private val _userExists = MutableLiveData<Resource<CheckRiderExistsResponse>>()
+    private val _userExists = MutableLiveData<Resource<CheckRiderExists>>()
     val userExists get() = _userExists
     fun signIn(task: SignInCredential) {
         launchOnBack {

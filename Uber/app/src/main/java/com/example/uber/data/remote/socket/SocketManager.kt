@@ -1,17 +1,11 @@
 package com.example.uber.data.remote.socket
 
 import android.util.Log
-import com.example.uber.data.local.entities.Location
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
-import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okio.ByteString
 import javax.inject.Inject
 
 class SocketManager @Inject constructor() {
@@ -30,8 +24,8 @@ class SocketManager @Inject constructor() {
         }
     }
     fun send(location: com.example.uber.data.local.models.Location){
-        kotlin.runCatching {
-            hubConnection.send("SendMessage", location)
+        runCatching {
+            hubConnection.send("UpdateLocation", location)
         }.onFailure {
             Log.d("SocketManager", "Error sending message: ${it.message}")
         }
