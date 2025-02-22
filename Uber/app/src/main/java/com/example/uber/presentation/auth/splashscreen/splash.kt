@@ -9,12 +9,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.core.common.Resource
+import com.example.uber.domain.local.rider.model.Rider
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.example.uber.presentation.splash.SplashActivity
+import com.example.uber.presentation.splash.viewmodel.RiderRoomViewModel
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.identity.SignInClient
@@ -22,6 +25,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.UUID
 
 @AndroidEntryPoint
 class splash : Fragment() {
@@ -32,6 +36,7 @@ class splash : Fragment() {
     private val RC_SIGN_IN = 2
     private lateinit var navController: NavController
     private val _loginViewModel: LoginViewModel by activityViewModels()
+    private val riderRoomViewModel: RiderRoomViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,7 +142,8 @@ class splash : Fragment() {
                     is Resource.Success -> {
                         val data = resource.data
                         data?.let {
-                            if (data.riderExists) {
+                            if (it.riderId != UUID(0,0) && it.riderId != null) {
+                                riderRoomViewModel.insertRider(Rider(it.riderId))
                                 startActivity(Intent(requireContext(), SplashActivity::class.java))
                                 requireActivity().finish()
                             } else {

@@ -20,8 +20,8 @@ import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.utils.system.SystemInfo
-import com.example.uber.data.remote.models.google.SuggetionsResponse.Prediction
-import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
+import com.example.uber.data.remote.api.googleMaps.models.SuggetionsResponse.Prediction
+import com.example.uber.data.remote.api.mapBox.models.SuggestionResponse.PlaceDetail
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.animation.AnimationManager
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel

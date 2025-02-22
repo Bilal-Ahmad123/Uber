@@ -4,10 +4,9 @@ import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.common.Resource
-import com.example.uber.data.remote.api.backend.authentication.models.responseModels.CheckRiderExistsResponse
 import com.example.uber.domain.remote.authentication.model.response.CheckRiderExists
-import com.example.uber.domain.use_case.auth.CheckIfUserExistsUseCase
-import com.example.uber.domain.use_case.auth.SignInUseCase
+import com.example.uber.domain.remote.authentication.usecase.CheckIfUserExistsUseCase
+import com.example.uber.domain.remote.authentication.usecase.SignInUseCase
 import com.google.android.gms.auth.api.identity.SignInCredential
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel

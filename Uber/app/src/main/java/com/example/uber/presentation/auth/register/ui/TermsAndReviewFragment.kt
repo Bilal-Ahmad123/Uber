@@ -15,10 +15,12 @@ import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.data.remote.api.backend.authentication.models.requestModels.RiderRequest
 import com.example.uber.databinding.FragmentTermsAndReviewBinding
+import com.example.uber.domain.local.rider.model.Rider
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
 import com.example.uber.presentation.auth.register.viewmodels.RegisterViewModel
 import com.example.uber.presentation.riderpresentation.bottomSheet.GenericBottomSheet
 import com.example.uber.presentation.splash.SplashActivity
+import com.example.uber.presentation.splash.viewmodel.RiderRoomViewModel
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +39,7 @@ class TermsAndReviewFragment : Fragment() {
     private var _bottomSheet: GenericBottomSheet? = null
     private val _registerViewModel: RegisterViewModel by viewModels()
     private val _loginViewModel: LoginViewModel by activityViewModels<LoginViewModel>()
+    private val _driverRoomViewModel: RiderRoomViewModel by viewModels<RiderRoomViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,6 +140,7 @@ class TermsAndReviewFragment : Fragment() {
         with(_registerViewModel) {
             rider.observe(viewLifecycleOwner) {
                 if (it.data != null) {
+                    _driverRoomViewModel.insertRider(Rider(it.data.riderId))
                     val intent = Intent(
                         requireContext(),
                         SplashActivity::class.java

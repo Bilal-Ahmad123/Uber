@@ -1,3 +1,5 @@
 package com.example.uber.domain.remote.authentication.model.response
 
-data class CheckRiderExists(val riderExists:Boolean)
+import java.util.UUID
+
+data class CheckRiderExists(val riderId: UUID?)

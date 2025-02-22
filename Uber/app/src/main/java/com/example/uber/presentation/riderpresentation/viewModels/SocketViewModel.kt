@@ -5,10 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
-import com.example.uber.data.local.entities.Location
-import com.example.uber.domain.use_case.socket.ConnectSocketUseCase
-import com.example.uber.domain.use_case.socket.DisconnectSocketUseCase
-import com.example.uber.domain.use_case.socket.SendMessageUseCase
+import com.example.uber.data.local.location.models.Location
+import com.example.uber.domain.remote.location.usecase.ConnectSocketUseCase
+import com.example.uber.domain.remote.location.usecase.DisconnectSocketUseCase
+import com.example.uber.domain.remote.location.usecase.SendMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -38,7 +38,7 @@ class SocketViewModel @Inject constructor(
     fun disconnectFromSocket() {
         disconnectFromSocketUseCase()
     }
-    fun sendMessage(location:com.example.uber.data.local.models.Location) {
+    fun sendMessage(location: Location) {
         sendMessageUseCase(location)
     }
 }

@@ -475,7 +475,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         lifecycleScope.launch {
             async {
                 mapboxViewModel.saveCurrentLocationToDB(
-                    com.example.uber.data.local.entities.Location(
+                    com.example.uber.data.local.location.entities.Location(
                         location = LatLng(
                             currentLocation?.latitude!!,
                             currentLocation?.longitude!!

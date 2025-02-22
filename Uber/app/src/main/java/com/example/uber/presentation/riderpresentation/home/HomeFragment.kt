@@ -14,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.permissions.PermissionManagers
+import com.example.uber.data.local.location.models.Location
 import com.example.uber.databinding.FragmentHomeBinding
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,16 +58,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun sendContinuousLocationUpdates() {
-        Log.d("HomeFragment", "Location")
-       lifecycleScope.launch {
-            FetchLocation.getLocationUpdates(requireContext()).collectLatest {
-                Log.d("HomeFragment", "Location: $it")
-                socketViewModel.sendMessage(
-                    com.example.uber.data.local.models.Location(
-                        it.latitude,
-                        it.longitude
+        checkLocationPermission(null) {
+            lifecycleScope.launch {
+                FetchLocation.getLocationUpdates(requireContext()).collectLatest {
+                    Log.d("HomeFragment", "Location: $it")
+                    socketViewModel.sendMessage(
+                        Location(
+                            it.latitude,
+                            it.longitude
+                        )
                     )
-                )
+                }
             }
         }
     }

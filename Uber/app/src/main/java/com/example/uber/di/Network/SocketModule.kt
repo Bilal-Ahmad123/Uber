@@ -1,8 +1,8 @@
 package com.example.uber.di.Network
 
-import com.example.uber.data.remote.socket.SocketManager
-import com.example.uber.data.repository.ISocketRepository
-import com.example.uber.domain.repository.SocketRepositoryImpl
+import com.example.uber.data.remote.api.backend.rider.location.api.SocketManager
+import com.example.uber.data.remote.api.backend.rider.location.repository.SocketRepository
+import com.example.uber.domain.remote.location.repository.SocketRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,7 +14,7 @@ import javax.inject.Singleton
 class SocketModule {
     @Provides
     @Singleton
-    fun provideSocketRepositoryImpl(socketManager: SocketManager):ISocketRepository{
+    fun provideSocketRepositoryImpl(socketManager: SocketManager): SocketRepository {
         return SocketRepositoryImpl(socketManager)
     }
 }

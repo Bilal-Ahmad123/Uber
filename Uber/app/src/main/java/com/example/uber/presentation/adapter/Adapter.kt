@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.uber.data.remote.models.mapbox.SuggestionResponse.PlaceDetail
+import com.example.uber.data.remote.api.mapBox.models.SuggestionResponse.PlaceDetail
 import com.example.uber.databinding.ItemPlaceSuggestionBinding
 
 class PlaceSuggestionAdapter(

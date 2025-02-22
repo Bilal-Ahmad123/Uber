@@ -6,7 +6,7 @@ import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.common.Resource
 import com.example.uber.data.remote.api.backend.authentication.models.requestModels.RiderRequest
 import com.example.uber.data.remote.api.backend.authentication.models.responseModels.RiderResponse
-import com.example.uber.domain.use_case.auth.CreateRiderUseCase
+import com.example.uber.domain.remote.authentication.usecase.CreateRiderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import retrofit2.Response
 import javax.inject.Inject

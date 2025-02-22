@@ -4,5 +4,5 @@ import com.example.uber.data.remote.api.backend.authentication.models.responseMo
 import com.example.uber.domain.remote.authentication.model.response.CheckRiderExists
 
 fun CheckRiderExistsResponse.toDomain(): CheckRiderExists {
-    return CheckRiderExists(userExists)
+    return CheckRiderExists(riderId)
 }
