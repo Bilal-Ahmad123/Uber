@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.data.local.location.models.Location
+import com.example.uber.domain.remote.location.model.UpdateLocation
 import com.example.uber.domain.remote.location.usecase.ConnectSocketUseCase
 import com.example.uber.domain.remote.location.usecase.DisconnectSocketUseCase
 import com.example.uber.domain.remote.location.usecase.SendMessageUseCase
@@ -38,7 +39,7 @@ class SocketViewModel @Inject constructor(
     fun disconnectFromSocket() {
         disconnectFromSocketUseCase()
     }
-    fun sendMessage(location: Location) {
+    fun sendMessage(location: UpdateLocation) {
         sendMessageUseCase(location)
     }
 }

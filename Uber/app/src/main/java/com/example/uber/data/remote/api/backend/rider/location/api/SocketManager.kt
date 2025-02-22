@@ -2,6 +2,8 @@ package com.example.uber.data.remote.api.backend.rider.location.api
 
 import android.util.Log
 import com.example.uber.data.local.location.models.Location
+import com.example.uber.data.remote.api.backend.rider.location.mapper.toData
+import com.example.uber.domain.remote.location.model.UpdateLocation
 import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
 import okhttp3.OkHttpClient
@@ -24,9 +26,9 @@ class SocketManager @Inject constructor() {
             Log.d("SocketManager", "Error connecting to socket: ${it.message}")
         }
     }
-    fun send(location: Location){
+    fun send(location: UpdateLocation){
         runCatching {
-            hubConnection.send("UpdateLocation", location)
+            hubConnection.send("UpdateLocation", location.toData())
         }.onFailure {
             Log.d("SocketManager", "Error sending message: ${it.message}")
         }

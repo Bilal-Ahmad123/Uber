@@ -16,7 +16,9 @@ import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.data.local.location.models.Location
 import com.example.uber.databinding.FragmentHomeBinding
+import com.example.uber.domain.remote.location.model.UpdateLocation
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
+import com.example.uber.presentation.splash.viewmodel.RiderRoomViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -27,6 +29,7 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val socketViewModel: SocketViewModel by viewModels()
+    private val riderRoomViewModel: RiderRoomViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -43,6 +46,7 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        riderRoomViewModel.getRider()
         connectToSocket()
         sendContinuousLocationUpdates()
     }
@@ -62,12 +66,16 @@ class HomeFragment : Fragment() {
             lifecycleScope.launch {
                 FetchLocation.getLocationUpdates(requireContext()).collectLatest {
                     Log.d("HomeFragment", "Location: $it")
-                    socketViewModel.sendMessage(
-                        Location(
-                            it.latitude,
-                            it.longitude
+                    if(riderRoomViewModel.rider.value.data?.riderId != null){
+                        socketViewModel.sendMessage(
+                            UpdateLocation(
+                                riderRoomViewModel.rider.value.data!!.riderId,
+                                it.latitude,
+                                it.longitude
+                            )
                         )
-                    )
+                    }
+
                 }
             }
         }

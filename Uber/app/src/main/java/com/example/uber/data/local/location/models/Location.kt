@@ -1,3 +1,5 @@
 package com.example.uber.data.local.location.models
 
-data class Location(val latitude:Double, val longitude:Double)
+import java.util.UUID
+
+data class Location(val riderId:UUID,val latitude:Double, val longitude:Double)
