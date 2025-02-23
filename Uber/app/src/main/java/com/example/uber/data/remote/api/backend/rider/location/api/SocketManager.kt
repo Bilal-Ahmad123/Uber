@@ -29,7 +29,7 @@ class SocketManager @Inject constructor() {
             hubConnection = HubConnectionBuilder.create(url)
                 .withTransport(com.microsoft.signalr.TransportEnum.LONG_POLLING)
                 .build()
-            hubConnection.start().doOnComplete {
+            hubConnection.start().subscribe  {
                 observeDriverLocationUpdates()
             }
         }.onFailure {
@@ -51,10 +51,10 @@ class SocketManager @Inject constructor() {
                 Log.d("SocketManager", "Observing driver location updates")
                 hubConnection?.on(
                     "DriverLocationUpdate",
-                    { userId: UUID, longitude: Double, latitude: Double ->
+                    { userId: String, longitude: Double, latitude: Double ->
                         CoroutineScope(Dispatchers.IO).launch {
                             Log.d("SocketManager", "Driver location update received: $userId, $longitude, $latitude")
-                            driver.emit(UpdateDriverLocation(userId, longitude, latitude))
+                            driver.emit(UpdateDriverLocation(UUID.fromString(userId), longitude, latitude))
                         }
                     },
                     String::class.java,
