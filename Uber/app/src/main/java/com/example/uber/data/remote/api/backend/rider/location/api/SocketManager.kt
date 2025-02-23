@@ -29,9 +29,11 @@ class SocketManager @Inject constructor() {
             hubConnection = HubConnectionBuilder.create(url)
                 .withTransport(com.microsoft.signalr.TransportEnum.LONG_POLLING)
                 .build()
-            hubConnection.start().subscribe  {
+            hubConnection.start().subscribe({
                 observeDriverLocationUpdates()
-            }
+            }, { error ->
+                Log.e("SocketManager", "Error starting connection: ${error.message}", error)
+            })
         }.onFailure {
             Log.d("SocketManager", "Error connecting to socket: ${it.message}")
         }

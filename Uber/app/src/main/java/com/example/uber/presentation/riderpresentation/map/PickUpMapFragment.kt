@@ -15,6 +15,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.uber.R
@@ -22,10 +23,13 @@ import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.interfaces.utils.mode.CheckMode
+import com.example.uber.core.utils.BitMapCreator
 import com.example.uber.core.utils.FetchLocation
+import com.example.uber.core.utils.HRMarkerAnimation
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
+import com.example.uber.domain.local.location.model.DriverLocationMarker
 import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
@@ -39,12 +43,15 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import java.util.UUID
 import kotlin.math.abs
 
 
@@ -61,7 +68,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private lateinit var dropOffTextView: EditText
     private val mapboxViewModel: MapboxViewModel by viewModels()
     private val googleViewModel: GoogleViewModel by viewModels()
-    private val socketViewModel: SocketViewModel by viewModels()
+    private val socketViewModel: SocketViewModel by activityViewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = true
     private var routeHelper: RouteCreationHelper? = null
@@ -70,6 +77,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private lateinit var mapFrag: SupportMapFragment
     private lateinit var googleMap: GoogleMap
     private var currentLocation: Location? = null
+    private val drivers = mutableMapOf<UUID, DriverLocationMarker>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,6 +104,9 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             requestLocationPermission()
             getInitialPickUpLocation()
         }
+        socketViewModel.startObservingDriversLocation()
+        socketViewModel.observeDriversLocations()
+        observeDriverLocations()
     }
 
 
@@ -495,6 +506,61 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             dispatcher(true)
         } else {
             dispatcher(false)
+        }
+    }
+
+    fun latLngToLocation(latLng: LatLng): Location {
+        val location = Location("provider")
+        location.latitude = latLng.latitude
+        location.longitude = latLng.longitude
+        return location
+    }
+
+
+    private fun animateMarker(driverLocationObj: DriverLocationMarker) {
+        driverLocationObj.hrMarker.animateMarker(
+            driverLocationObj.mLastLocation,
+            driverLocationObj.oldLocation,
+            driverLocationObj.driverMarker
+        )
+    }
+
+    private fun observeDriverLocations() {
+        lifecycleScope.launch {
+            with(socketViewModel) {
+                driverLocation.collectLatest {
+                    if (!drivers.containsKey(it.driverId)) {
+                        val marker = googleMap?.addMarker(
+                            MarkerOptions().position(LatLng(it.latitude, it.longitude))
+                                .icon(
+                                    BitMapCreator.bitmapDescriptorFromVector(
+                                        R.drawable.ic_car,
+                                        requireContext()
+                                    )
+                                )
+                        )
+                        drivers.put(
+                            it.driverId,
+                            DriverLocationMarker(
+                                latLngToLocation(
+                                    LatLng(
+                                        it.latitude,
+                                        it.longitude
+                                    )
+                                ), latLngToLocation(LatLng(it.latitude, it.longitude)), marker!!,
+                                HRMarkerAnimation(
+                                    googleMap, 1000
+                                ) {}
+                            )
+                        )
+                    } else {
+                        val driverLocationObj = drivers.get(it.driverId)
+                        driverLocationObj?.mLastLocation =
+                            latLngToLocation(LatLng(it.latitude, it.longitude))
+                        animateMarker(driverLocationObj!!)
+                    }
+                }
+            }
         }
     }
 
