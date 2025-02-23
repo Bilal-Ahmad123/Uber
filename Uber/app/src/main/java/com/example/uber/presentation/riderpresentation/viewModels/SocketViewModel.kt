@@ -5,12 +5,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
-import com.example.uber.data.local.location.models.Location
+import com.example.uber.data.remote.api.backend.rider.location.mapper.UpdateDriverLocation
 import com.example.uber.domain.remote.location.model.UpdateLocation
 import com.example.uber.domain.remote.location.usecase.ConnectSocketUseCase
 import com.example.uber.domain.remote.location.usecase.DisconnectSocketUseCase
+import com.example.uber.domain.remote.location.usecase.ObserveDriverLocationUseCase
+import com.example.uber.domain.remote.location.usecase.StartObservingDriverLocationUseCase
 import com.example.uber.domain.remote.location.usecase.SendMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import javax.inject.Inject
@@ -20,11 +25,15 @@ class SocketViewModel @Inject constructor(
     private val connectToSocketUseCase: ConnectSocketUseCase,
     private val disconnectFromSocketUseCase: DisconnectSocketUseCase,
     private val sendMessageUseCase: SendMessageUseCase,
+    private val startObservingDriversLocationUseCase: StartObservingDriverLocationUseCase,
+    private val observeDriversLocationsUseCase: ObserveDriverLocationUseCase,
     private val dispatcher: IDispatchers,
 ) : BaseViewModel(dispatcher) {
     private val _messages = MutableLiveData<List<String>>()
     val messages: LiveData<List<String>> get() = _messages
-
+    private val _driverLocation = MutableSharedFlow<UpdateDriverLocation>()
+    val driverLocation: SharedFlow<UpdateDriverLocation>
+        get() = _driverLocation.asSharedFlow()
     private val receivedMessages = mutableListOf<String>()
     fun connectToSocket(url: String) {
         val listener = object : WebSocketListener() {
@@ -42,4 +51,17 @@ class SocketViewModel @Inject constructor(
     fun sendMessage(location: UpdateLocation) {
         sendMessageUseCase(location)
     }
+
+    fun startObservingDriversLocation(){
+        startObservingDriversLocationUseCase()
+    }
+
+    fun observeDriversLocations(){
+        launchOnBack {
+            observeDriversLocationsUseCase().collect{
+                _driverLocation.emit(it)
+            }
+        }
+    }
+
 }
