@@ -2,48 +2,33 @@ package com.example.uber.presentation.riderpresentation.bottomSheet
 
 import android.content.Context
 import android.view.View
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.example.uber.R
+import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import java.lang.ref.WeakReference
 
-class RideOptionsBottomSheet private constructor(
-    private val view: View, private val context: Context,
+class RideOptionsBottomSheet(
+    private val view: WeakReference<View>, private val context: Context,
+    private val viewModelStoreOwner : ViewModelStoreOwner
 ) {
-    private val bottomSheet: View = view.findViewById(R.id.ride_options_bottom_sheet)
+    private val bottomSheet: View = view.get()!!.findViewById(R.id.ride_options_bottom_sheet)
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-    private val shimmer: ShimmerFrameLayout by lazy { view.findViewById(R.id.shimmerLayout) }
-
-    companion object{
-        @Volatile
-        private var instance: RideOptionsBottomSheet? = null
-        fun initialize( view: View,context: Context): RideOptionsBottomSheet?{
-            if(instance == null){
-                synchronized(this){
-                    if(instance == null){
-                        instance = RideOptionsBottomSheet(view,context)
-                    }
-                }
-            }
-            return instance
-        }
-
-        fun getInstance(): RideOptionsBottomSheet?{
-            return instance
-        }
-
-
-        fun cleanResources(){
-            if (instance != null){
-                instance = null
-            }
-        }
-    }
+    private val shimmer: ShimmerFrameLayout by lazy { view.get()!!.findViewById(R.id.shimmerLayout) }
 
     init {
         setBottomSheetStyle()
         initialBottomSheetHidden()
         setupBottomSheetCallback()
     }
+
+    private val riderViewModel : RiderViewModel by lazy {
+        ViewModelProvider(viewModelStoreOwner)[RiderViewModel::class.java]
+    }
+
+    private val
 
     private fun setupBottomSheetCallback() {
         bottomSheetBehavior.addBottomSheetCallback(object :
@@ -85,6 +70,10 @@ class RideOptionsBottomSheet private constructor(
         shimmer.startShimmer()
     }
 
+    private fun showNearbyVehicles(){
+
+    }
+
     private fun initialBottomSheetHidden() {
         bottomSheetBehavior.isHideable = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
@@ -97,5 +86,9 @@ class RideOptionsBottomSheet private constructor(
 
     fun bottomSheetBehaviour(): Int {
         return bottomSheetBehavior.state
+    }
+
+    private fun getNearbyVehicles(){
+        riderViewModel.getNearbyVehicles()
     }
 }

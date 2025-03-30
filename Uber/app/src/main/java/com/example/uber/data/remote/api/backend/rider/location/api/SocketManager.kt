@@ -53,15 +53,16 @@ class SocketManager @Inject constructor() {
                 Log.d("SocketManager", "Observing driver location updates")
                 hubConnection?.on(
                     "DriverLocationUpdate",
-                    { userId: String, longitude: Double, latitude: Double ->
+                    { userId: String, longitude: Double, latitude: Double,vehicleType:String ->
                         CoroutineScope(Dispatchers.IO).launch {
                             Log.d("SocketManager", "Driver location update received: $userId, $longitude, $latitude")
-                            driver.emit(UpdateDriverLocation(UUID.fromString(userId), longitude, latitude))
+                            driver.emit(UpdateDriverLocation(UUID.fromString(userId), longitude, latitude, vehicleType))
                         }
                     },
                     String::class.java,
                     Double::class.java,
-                    Double::class.java
+                    Double::class.java,
+                    String::class.java
                 )
             }
         }.onFailure {

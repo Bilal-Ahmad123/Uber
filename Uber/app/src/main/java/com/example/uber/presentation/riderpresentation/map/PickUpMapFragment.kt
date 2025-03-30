@@ -126,7 +126,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                 viewLifecycleOwner,
                 googleViewModel,
             )
-        _rideOptionsBottomSheet = RideOptionsBottomSheet.initialize(view, requireContext())
+        _rideOptionsBottomSheet = RideOptionsBottomSheet(WeakReference(view),requireContext(),this)
     }
 
     private fun initializeBottomSheetViews() {
