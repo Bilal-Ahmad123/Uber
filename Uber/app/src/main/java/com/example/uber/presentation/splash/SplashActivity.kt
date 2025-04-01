@@ -10,6 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.uber.R
+import com.example.uber.core.common.AppConstants
 import com.example.uber.core.common.Resource
 import com.example.uber.presentation.auth.AuthActivity
 import com.example.uber.presentation.auth.login.viewmodels.LoginViewModel
@@ -20,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @SuppressLint("CustomSplashScreen")
 @AndroidEntryPoint
@@ -49,12 +51,11 @@ class SplashActivity : AppCompatActivity() {
                         when (it) {
                             is Resource.Success -> {
                                 val rider = it.data
-                                if (rider?.riderId != null) {
+                                if (rider?.riderId != null && rider.riderId != UUID(0,0)) {
+                                   val intent = Intent(this@SplashActivity,MainActivity::class.java)
+                                    intent.putExtra(AppConstants.RiderId,rider.riderId)
                                     startActivity(
-                                        Intent(
-                                            this@SplashActivity,
-                                            MainActivity::class.java
-                                        )
+                                        intent
                                     )
                                     finish()
                                 } else {

@@ -5,25 +5,40 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvVehicleName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vehicle Name"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="5"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="80dp"
+            android:id="@+id/ivVehicle"
+            android:layout_height="80dp"
+           />
+        <TextView
+            android:id="@+id/tvVehicleName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vehicle Name"
+            android:layout_marginRight="@dimen/_5sdp"
+            android:textSize="@dimen/_12ssp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/tvMaxSeats"
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Max Seats"
+            android:textSize="@dimen/_10ssp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/tvFare"
+            android:layout_weight="2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fare"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvVehicleType"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vehicle Type"
-        android:textSize="16sp" />
-
-    <TextView
-        android:id="@+id/tvVehicleDistance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Distance"
-        android:textSize="14sp" />
 </LinearLayout>

@@ -33,7 +33,9 @@ import com.example.uber.domain.local.location.model.DriverLocationMarker
 import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapboxViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -78,7 +80,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private lateinit var googleMap: GoogleMap
     private var currentLocation: Location? = null
     private val drivers = mutableMapOf<UUID, DriverLocationMarker>()
-
+    private val locationViewModel : LocationViewModel by activityViewModels<LocationViewModel>()
+    private val riderViewModel : RiderViewModel by activityViewModels<RiderViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,6 +110,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         socketViewModel.startObservingDriversLocation()
         socketViewModel.observeDriversLocations()
         observeDriverLocations()
+        riderViewModel.riderId
     }
 
 
@@ -126,7 +130,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                 viewLifecycleOwner,
                 googleViewModel,
             )
-        _rideOptionsBottomSheet = RideOptionsBottomSheet(WeakReference(view),requireContext(),this)
+        _rideOptionsBottomSheet = RideOptionsBottomSheet(WeakReference(view),requireContext(),requireActivity(),viewLifecycleOwner)
     }
 
     private fun initializeBottomSheetViews() {
@@ -234,7 +238,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         FetchLocation.cleanResources()
         RouteCreationHelper.destroyInstance()
         routeHelper = null
-        RideOptionsBottomSheet.cleanResources()
         _rideOptionsBottomSheet = null
         _compositeDisposable.dispose()
     }
@@ -438,6 +441,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                 dropOff.latitude
             )
         )
+        locationViewModel.setPickUpLocation(pickUp)
         showRideOptionsBottomSheet()
     }
 
@@ -466,7 +470,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
     }
 
-    fun onRemoveCameraAndMoveListener() {
+    private fun onRemoveCameraAndMoveListener() {
         if (_areListenersRegistered) {
             _areListenersRegistered = false
             googleMap.setOnCameraIdleListener(null)
@@ -509,7 +513,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
     }
 
-    fun latLngToLocation(latLng: LatLng): Location {
+    private fun latLngToLocation(latLng: LatLng): Location {
         val location = Location("provider")
         location.latitude = latLng.latitude
         location.longitude = latLng.longitude
@@ -539,22 +543,19 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                                     )
                                 )
                         )
-                        drivers.put(
-                            it.driverId,
-                            DriverLocationMarker(
-                                latLngToLocation(
-                                    LatLng(
-                                        it.latitude,
-                                        it.longitude
-                                    )
-                                ), latLngToLocation(LatLng(it.latitude, it.longitude)), marker!!,
-                                HRMarkerAnimation(
-                                    googleMap, 1000
-                                ) {}
-                            )
+                        drivers[it.driverId] = DriverLocationMarker(
+                            latLngToLocation(
+                                LatLng(
+                                    it.latitude,
+                                    it.longitude
+                                )
+                            ), latLngToLocation(LatLng(it.latitude, it.longitude)), marker!!,
+                            HRMarkerAnimation(
+                                googleMap, 1000
+                            ) {}
                         )
                     } else {
-                        val driverLocationObj = drivers.get(it.driverId)
+                        val driverLocationObj = drivers[it.driverId]
                         driverLocationObj?.mLastLocation =
                             latLngToLocation(LatLng(it.latitude, it.longitude))
                         animateMarker(driverLocationObj!!)

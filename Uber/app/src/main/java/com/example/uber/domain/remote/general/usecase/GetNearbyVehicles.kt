@@ -1,5 +1,6 @@
 package com.example.uber.domain.remote.general.usecase
 
+import com.example.uber.data.remote.api.backend.rider.general.model.response.NearbyVehiclesResponse
 import com.example.uber.data.remote.api.backend.rider.general.repository.RiderRepository
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 import retrofit2.Response

@@ -5,20 +5,28 @@ import android.content.IntentFilter
 import android.content.res.Configuration
 import android.location.LocationManager
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ReportFragment.Companion.reportFragment
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.uber.R
+import com.example.uber.core.common.AppConstants
 import com.example.uber.core.utils.system.GPSCheck
 import com.example.uber.core.utils.system.NetworkStateReceiver
 import com.example.uber.databinding.ActivityMainBinding
+import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.UUID
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -28,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private val ll_nointernet: View by lazy { findViewById(R.id.noInternetConnection) }
     private val ll_no_location_service: View by lazy { findViewById(R.id.ll_no_location_service) }
     private val iv_cross: View by lazy { findViewById(R.id.iv_cross) }
+    private val riderViewModel : RiderViewModel by viewModels<RiderViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +54,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             insets
+
         }
+        getRiderId()
         currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         registerGPSListener()
         registerNetworkListener()
@@ -145,4 +156,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getRiderId(){
+        val bundle = intent.extras
+        val riderId = bundle?.getSerializable(AppConstants.RiderId) as UUID
+        riderViewModel.setRiderId(riderId)
+    }
 }

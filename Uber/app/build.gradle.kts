@@ -173,6 +173,13 @@ dependencies {
     implementation("io.michaelrocks:libphonenumber-android:8.12.44")
     implementation("com.github.joielechong:countrycodepicker:2.4.2")
 
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    kapt ("com.github.bumptech.glide:compiler:4.16.0")
+
+    implementation("org.conscrypt:conscrypt-android:2.2.1")
+
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
 
 }
 

@@ -83,6 +83,9 @@
 
     </com.facebook.shimmer.ShimmerFrameLayout>
 
-
-
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/vehicleRecyclerView"
+        android:clipToPadding="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </LinearLayout>
