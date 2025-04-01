@@ -1,4 +1,4 @@
-package com.example.uber.presentation.riderpresentation.bottomSheet.viewadapter.item
+package com.example.uber.core.utils
 
 import okhttp3.OkHttpClient
 import java.security.SecureRandom

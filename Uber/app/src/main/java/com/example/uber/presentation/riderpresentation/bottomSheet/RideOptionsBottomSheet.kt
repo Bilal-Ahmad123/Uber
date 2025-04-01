@@ -119,6 +119,11 @@ class RideOptionsBottomSheet(
         val adapter = CarListAdapter(nearbyVehicles)
         vehicleRecyclerView.layoutManager = LinearLayoutManager(context)
         vehicleRecyclerView.adapter = adapter
+        hideShimmer()
+    }
+
+    private fun hideShimmer(){
+        shimmer.visibility = View.GONE
     }
 
     private fun observeNearbyVehiclesList(){

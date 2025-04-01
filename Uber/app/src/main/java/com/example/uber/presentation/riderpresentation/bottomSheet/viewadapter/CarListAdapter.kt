@@ -8,11 +8,8 @@ import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.model.GlideUrl
 import com.example.uber.databinding.ItemVehicleBinding
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
-import com.example.uber.presentation.riderpresentation.bottomSheet.viewadapter.item.UnsafeTrustManager
-import okhttp3.OkHttpClient
+import com.example.uber.core.utils.UnsafeTrustManager
 import java.io.InputStream
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLSession
 
 
 class CarListAdapter(private val cars:List<NearbyVehicles>) : RecyclerView.Adapter<CarListAdapter.VehicleViewHolder>() {
@@ -34,7 +31,7 @@ class CarListAdapter(private val cars:List<NearbyVehicles>) : RecyclerView.Adapt
                 InputStream::class.java,
                 glideModule
             )
-            Glide.with(binding.root.context).load("https://192.168.18.65:5196/images/eca9101a-054b-4cbf-80ea-9cbdef77a092 - uberx.png")
+            Glide.with(binding.root.context).load(car.image)
                 .skipMemoryCache(true)
                 .into(binding.ivVehicle)
         }
