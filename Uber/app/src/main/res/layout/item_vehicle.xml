@@ -6,6 +6,7 @@
     android:padding="16dp">
 
     <LinearLayout
+        android:id="@+id/llVehicle"
         android:layout_width="match_parent"
         android:orientation="horizontal"
         android:weightSum="5"

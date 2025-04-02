@@ -3,6 +3,7 @@ package com.example.uber.presentation.riderpresentation.bottomSheet
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
@@ -116,7 +117,9 @@ class RideOptionsBottomSheet(
     }
 
     private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>){
-        val adapter = CarListAdapter(nearbyVehicles)
+        val adapter = CarListAdapter(nearbyVehicles){
+            Log.i("Logged Vehicle",it.toString())
+        }
         vehicleRecyclerView.layoutManager = LinearLayoutManager(context)
         vehicleRecyclerView.adapter = adapter
         hideShimmer()
@@ -142,4 +145,5 @@ class RideOptionsBottomSheet(
             }
         }
     }
+
 }

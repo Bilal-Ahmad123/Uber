@@ -12,10 +12,17 @@ import com.example.uber.core.utils.UnsafeTrustManager
 import java.io.InputStream
 
 
-class CarListAdapter(private val cars:List<NearbyVehicles>) : RecyclerView.Adapter<CarListAdapter.VehicleViewHolder>() {
+class CarListAdapter(private val cars:List<NearbyVehicles>,private val onItemClick:(NearbyVehicles) -> Unit) : RecyclerView.Adapter<CarListAdapter.VehicleViewHolder>() {
 
 
-    inner class VehicleViewHolder(private val binding : ItemVehicleBinding) :RecyclerView.ViewHolder(binding.root){
+    inner class VehicleViewHolder(private val binding : ItemVehicleBinding,private val onItemClicked:(Int) -> Unit) :RecyclerView.ViewHolder(binding.root){
+
+        init {
+            binding.llVehicle.setOnClickListener {
+                onItemClicked(adapterPosition)
+            }
+        }
+
         fun bind(car : NearbyVehicles){
             binding.tvVehicleName.text = car.name
             binding.tvMaxSeats.text= car.seats.toString()
@@ -39,7 +46,9 @@ class CarListAdapter(private val cars:List<NearbyVehicles>) : RecyclerView.Adapt
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VehicleViewHolder{
         val binding = ItemVehicleBinding.inflate(LayoutInflater.from(parent.context),parent,false)
-        return VehicleViewHolder(binding)
+        return VehicleViewHolder(binding){
+            onItemClick(cars[it])
+        }
     }
 
     override fun getItemCount(): Int = cars.size
