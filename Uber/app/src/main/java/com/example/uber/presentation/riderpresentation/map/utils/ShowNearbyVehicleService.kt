@@ -2,14 +2,17 @@ package com.example.uber.presentation.riderpresentation.map.utils
 
 import android.content.Context
 import android.location.Location
+import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import com.example.uber.R
+import com.example.uber.core.enums.CarMarker
 import com.example.uber.core.utils.BitMapCreator
 import com.example.uber.core.utils.HRMarkerAnimation
 import com.example.uber.domain.local.location.model.DriverLocationMarker
+import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -20,27 +23,41 @@ import java.lang.ref.WeakReference
 import java.util.UUID
 
 class ShowNearbyVehicleService(
-    private val googleMap: WeakReference<GoogleMap>,
     private val viewModelStoreOwner: ViewModelStoreOwner,
     private val viewLifecycleOwner: LifecycleOwner,
     private val context: WeakReference<Context>,
 ) {
     private val drivers = mutableMapOf<UUID, DriverLocationMarker>()
+    private lateinit var googleMap:WeakReference<GoogleMap>
 
     private val socketViewModel: SocketViewModel by lazy {
         ViewModelProvider(viewModelStoreOwner)[SocketViewModel::class.java]
     }
 
-    fun startObservingNearbyVehicles() {
+
+    fun startObservingNearbyVehicles(googleMap: WeakReference<GoogleMap>) {
+        this.googleMap = googleMap
         viewLifecycleOwner.lifecycleScope.launch {
             with(socketViewModel) {
                 driverLocation.collectLatest {
                     if (!drivers.containsKey(it.driverId)) {
+                        var carMarker = R.drawable.ic_car
+                        when(it.vehicleType){
+                            CarMarker.Lux.toString() ->{
+                                carMarker = R.drawable.lux_upperview
+                            }
+                            CarMarker.UberX.toString() ->{
+                                carMarker = R.drawable.uberx_upperview
+                            }
+                            CarMarker.UberXL.toString() ->{
+                                carMarker = R.drawable.uberxl_upperview
+                            }
+                        }
                         val marker = googleMap.get()?.addMarker(
                             MarkerOptions().position(LatLng(it.latitude, it.longitude)).visible(false)
                                 .icon(
                                     BitMapCreator.bitmapDescriptorFromVector(
-                                        R.drawable.ic_car,
+                                        carMarker,
                                         context.get()!!
                                     )
                                 )
@@ -83,7 +100,10 @@ class ShowNearbyVehicleService(
         )
     }
 
-    fun onCarItemListClickListener(){
-
+    fun onCarItemListClickListener(vehicle : NearbyVehicles){
+        Log.i("Nearby Vehicles",vehicle.toString())
+        for ((key,value) in drivers){
+            value.driverMarker.isVisible = value.vehicleType == vehicle.name
+        }
     }
 }

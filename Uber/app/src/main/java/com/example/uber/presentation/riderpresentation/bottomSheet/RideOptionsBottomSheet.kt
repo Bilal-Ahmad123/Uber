@@ -16,6 +16,7 @@ import com.example.uber.core.common.Resource
 import com.example.uber.data.remote.api.backend.rider.general.model.response.NearbyVehiclesResponse
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 import com.example.uber.presentation.riderpresentation.bottomSheet.viewadapter.CarListAdapter
+import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
 import com.facebook.shimmer.ShimmerFrameLayout
@@ -29,6 +30,7 @@ class RideOptionsBottomSheet(
     private val context: Context,
     private val viewModelStoreOwner : ViewModelStoreOwner,
     private val viewLifecycleOwner: LifecycleOwner,
+    private val nearbyVehicleService: WeakReference<ShowNearbyVehicleService>
     ) {
     private val bottomSheet: View = view.get()!!.findViewById(R.id.ride_options_bottom_sheet)
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
@@ -118,7 +120,7 @@ class RideOptionsBottomSheet(
 
     private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>){
         val adapter = CarListAdapter(nearbyVehicles){
-            Log.i("Logged Vehicle",it.toString())
+            nearbyVehicleService.get()?.onCarItemListClickListener(it)
         }
         vehicleRecyclerView.layoutManager = LinearLayoutManager(context)
         vehicleRecyclerView.adapter = adapter

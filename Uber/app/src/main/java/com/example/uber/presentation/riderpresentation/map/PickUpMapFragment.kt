@@ -31,6 +31,7 @@ import com.example.uber.databinding.FragmentPickUpMapBinding
 import com.example.uber.domain.local.location.model.DriverLocationMarker
 import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
+import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapboxViewModel
@@ -79,6 +80,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val drivers = mutableMapOf<UUID, DriverLocationMarker>()
     private val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
     private val riderViewModel: RiderViewModel by activityViewModels<RiderViewModel>()
+    private var nearbyVehicles: ShowNearbyVehicleService? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,11 +108,39 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
         socketViewModel.startObservingDriversLocation()
         socketViewModel.observeDriversLocations()
+        handleOnBackPressed()
     }
 
-    private fun handleOnBackPressed(){
-        requireActivity().onBackPressedDispatcher.addCallback {
+    private fun initializeNearbyVehicles() {
+        nearbyVehicles = ShowNearbyVehicleService(requireActivity(), viewLifecycleOwner,
+            WeakReference(requireContext())
+        )
+    }
 
+    private fun handleOnBackPressed() {
+        requireActivity().onBackPressedDispatcher.addCallback {
+            when (_rideOptionsBottomSheet?.bottomSheetBehaviour()) {
+                BottomSheetBehavior.STATE_EXPANDED -> {
+                    _rideOptionsBottomSheet?.hideBottomSheet()
+                    bottomSheetManager?.showBottomSheet()
+                    routeHelper?.deleteEveryThingOnMap()
+                    showLocationPickerMarker()
+                    onAddCameraAndMoveListeners()
+                }
+
+                BottomSheetBehavior.STATE_COLLAPSED -> {
+                    _rideOptionsBottomSheet?.hideBottomSheet()
+                    bottomSheetManager?.showBottomSheet()
+                    routeHelper?.deleteEveryThingOnMap()
+                    showLocationPickerMarker()
+                    onAddCameraAndMoveListeners()
+                }
+
+                else -> {
+                    isEnabled = false
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                }
+            }
         }
     }
 
@@ -122,6 +152,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
 
     private fun initializeBottomSheets(view: View) {
+        initializeNearbyVehicles()
         bottomSheetManager =
             BottomSheetManager.initialize(
                 view,
@@ -134,7 +165,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             WeakReference(view),
             requireContext(),
             requireActivity(),
-            viewLifecycleOwner
+            viewLifecycleOwner,
+            WeakReference(nearbyVehicles)
         )
     }
 
@@ -162,6 +194,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
+        nearbyVehicles?.startObservingNearbyVehicles(WeakReference(googleMap))
         onAddCameraAndMoveListeners()
         googleMap.setMapStyle(
             MapStyleOptions.loadRawResourceStyle(
@@ -172,7 +205,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         ifNetworkOrGPSDisabled()
         editTextFocusChangeListener()
         initializeRouteHelper()
-
         enableMyLocation()
     }
 
