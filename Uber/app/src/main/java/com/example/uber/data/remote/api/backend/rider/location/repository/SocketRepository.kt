@@ -11,4 +11,5 @@ interface SocketRepository {
     fun disconnect()
     fun startObservingDriverLocationUpdates()
     fun observeDriverLocation():Flow<UpdateDriverLocation>
+    fun connectedToSocket():Flow<Boolean>
 }

@@ -15,8 +15,8 @@ object BitMapCreator {
             val originalWidth = it.intrinsicWidth
             val originalHeight = it.intrinsicHeight
 
-            val scaledWidth = (originalWidth * 0.20).toInt()
-            val scaledHeight = (originalHeight * 0.20).toInt()
+            val scaledWidth = (originalWidth * 0.25).toInt()
+            val scaledHeight = (originalHeight * 0.25).toInt()
 
             val bitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)

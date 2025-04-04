@@ -57,7 +57,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         observeRider()
         riderRoomViewModel.getRider()
-        sendContinuousLocationUpdates()
+        observeSocketConnected()
     }
 
     private fun observeRider() {
@@ -66,6 +66,7 @@ class HomeFragment : Fragment() {
                 rider.collectLatest {
                     if (it.data?.riderId != null && it.data.riderId != UUID(0, 0))
                         connectToSocket(it.data.riderId)
+                        socketViewModel.observeConnectedToSocket()
                 }
             }
         }
@@ -119,6 +120,24 @@ class HomeFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+    }
+
+    private fun startObservingNearbyDrivers(){
+        socketViewModel.startObservingDriversLocation()
+        socketViewModel.observeDriversLocations()
+    }
+
+    private fun observeSocketConnected(){
+        viewLifecycleOwner.lifecycleScope.launch {
+            with(socketViewModel){
+                socketConnected.collectLatest {
+                    if(it){
+                        startObservingNearbyDrivers()
+                        sendContinuousLocationUpdates()
+                    }
+                }
+            }
+        }
     }
 
 

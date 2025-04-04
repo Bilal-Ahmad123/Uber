@@ -19,6 +19,7 @@ import com.example.uber.R
 import com.example.uber.core.enums.Markers
 import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
+import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -107,7 +108,6 @@ class RouteCreationHelper(
         googleViewModel.get()?.run {
 
             directions.observe(viewLifecycleOwner) {
-                deleteEveryThingOnMap()
                 Log.d("observeDirectionsResponse", "observeDirectionsResponse: ${it.data}")
                 if (it.data!!.routes.isNotEmpty()) {
 
@@ -257,6 +257,7 @@ class RouteCreationHelper(
 
     fun deleteEveryThingOnMap() {
         map.get()?.clear()
+        ShowNearbyVehicleService.drivers.clear()
         pickUpMarker = null
         dropOffMarker = null
     }
@@ -335,15 +336,17 @@ class RouteCreationHelper(
 //    }
 
     private fun addAnnotationClickListener(marker: Marker) {
-        if (marker.tag?.equals(pickUpMarker?.tag)!!) {
-            bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
-        } else if (marker.tag?.equals(dropOffMarker?.tag)!!) {
-            bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
+        if(marker.tag != null) {
+            if (marker.tag?.equals(pickUpMarker?.tag)!!) {
+                bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
+            } else if (marker.tag?.equals(dropOffMarker?.tag)!!) {
+                bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
+            }
+            rideOptionsBottomSheet.get()?.hideBottomSheet()
+            deleteEveryThingOnMap()
+            pickUpMapFragment.get()?.showLocationPickerMarker()
+            pickUpMapFragment.get()?.onAddCameraAndMoveListeners()
         }
-        rideOptionsBottomSheet.get()?.hideBottomSheet()
-        deleteEveryThingOnMap()
-        pickUpMapFragment.get()?.showLocationPickerMarker()
-        pickUpMapFragment.get()?.onAddCameraAndMoveListeners()
     }
 
 

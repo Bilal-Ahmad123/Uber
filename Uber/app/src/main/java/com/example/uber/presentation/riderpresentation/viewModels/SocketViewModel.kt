@@ -9,6 +9,7 @@ import com.example.uber.data.remote.api.backend.rider.location.mapper.UpdateDriv
 import com.example.uber.domain.remote.location.model.UpdateLocation
 import com.example.uber.domain.remote.location.usecase.ConnectSocketUseCase
 import com.example.uber.domain.remote.location.usecase.DisconnectSocketUseCase
+import com.example.uber.domain.remote.location.usecase.ObserveConnectedToSocket
 import com.example.uber.domain.remote.location.usecase.ObserveDriverLocationUseCase
 import com.example.uber.domain.remote.location.usecase.StartObservingDriverLocationUseCase
 import com.example.uber.domain.remote.location.usecase.SendMessageUseCase
@@ -27,6 +28,7 @@ class SocketViewModel @Inject constructor(
     private val sendMessageUseCase: SendMessageUseCase,
     private val startObservingDriversLocationUseCase: StartObservingDriverLocationUseCase,
     private val observeDriversLocationsUseCase: ObserveDriverLocationUseCase,
+    private val observeConnectedToSocketUseCase: ObserveConnectedToSocket,
     private val dispatcher: IDispatchers,
 ) : BaseViewModel(dispatcher) {
     private val _messages = MutableLiveData<List<String>>()
@@ -34,6 +36,8 @@ class SocketViewModel @Inject constructor(
     private val _driverLocation = MutableSharedFlow<UpdateDriverLocation>()
     val driverLocation: SharedFlow<UpdateDriverLocation>
         get() = _driverLocation.asSharedFlow()
+    private val connectedToSocket = MutableSharedFlow<Boolean>()
+    val socketConnected = connectedToSocket.asSharedFlow()
     private val receivedMessages = mutableListOf<String>()
     fun connectToSocket(url: String) {
         val listener = object : WebSocketListener() {
@@ -60,6 +64,14 @@ class SocketViewModel @Inject constructor(
         launchOnBack {
             observeDriversLocationsUseCase().collect{
                 _driverLocation.emit(it)
+            }
+        }
+    }
+
+    fun observeConnectedToSocket(){
+        launchOnBack {
+            observeConnectedToSocketUseCase().collect{
+                connectedToSocket.emit(it)
             }
         }
     }

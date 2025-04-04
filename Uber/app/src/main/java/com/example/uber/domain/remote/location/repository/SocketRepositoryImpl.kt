@@ -29,4 +29,8 @@ class SocketRepositoryImpl(private val socketManager: SocketManager): SocketRepo
         return socketManager.driverLocationUpdates
     }
 
+    override fun connectedToSocket():Flow<Boolean>{
+        return socketManager.socketConnected
+    }
+
 }

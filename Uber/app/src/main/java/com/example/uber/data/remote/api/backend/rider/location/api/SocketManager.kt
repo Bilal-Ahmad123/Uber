@@ -23,14 +23,18 @@ class SocketManager @Inject constructor() {
     private lateinit var hubConnection: HubConnection
     private val driver = MutableSharedFlow<UpdateDriverLocation>()
     val driverLocationUpdates = driver.asSharedFlow()
+    private val connectedToSocket = MutableSharedFlow<Boolean>()
+    val socketConnected = connectedToSocket.asSharedFlow()
 
-    fun connect(url: String, listener: WebSocketListener) {
+     fun connect(url: String, listener: WebSocketListener) {
         runCatching {
             hubConnection = HubConnectionBuilder.create(url)
                 .withTransport(com.microsoft.signalr.TransportEnum.LONG_POLLING)
                 .build()
             hubConnection.start().subscribe({
-                observeDriverLocationUpdates()
+                CoroutineScope(Dispatchers.IO).launch{
+                    connectedToSocket.emit(true)
+                }
             }, { error ->
                 Log.e("SocketManager", "Error starting connection: ${error.message}", error)
             })
@@ -50,7 +54,6 @@ class SocketManager @Inject constructor() {
     fun observeDriverLocationUpdates() {
         runCatching {
             if (::hubConnection.isInitialized) {
-                Log.d("SocketManager", "Observing driver location updates")
                 hubConnection?.on(
                     "DriverLocationUpdate",
                     { userId: String, longitude: Double, latitude: Double,vehicleType:String ->

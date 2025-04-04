@@ -106,8 +106,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             requestLocationPermission()
             getInitialPickUpLocation()
         }
-        socketViewModel.startObservingDriversLocation()
-        socketViewModel.observeDriversLocations()
         handleOnBackPressed()
     }
 

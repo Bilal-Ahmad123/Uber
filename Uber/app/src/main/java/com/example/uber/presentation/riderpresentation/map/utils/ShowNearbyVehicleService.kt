@@ -27,11 +27,14 @@ class ShowNearbyVehicleService(
     private val viewLifecycleOwner: LifecycleOwner,
     private val context: WeakReference<Context>,
 ) {
-    private val drivers = mutableMapOf<UUID, DriverLocationMarker>()
-    private lateinit var googleMap:WeakReference<GoogleMap>
+    private lateinit var googleMap: WeakReference<GoogleMap>
 
     private val socketViewModel: SocketViewModel by lazy {
         ViewModelProvider(viewModelStoreOwner)[SocketViewModel::class.java]
+    }
+
+    companion object {
+        val drivers = mutableMapOf<UUID, DriverLocationMarker>()
     }
 
 
@@ -42,19 +45,22 @@ class ShowNearbyVehicleService(
                 driverLocation.collectLatest {
                     if (!drivers.containsKey(it.driverId)) {
                         var carMarker = R.drawable.ic_car
-                        when(it.vehicleType){
-                            CarMarker.Lux.toString() ->{
+                        when (it.vehicleType) {
+                            CarMarker.Lux.toString() -> {
                                 carMarker = R.drawable.lux_upperview
                             }
-                            CarMarker.UberX.toString() ->{
+
+                            CarMarker.UberX.toString() -> {
                                 carMarker = R.drawable.uberx_upperview
                             }
-                            CarMarker.UberXL.toString() ->{
+
+                            CarMarker.UberXL.toString() -> {
                                 carMarker = R.drawable.uberxl_upperview
                             }
                         }
                         val marker = googleMap.get()?.addMarker(
-                            MarkerOptions().position(LatLng(it.latitude, it.longitude)).visible(false)
+                            MarkerOptions().position(LatLng(it.latitude, it.longitude))
+                                .visible(false)
                                 .icon(
                                     BitMapCreator.bitmapDescriptorFromVector(
                                         carMarker,
@@ -62,6 +68,8 @@ class ShowNearbyVehicleService(
                                     )
                                 )
                         )
+                        marker?.zIndex = 1f
+
                         drivers[it.driverId] = DriverLocationMarker(
                             latLngToLocation(
                                 LatLng(
@@ -76,6 +84,7 @@ class ShowNearbyVehicleService(
                         )
                     } else {
                         val driverLocationObj = drivers[it.driverId]
+                        Log.i("DriverInfo:","DriverId: ${it.driverId}, Latitude: ${it.latitude}, Longitude: ${it.longitude}")
                         driverLocationObj?.mLastLocation =
                             latLngToLocation(LatLng(it.latitude, it.longitude))
                         animateMarker(driverLocationObj!!)
@@ -100,9 +109,8 @@ class ShowNearbyVehicleService(
         )
     }
 
-    fun onCarItemListClickListener(vehicle : NearbyVehicles){
-        Log.i("Nearby Vehicles",vehicle.toString())
-        for ((key,value) in drivers){
+    fun onCarItemListClickListener(vehicle: NearbyVehicles) {
+        for ((key, value) in drivers) {
             value.driverMarker.isVisible = value.vehicleType == vehicle.name
         }
     }
