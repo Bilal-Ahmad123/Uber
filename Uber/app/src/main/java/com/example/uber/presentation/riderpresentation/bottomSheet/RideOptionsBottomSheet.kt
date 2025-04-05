@@ -3,7 +3,6 @@ package com.example.uber.presentation.riderpresentation.bottomSheet
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
@@ -11,15 +10,20 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.blankj.utilcode.util.ConvertUtils
 import com.example.uber.R
 import com.example.uber.core.common.Resource
-import com.example.uber.data.remote.api.backend.rider.general.model.response.NearbyVehiclesResponse
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 import com.example.uber.presentation.riderpresentation.bottomSheet.viewadapter.CarListAdapter
+import com.example.uber.presentation.riderpresentation.map.RouteCreationHelper
 import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
 import com.facebook.shimmer.ShimmerFrameLayout
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -28,14 +32,17 @@ import java.lang.ref.WeakReference
 class RideOptionsBottomSheet(
     private val view: WeakReference<View>,
     private val context: Context,
-    private val viewModelStoreOwner : ViewModelStoreOwner,
+    private val viewModelStoreOwner: ViewModelStoreOwner,
     private val viewLifecycleOwner: LifecycleOwner,
     private val nearbyVehicleService: WeakReference<ShowNearbyVehicleService>
-    ) {
+) {
     private val bottomSheet: View = view.get()!!.findViewById(R.id.ride_options_bottom_sheet)
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-    private val shimmer: ShimmerFrameLayout by lazy { view.get()!!.findViewById(R.id.shimmerLayout) }
-    private val vehicleRecyclerView: RecyclerView by lazy {bottomSheet.findViewById(R.id.vehicleRecyclerView)}
+    private val shimmer: ShimmerFrameLayout by lazy {
+        view.get()!!.findViewById(R.id.shimmerLayout)
+    }
+    private val vehicleRecyclerView: RecyclerView by lazy { bottomSheet.findViewById(R.id.vehicleRecyclerView) }
+    private lateinit var googleMap: WeakReference<GoogleMap>
 
     init {
         setBottomSheetStyle()
@@ -47,11 +54,15 @@ class RideOptionsBottomSheet(
 
     }
 
-    private val riderViewModel : RiderViewModel by lazy {
+    fun initializeGoogleMap(googleMap: WeakReference<GoogleMap>) {
+        this.googleMap = googleMap
+    }
+
+    private val riderViewModel: RiderViewModel by lazy {
         ViewModelProvider(viewModelStoreOwner)[RiderViewModel::class.java]
     }
 
-    private val locationViewModel : LocationViewModel by lazy {
+    private val locationViewModel: LocationViewModel by lazy {
         ViewModelProvider(viewModelStoreOwner)[LocationViewModel::class.java]
     }
 
@@ -71,13 +82,64 @@ class RideOptionsBottomSheet(
 
         when (newState) {
             BottomSheetBehavior.STATE_EXPANDED -> {
-//                RouteCreationHelper.getInstance()?.animateToRespectivePadding(1000)
+                expandToFillScreen()
             }
 
             BottomSheetBehavior.STATE_COLLAPSED -> {
-//                RouteCreationHelper.getInstance()?.animateToRespectivePadding()
+                shrinkToFillScreen()
             }
         }
+    }
+
+    private var builder = LatLngBounds.Builder()
+    private lateinit var bounds: LatLngBounds
+
+
+    private fun shrinkToFillScreen() {
+        if (!::bounds.isInitialized) {
+            bounds = calculateBounds() ?: return
+        }
+        val bottomPadding = ConvertUtils.dp2px(0f)
+
+        googleMap.get()?.setPadding(0, 0, 0, bottomPadding)
+
+        val cameraPosition = CameraPosition.Builder()
+            .target(bounds.center)
+            .zoom(googleMap.get()?.cameraPosition?.zoom?.plus(2f) ?: 15f)
+            .build()
+
+        googleMap.get()?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+
+    }
+
+    private fun calculateBounds(): LatLngBounds? {
+            val latLngList = RouteCreationHelper.latLngBounds
+
+        if(latLngList == null){
+            return null
+        }
+
+            latLngList?.forEach {
+                builder.include(it)
+            }
+
+            return builder.build()
+    }
+
+    private fun expandToFillScreen() {
+        if (!::bounds.isInitialized) {
+            bounds = calculateBounds() ?: return
+        }
+        val bottomPadding = ConvertUtils.dp2px(400f) // adjust this based on your sheet height
+
+        googleMap.get()?.setPadding(0, 0, 0, bottomPadding)
+        val cameraPosition = CameraPosition.Builder()
+            .target(bounds.center)
+            .zoom(googleMap.get()?.cameraPosition?.zoom?.minus(2f) ?: 12f)
+            .build()
+
+        googleMap.get()?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
     }
 
     private fun setBottomSheetStyle() {
@@ -96,7 +158,7 @@ class RideOptionsBottomSheet(
         shimmer.startShimmer()
     }
 
-    private fun showNearbyVehicles(){
+    private fun showNearbyVehicles() {
 
     }
 
@@ -114,12 +176,15 @@ class RideOptionsBottomSheet(
         return bottomSheetBehavior.state
     }
 
-    private fun getNearbyVehicles(){
-        riderViewModel.getNearbyVehicles(riderViewModel.riderId!!,locationViewModel.pickUpLocation!!)
+    private fun getNearbyVehicles() {
+        riderViewModel.getNearbyVehicles(
+            riderViewModel.riderId!!,
+            locationViewModel.pickUpLocation!!
+        )
     }
 
-    private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>){
-        val adapter = CarListAdapter(nearbyVehicles){
+    private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>) {
+        val adapter = CarListAdapter(nearbyVehicles) {
             nearbyVehicleService.get()?.onCarItemListClickListener(it)
         }
         vehicleRecyclerView.layoutManager = LinearLayoutManager(context)
@@ -127,20 +192,21 @@ class RideOptionsBottomSheet(
         hideShimmer()
     }
 
-    private fun hideShimmer(){
+    private fun hideShimmer() {
         shimmer.visibility = View.GONE
     }
 
-    private fun observeNearbyVehiclesList(){
+    private fun observeNearbyVehiclesList() {
         viewLifecycleOwner.lifecycleScope.launch {
             with(riderViewModel) {
                 nearbyVehicles.collectLatest {
                     when (it) {
                         is Resource.Success -> {
-                            if(it.data != null){
+                            if (it.data != null) {
                                 createRecyclerViewAdapter(it.data)
                             }
                         }
+
                         else -> Unit
                     }
                 }

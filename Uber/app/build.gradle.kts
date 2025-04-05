@@ -181,6 +181,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
 
+    implementation ("com.blankj:utilcodex:1.31.1")
+
 }
 
 

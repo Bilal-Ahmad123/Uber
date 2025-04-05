@@ -192,6 +192,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
+        _rideOptionsBottomSheet?.initializeGoogleMap(WeakReference(googleMap))
         nearbyVehicles?.startObservingNearbyVehicles(WeakReference(googleMap))
         onAddCameraAndMoveListeners()
         googleMap.setMapStyle(

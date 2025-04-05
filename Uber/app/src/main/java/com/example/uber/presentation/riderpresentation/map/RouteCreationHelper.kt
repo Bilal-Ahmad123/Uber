@@ -59,6 +59,8 @@ class RouteCreationHelper(
     private var dropOffMarker: Marker? = null
 
     companion object {
+        var latLngBounds:List<LatLng>? = null
+
         @Volatile
         private var instance: RouteCreationHelper? = null
         fun getInstance(): RouteCreationHelper? {
@@ -131,7 +133,6 @@ class RouteCreationHelper(
         return PolyUtil.decode(line)
     }
 
-    private var latLngBounds:List<LatLng>? = null
     @SuppressLint("ResourceType")
     private fun createAnimatedRoute(line: String) {
         val routePoints: List<LatLng> = decodePolyLine(line)
