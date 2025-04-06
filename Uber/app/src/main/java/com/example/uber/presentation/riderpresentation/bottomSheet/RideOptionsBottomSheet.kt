@@ -3,6 +3,7 @@ package com.example.uber.presentation.riderpresentation.bottomSheet
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
@@ -43,13 +44,14 @@ class RideOptionsBottomSheet(
     }
     private val vehicleRecyclerView: RecyclerView by lazy { bottomSheet.findViewById(R.id.vehicleRecyclerView) }
     private lateinit var googleMap: WeakReference<GoogleMap>
+    private var isSheetExpanded: Boolean = false
 
     init {
         setBottomSheetStyle()
         initialBottomSheetHidden()
         setupBottomSheetCallback()
         Handler(Looper.getMainLooper()).post {
-            observeNearbyVehiclesList() // Delayed call to ensure lifecycle readiness
+            observeNearbyVehiclesList()
         }
 
     }
@@ -78,64 +80,63 @@ class RideOptionsBottomSheet(
         })
     }
 
-    private fun handleStateChange(newState: Int) {
 
-        when (newState) {
-            BottomSheetBehavior.STATE_EXPANDED -> {
+    private fun handleStateChange(newState: Int) {
+        Log.i("State", bottomSheetBehavior.state.toString())
+
+        when {
+            newState == BottomSheetBehavior.STATE_EXPANDED && !isSheetExpanded -> {
                 expandToFillScreen()
+                isSheetExpanded = true
             }
 
-            BottomSheetBehavior.STATE_COLLAPSED -> {
+            newState == BottomSheetBehavior.STATE_COLLAPSED && isSheetExpanded -> {
                 shrinkToFillScreen()
+                isSheetExpanded = false
             }
         }
     }
 
     private var builder = LatLngBounds.Builder()
-    private lateinit var bounds: LatLngBounds
+    private var bounds: LatLngBounds? = null
 
 
     private fun shrinkToFillScreen() {
-        if (!::bounds.isInitialized) {
-            bounds = calculateBounds() ?: return
-        }
+        bounds = calculateBounds() ?: return
         val bottomPadding = ConvertUtils.dp2px(0f)
 
         googleMap.get()?.setPadding(0, 0, 0, bottomPadding)
 
         val cameraPosition = CameraPosition.Builder()
-            .target(bounds.center)
-            .zoom(googleMap.get()?.cameraPosition?.zoom?.plus(2f) ?: 15f)
+            .target(bounds!!.center)
+            .zoom(googleMap.get()?.cameraPosition?.zoom?.plus(2f) ?: 20f)
             .build()
 
         googleMap.get()?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
-
     }
 
     private fun calculateBounds(): LatLngBounds? {
-            val latLngList = RouteCreationHelper.latLngBounds
+        val latLngList = RouteCreationHelper.latLngBounds
 
-        if(latLngList == null){
+        if (latLngList == null) {
             return null
         }
 
-            latLngList?.forEach {
-                builder.include(it)
-            }
+        latLngList?.forEach {
+            builder.include(it)
+        }
 
-            return builder.build()
+        return builder.build()
     }
 
     private fun expandToFillScreen() {
-        if (!::bounds.isInitialized) {
-            bounds = calculateBounds() ?: return
-        }
-        val bottomPadding = ConvertUtils.dp2px(400f) // adjust this based on your sheet height
+        bounds = calculateBounds() ?: return
+        val bottomPadding = ConvertUtils.dp2px(400f)
 
         googleMap.get()?.setPadding(0, 0, 0, bottomPadding)
         val cameraPosition = CameraPosition.Builder()
-            .target(bounds.center)
+            .target(bounds!!.center)
             .zoom(googleMap.get()?.cameraPosition?.zoom?.minus(2f) ?: 12f)
             .build()
 

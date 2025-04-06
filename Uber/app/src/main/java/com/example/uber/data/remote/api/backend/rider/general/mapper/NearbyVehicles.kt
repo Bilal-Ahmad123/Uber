@@ -4,5 +4,5 @@ import com.example.uber.data.remote.api.backend.rider.general.model.response.Nea
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 
 fun NearbyVehicleDetails.toDomain():NearbyVehicles{
-    return NearbyVehicles(vehicleName,maxSeats,fare,imageUrl)
+    return NearbyVehicles(vehicleName,maxSeats,fare,imageUrl,vehicleDescription,timeAway)
 }

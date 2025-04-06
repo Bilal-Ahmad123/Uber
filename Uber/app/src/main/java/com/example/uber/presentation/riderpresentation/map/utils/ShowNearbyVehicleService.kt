@@ -46,7 +46,7 @@ class ShowNearbyVehicleService(
                     if (!drivers.containsKey(it.driverId)) {
                         var carMarker = R.drawable.ic_car
                         when (it.vehicleType) {
-                            CarMarker.Lux.toString() -> {
+                            CarMarker.Uber_Lux.toString() -> {
                                 carMarker = R.drawable.lux_upperview
                             }
 
