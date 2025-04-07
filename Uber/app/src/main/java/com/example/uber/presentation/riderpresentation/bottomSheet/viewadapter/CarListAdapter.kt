@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
 import com.bumptech.glide.load.model.GlideUrl
+import com.example.uber.core.utils.Helper
 import com.example.uber.databinding.ItemVehicleBinding
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 import com.example.uber.core.utils.UnsafeTrustManager
@@ -26,6 +27,9 @@ class CarListAdapter(private val cars:List<NearbyVehicles>,private val onItemCli
         fun bind(car : NearbyVehicles){
             binding.tvVehicleName.text = car.name
             binding.tvMaxSeats.text= car.seats.toString()
+            binding.tvArrivalTime.text = Helper.calculateTimeWithVehicleTime(car.time)
+            binding.tvEta.text = Helper.showTimeAway(car.time)
+            binding.tvFare.text = Helper.showCurrency(car.fare)
             addImage(car)
         }
 
