@@ -15,6 +15,7 @@ import java.io.InputStream
 
 class CarListAdapter(private val cars:List<NearbyVehicles>,private val onItemClick:(NearbyVehicles) -> Unit) : RecyclerView.Adapter<CarListAdapter.VehicleViewHolder>() {
 
+    private var selectedPosition = -1
 
     inner class VehicleViewHolder(private val binding : ItemVehicleBinding,private val onItemClicked:(Int) -> Unit) :RecyclerView.ViewHolder(binding.root){
 
@@ -59,5 +60,7 @@ class CarListAdapter(private val cars:List<NearbyVehicles>,private val onItemCli
 
     override fun onBindViewHolder(holder: CarListAdapter.VehicleViewHolder, position: Int) {
         holder.bind(cars[position])
+        holder.itemView.isSelected = position == selectedPosition
+        notifyDataSetChanged()
     }
 }
