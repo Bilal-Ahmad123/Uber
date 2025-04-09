@@ -26,8 +26,11 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 class RideOptionsBottomSheet(
@@ -184,6 +187,7 @@ class RideOptionsBottomSheet(
         )
     }
 
+    private var searchJob: Job? = null
     private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>) {
         val adapter = CarListAdapter(nearbyVehicles) {
             nearbyVehicleService.get()?.onCarItemListClickListener(it)
@@ -204,7 +208,9 @@ class RideOptionsBottomSheet(
                     when (it) {
                         is Resource.Success -> {
                             if (it.data != null) {
-                                createRecyclerViewAdapter(it.data)
+                                withContext(Dispatchers.Main) {
+                                    createRecyclerViewAdapter(it.data)
+                                }
                             }
                         }
 
