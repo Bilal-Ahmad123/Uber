@@ -189,9 +189,11 @@ class RideOptionsBottomSheet(
 
     private var searchJob: Job? = null
     private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>) {
-        val adapter = CarListAdapter(nearbyVehicles) {
+        val adapter = CarListAdapter(nearbyVehicles)
+        adapter.onItemClicked = {
             nearbyVehicleService.get()?.onCarItemListClickListener(it)
         }
+
         vehicleRecyclerView.layoutManager = LinearLayoutManager(context)
         vehicleRecyclerView.adapter = adapter
         hideShimmer()
