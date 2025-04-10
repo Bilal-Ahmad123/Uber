@@ -75,18 +75,18 @@ class RideOptionsBottomSheet(
         bottomSheetBehavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                handleStateChange(newState)
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                if (slideOffset == 0.0f || slideOffset == 1f){
+                    adjustMapForBottomSheet(slideOffset)
+                }
             }
         })
     }
 
 
     private fun handleStateChange(newState: Int) {
-        Log.i("State", bottomSheetBehavior.state.toString())
-
         when {
             newState == BottomSheetBehavior.STATE_EXPANDED && !isSheetExpanded -> {
                 expandToFillScreen()
@@ -99,6 +99,22 @@ class RideOptionsBottomSheet(
             }
         }
     }
+
+    fun adjustMapForBottomSheet(slideOffset: Float) {
+
+        bounds = calculateBounds() ?: return
+        val totalSheetHeight = bottomSheet.height
+        val mapPaddingBottom = (slideOffset * totalSheetHeight).toInt()
+
+        googleMap.get()?.setPadding(0, 0, 0, mapPaddingBottom)
+        googleMap.get()?.animateCamera(
+            CameraUpdateFactory.newLatLngBounds(
+                bounds!!,
+                100
+            )
+        )
+    }
+
 
     private var builder = LatLngBounds.Builder()
     private var bounds: LatLngBounds? = null
@@ -187,7 +203,6 @@ class RideOptionsBottomSheet(
         )
     }
 
-    private var searchJob: Job? = null
     private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>) {
         val adapter = CarListAdapter(nearbyVehicles)
         adapter.onItemClicked = {

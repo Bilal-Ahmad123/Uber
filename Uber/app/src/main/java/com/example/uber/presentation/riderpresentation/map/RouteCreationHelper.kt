@@ -261,6 +261,7 @@ class RouteCreationHelper(
         ShowNearbyVehicleService.drivers.clear()
         pickUpMarker = null
         dropOffMarker = null
+        bounds = null
     }
 
     private fun createAnnotation(
@@ -339,6 +340,7 @@ class RouteCreationHelper(
     private fun addAnnotationClickListener(marker: Marker) {
         if(marker.tag != null) {
             if (marker.tag?.equals(pickUpMarker?.tag)!!) {
+
                 bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
             } else if (marker.tag?.equals(dropOffMarker?.tag)!!) {
                 bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)

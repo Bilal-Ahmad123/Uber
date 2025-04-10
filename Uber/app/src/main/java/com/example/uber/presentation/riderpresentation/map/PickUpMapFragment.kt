@@ -210,6 +210,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private fun enableMyLocation() {
         checkLocationPermission(null) {
             googleMap.isMyLocationEnabled = true
+            googleMap.uiSettings.isMyLocationButtonEnabled = false
         }
     }
 
