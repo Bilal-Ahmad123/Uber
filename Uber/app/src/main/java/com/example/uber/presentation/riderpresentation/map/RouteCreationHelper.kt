@@ -53,9 +53,10 @@ class RouteCreationHelper(
     private var context: WeakReference<Context>,
     private var googleViewModel: WeakReference<GoogleViewModel>,
     private val viewLifecycleOwner: LifecycleOwner,
-) : OnMarkerClickListener {
+    ) : OnMarkerClickListener {
 
     private var pickUpMarker: Marker? = null
+
     private var dropOffMarker: Marker? = null
 
     companion object {
@@ -75,7 +76,7 @@ class RouteCreationHelper(
             context: WeakReference<Context>,
             googleViewModel: WeakReference<GoogleViewModel>,
             viewLifecycleOwner: LifecycleOwner,
-        ): RouteCreationHelper? {
+            ): RouteCreationHelper? {
             if (instance == null) {
                 synchronized(this) {
                     if (instance == null) {
@@ -154,7 +155,13 @@ class RouteCreationHelper(
                 bounds!!.include(it)
             }
             withContext(Dispatchers.Main) {
-                map.get()?.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds!!.build(), 500))
+                map.get()?.setPadding(0, 0, 0, 0)
+                map.get()?.animateCamera(
+                    CameraUpdateFactory.newLatLngBounds(
+                        bounds!!.build(),
+                        100
+                    )
+                )
             }
         }
     }

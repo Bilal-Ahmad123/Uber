@@ -241,8 +241,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             WeakReference(googleMap),
             WeakReference(requireContext()),
             WeakReference(googleViewModel),
-            viewLifecycleOwner,
-        )
+            viewLifecycleOwner)
         routeHelper = RouteCreationHelper.getInstance()
     }
 
