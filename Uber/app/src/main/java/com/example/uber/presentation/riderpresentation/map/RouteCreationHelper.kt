@@ -261,7 +261,6 @@ class RouteCreationHelper(
         ShowNearbyVehicleService.drivers.clear()
         pickUpMarker = null
         dropOffMarker = null
-        bounds = null
     }
 
     private fun createAnnotation(

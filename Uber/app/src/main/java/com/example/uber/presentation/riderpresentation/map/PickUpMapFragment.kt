@@ -118,27 +118,24 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private fun handleOnBackPressed() {
         requireActivity().onBackPressedDispatcher.addCallback {
-            when(currentSheet){
-                SheetState.PICKUP_SHEET ->{
-                    isEnabled = false
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
-                SheetState.RIDE_SHEET ->{
-                    currentSheet = SheetState.PICKUP_SHEET
-                    bottomSheetManager?.showBottomSheet()
-                    _rideOptionsBottomSheet?.hideBottomSheet()
-                    routeHelper?.deleteEveryThingOnMap()
-                    showLocationPickerMarker()
-                    onAddCameraAndMoveListeners()
-                }
-                SheetState.VEHICLE_SHEET ->{
-
-                    currentSheet = SheetState.RIDE_SHEET
-                    _rideOptionsBottomSheet?.showBottomSheet()
-                    _rideOptionsBottomSheet?.vehicleSheet?.hideSheet()
-
-                }
+            if(_rideOptionsBottomSheet?.vehicleSheet?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED){
+                _rideOptionsBottomSheet?.vehicleSheet?.hideSheet()
+                _rideOptionsBottomSheet?.showBottomSheet()
             }
+
+            else if(_rideOptionsBottomSheet?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED){
+                _rideOptionsBottomSheet?.hideBottomSheet()
+                bottomSheetManager?.showBottomSheet()
+                routeHelper?.deleteEveryThingOnMap()
+                showLocationPickerMarker()
+                onAddCameraAndMoveListeners()
+            }
+
+            else {
+                isEnabled = false
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+            }
+
 //            when (_rideOptionsBottomSheet?.bottomSheetBehaviour()) {
 //                BottomSheetBehavior.STATE_EXPANDED -> {
 //                    _rideOptionsBottomSheet?.hideBottomSheet()
