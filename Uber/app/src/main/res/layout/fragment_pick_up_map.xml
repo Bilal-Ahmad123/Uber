@@ -91,4 +91,6 @@
 
     <include layout="@layout/ride_options_bottom_sheet" />
 
+    <include layout="@layout/vehicle_details_bottom_sheet"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

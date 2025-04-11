@@ -2,10 +2,13 @@ package com.example.uber.presentation.riderpresentation.bottomSheet
 
 import android.app.Dialog
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.core.view.updateLayoutParams
 import com.example.uber.R
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -48,6 +51,25 @@ class GenericBottomSheet: BottomSheetDialogFragment() {
             val fragment = GenericBottomSheet()
             fragment.customView = customView
             return fragment
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        dialog?.window?.apply {
+            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL)
+
+            findViewById<View>(com.google.android.material.R.id.touch_outside)?.updateLayoutParams {
+                height = 100
+                width = 0
+            }
+
+            attributes = attributes.apply {
+                gravity = Gravity.BOTTOM
+            }
+            setDimAmount(0.0f)
         }
     }
 }

@@ -15,13 +15,15 @@ import java.io.InputStream
 
 
 class CarListAdapter(
-    private val cars: List<NearbyVehicles>) : RecyclerView.Adapter<CarListAdapter.VehicleViewHolder>() {
+    private val cars: List<NearbyVehicles>
+) : RecyclerView.Adapter<CarListAdapter.VehicleViewHolder>() {
 
-    public var onItemClicked: ((NearbyVehicles) -> Unit)? = null
-    private var selectedPosition = -1
+    public var onItemClicked: ((NearbyVehicles,Boolean) -> Unit)? = null
+    private var selectedPosition = 0
 
     inner class VehicleViewHolder(
-        private val binding: ItemVehicleBinding) : RecyclerView.ViewHolder(binding.root) {
+        private val binding: ItemVehicleBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(car: NearbyVehicles) {
             binding.tvVehicleName.text = car.name
@@ -58,18 +60,17 @@ class CarListAdapter(
         holder.bind(cars[position])
         holder.itemView.isSelected = position == selectedPosition
         holder.itemView.setOnClickListener {
-            selectedPosition = if (selectedPosition == position) {
-                -1
-            } else {
-                position
+            if (selectedPosition != position) {
+                selectedPosition = position
+                onItemClicked?.invoke(cars[position],false)
+                runCatching {
+                    notifyDataSetChanged()
+                }.onFailure {
+                    Log.e("Error", it.toString())
+                }
             }
-            onItemClicked?.invoke(cars[position])
-
-            //MUD code needs to be refactored
-            runCatching {
-                notifyDataSetChanged()
-            }.onFailure {
-                Log.e("Error",it.toString())
+            else{
+                onItemClicked?.invoke(cars[position],true)
             }
         }
     }

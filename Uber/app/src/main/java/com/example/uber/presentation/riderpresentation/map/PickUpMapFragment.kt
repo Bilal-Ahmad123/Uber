@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
+import com.example.uber.core.enums.SheetState
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.utils.FetchLocation
@@ -81,7 +82,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
     private val riderViewModel: RiderViewModel by activityViewModels<RiderViewModel>()
     private var nearbyVehicles: ShowNearbyVehicleService? = null
-
+    private var currentSheet : SheetState = SheetState.PICKUP_SHEET
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -117,28 +118,49 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private fun handleOnBackPressed() {
         requireActivity().onBackPressedDispatcher.addCallback {
-            when (_rideOptionsBottomSheet?.bottomSheetBehaviour()) {
-                BottomSheetBehavior.STATE_EXPANDED -> {
-                    _rideOptionsBottomSheet?.hideBottomSheet()
-                    bottomSheetManager?.showBottomSheet()
-                    routeHelper?.deleteEveryThingOnMap()
-                    showLocationPickerMarker()
-                    onAddCameraAndMoveListeners()
-                }
-
-                BottomSheetBehavior.STATE_COLLAPSED -> {
-                    _rideOptionsBottomSheet?.hideBottomSheet()
-                    bottomSheetManager?.showBottomSheet()
-                    routeHelper?.deleteEveryThingOnMap()
-                    showLocationPickerMarker()
-                    onAddCameraAndMoveListeners()
-                }
-
-                else -> {
+            when(currentSheet){
+                SheetState.PICKUP_SHEET ->{
                     isEnabled = false
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
+                SheetState.RIDE_SHEET ->{
+                    currentSheet = SheetState.PICKUP_SHEET
+                    bottomSheetManager?.showBottomSheet()
+                    _rideOptionsBottomSheet?.hideBottomSheet()
+                    routeHelper?.deleteEveryThingOnMap()
+                    showLocationPickerMarker()
+                    onAddCameraAndMoveListeners()
+                }
+                SheetState.VEHICLE_SHEET ->{
+
+                    currentSheet = SheetState.RIDE_SHEET
+                    _rideOptionsBottomSheet?.showBottomSheet()
+                    _rideOptionsBottomSheet?.vehicleSheet?.hideSheet()
+
+                }
             }
+//            when (_rideOptionsBottomSheet?.bottomSheetBehaviour()) {
+//                BottomSheetBehavior.STATE_EXPANDED -> {
+//                    _rideOptionsBottomSheet?.hideBottomSheet()
+//                    bottomSheetManager?.showBottomSheet()
+//                    routeHelper?.deleteEveryThingOnMap()
+//                    showLocationPickerMarker()
+//                    onAddCameraAndMoveListeners()
+//                }
+//
+//                BottomSheetBehavior.STATE_COLLAPSED -> {
+//                    _rideOptionsBottomSheet?.hideBottomSheet()
+//                    bottomSheetManager?.showBottomSheet()
+//                    routeHelper?.deleteEveryThingOnMap()
+//                    showLocationPickerMarker()
+//                    onAddCameraAndMoveListeners()
+//                }
+//
+//                else -> {
+//                    isEnabled = false
+//                    requireActivity().onBackPressedDispatcher.onBackPressed()
+//                }
+//            }
         }
     }
 
@@ -489,6 +511,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private fun showRideOptionsBottomSheet() {
         _rideOptionsBottomSheet?.showBottomSheet()
+        currentSheet = SheetState.RIDE_SHEET
     }
 
 

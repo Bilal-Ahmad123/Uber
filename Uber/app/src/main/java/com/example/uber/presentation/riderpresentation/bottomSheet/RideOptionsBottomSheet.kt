@@ -4,7 +4,9 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -38,8 +40,7 @@ class RideOptionsBottomSheet(
     private val context: Context,
     private val viewModelStoreOwner: ViewModelStoreOwner,
     private val viewLifecycleOwner: LifecycleOwner,
-    private val nearbyVehicleService: WeakReference<ShowNearbyVehicleService>
-) {
+    private val nearbyVehicleService: WeakReference<ShowNearbyVehicleService>) {
     private val bottomSheet: View = view.get()!!.findViewById(R.id.ride_options_bottom_sheet)
     private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
     private val shimmer: ShimmerFrameLayout by lazy {
@@ -48,16 +49,20 @@ class RideOptionsBottomSheet(
     private val vehicleRecyclerView: RecyclerView by lazy { bottomSheet.findViewById(R.id.vehicleRecyclerView) }
     private lateinit var googleMap: WeakReference<GoogleMap>
     private var isSheetExpanded: Boolean = false
+    private var vehicleDetailSheet : VehicleDetailsBottomSheet ? = null
 
     init {
         setBottomSheetStyle()
         initialBottomSheetHidden()
         setupBottomSheetCallback()
+        initializeVehicleDetailsSheet()
         Handler(Looper.getMainLooper()).post {
             observeNearbyVehiclesList()
         }
 
     }
+
+    val vehicleSheet get() = vehicleDetailSheet
 
     fun initializeGoogleMap(googleMap: WeakReference<GoogleMap>) {
         this.googleMap = googleMap
@@ -178,9 +183,11 @@ class RideOptionsBottomSheet(
         shimmer.startShimmer()
     }
 
-    private fun showNearbyVehicles() {
-
+    private fun initializeVehicleDetailsSheet(){
+        vehicleDetailSheet = VehicleDetailsBottomSheet(view,context)
     }
+
+
 
     private fun initialBottomSheetHidden() {
         bottomSheetBehavior.isHideable = true
@@ -205,8 +212,12 @@ class RideOptionsBottomSheet(
 
     private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>) {
         val adapter = CarListAdapter(nearbyVehicles)
-        adapter.onItemClicked = {
+        adapter.onItemClicked = {it,isSelectedAgain->
             nearbyVehicleService.get()?.onCarItemListClickListener(it)
+            if(isSelectedAgain){
+                vehicleDetailSheet?.showSheet()
+                hideBottomSheet()
+            }
         }
 
         vehicleRecyclerView.layoutManager = LinearLayoutManager(context)
