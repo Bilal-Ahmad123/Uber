@@ -46,7 +46,7 @@ class GoogleViewModel @Inject constructor(
     val dropOffLocationName get() = _dropOffLocationName
     private val _placesSuggestion = MutableLiveData<Resource<SuggestionsResponse>>()
     val placesSuggestion get() = _placesSuggestion
-    private var _retrieveSuggestedPlaceDetail = MutableLiveData<List<Double>>()
+    private var _retrieveSuggestedPlaceDetail = MutableLiveData<List<Double>?>()
     val retrieveSuggestedPlaceDetail get() = _retrieveSuggestedPlaceDetail
 
 
@@ -140,5 +140,9 @@ class GoogleViewModel @Inject constructor(
         _pickUpLatitude = 0.0
         _pickUpLongitude = 0.0
         _dropOffLongitude = 0.0
+    }
+
+    fun cleanRetreiveSuggestedData(){
+        _retrieveSuggestedPlaceDetail.value = null
     }
 }

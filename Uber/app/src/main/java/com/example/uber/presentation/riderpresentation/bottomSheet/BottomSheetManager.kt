@@ -17,6 +17,7 @@ import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
+import com.example.uber.core.enums.SheetState
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.data.remote.api.googleMaps.models.SuggetionsResponse.Prediction
 import com.example.uber.data.remote.api.mapBox.models.SuggestionResponse.PlaceDetail
@@ -57,8 +58,8 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 //    private val lineView: View by lazy { view.findViewById<View>(R.id.lineView) }
     private lateinit var placeSuggestionAdapter: PlaceSuggestionAdapter
     private lateinit var binding: BottomSheetWhereToBinding
-    private lateinit var bottomSheet: LinearLayout
-    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private var bottomSheet: LinearLayout? = null
+    private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
     private val googleViewModel: GoogleViewModel by activityViewModels<GoogleViewModel>()
     private val sharedViewModel : MapAndSheetsSharedViewModel by activityViewModels()
 
@@ -98,6 +99,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         observePlacesSuggestions()
         debounce()
         setUpRecyclerViewAdapter()
+        sharedViewModel.setCurrentOpenedSheet(SheetState.PICKUP_SHEET)
     }
     private fun debounce() {
         pickUpLocationDebounce()
@@ -120,7 +122,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
 
     private fun setupBottomSheetCallback() {
-        bottomSheetBehavior.addBottomSheetCallback(object :
+        bottomSheetBehavior?.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 handleStateChange(newState)
@@ -177,13 +179,13 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
     private fun setBottomSheetStyle() {
         bottomSheet = requireActivity().findViewById<LinearLayout>(R.id.bottomSheet)
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-        bottomSheet.layoutParams.height =
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
+        bottomSheet?.layoutParams?.height =
             (requireContext().resources.displayMetrics.heightPixels * 0.95).toInt()
-        bottomSheetBehavior.peekHeight =
+        bottomSheetBehavior?.peekHeight =
             (requireContext().resources.displayMetrics.heightPixels * 0.32).toInt()
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        bottomSheetBehavior.isHideable = false
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        bottomSheetBehavior?.isHideable = false
     }
 
     private fun fadeInOutBottomSheetContent(slideOffset: Float) {
@@ -253,7 +255,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
     private fun setLocationOnMapLinearLayoutOnClickListener() {
         binding.llSetLocationOnMap.setOnClickListener {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
         }
     }
 
@@ -280,13 +282,13 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
 
     private fun hideBottomSheet() {
-        bottomSheetBehavior.isHideable = true
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        bottomSheetBehavior?.isHideable = true
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
     fun showBottomSheet(etAnnotationFocusListener: Markers? = null) {
-        bottomSheetBehavior.isHideable = false
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        bottomSheetBehavior?.isHideable = false
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         if (etAnnotationFocusListener != null) {
             when (etAnnotationFocusListener) {
                 Markers.PICK_UP -> binding.tiPickup.requestFocus()
@@ -312,15 +314,11 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
     }
 
 
-    fun bottomSheetBehaviour(): Int {
-        return bottomSheetBehavior.state
-    }
 
     private fun editTextFocusChangeListener() {
         binding.tiPickup.setOnFocusChangeListener { view, b ->
             if (b) {
                 sharedViewModel.setPickUpInputInFocus(true)
-                sharedViewModel.setDropOffInputInFocus(false)
 //                RxBus.publish(RxEvent.EventEditTextFocus(true, false))
 //                isPickupEtInFocus = true
 //                isDropOffEtInFocus = false
@@ -330,9 +328,6 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 //            RxBus.publish(RxEvent.EventEditTextFocus(false, true))
             if (b) {
                 sharedViewModel.setDropOffInputInFocus(true)
-                sharedViewModel.setPickUpInputInFocus(false)
-//                isPickupEtInFocus = false
-//                isDropOffEtInFocus = true
             }
         }
     }
@@ -366,6 +361,11 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         this.searchedResults = searchedResults
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        sharedViewModel.cleanData()
+        bottomSheetBehavior = null
+    }
     private fun extractSearchedResults(suggestions: List<Prediction>?): MutableList<PlaceDetail> {
         val searchedResults: MutableList<PlaceDetail> = mutableListOf()
         suggestions?.forEach {
@@ -386,14 +386,17 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
 
     private fun observeSuggestedPlaceDetail() {
-        googleViewModel.run {
+        googleViewModel.apply {
             retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
-                if (isPickupEtInFocus) {
-                    createRouteAndHideSheet(pickUpLatLng = LatLng(it[0], it[1]))
-                } else {
-                    createRouteAndHideSheet(dropOffLatLng = LatLng(it[0], it[1]))
+                if(it != null) {
+                    if (sharedViewModel.pickUpInputInFocus.value!!) {
+                        createRouteAndHideSheet(pickUpLatLng = LatLng(it[0], it[1]))
+                    } else {
+                        createRouteAndHideSheet(dropOffLatLng = LatLng(it[0], it[1]))
+                    }
                 }
             }
+            cleanRetreiveSuggestedData()
         }
     }
 
@@ -413,7 +416,6 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         AnimationManager.animateToEndOfScreenAndScale(binding.lineView, context = requireContext())
     }
 
-    //
     private fun pickUpLocationDebounce() {
         RxTextView.textChanges(binding.tiPickup).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
@@ -476,53 +478,20 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
     fun requestEditTextDropOffFocus() {
         binding.tiDropOff.requestFocus()
-        selectTextInsideEditText()
         showKeyBoardOnBottomsheetExpand()
     }
 
-    //
     private fun requestEditTextPickUpFocus() {
         binding.tiPickup.requestFocus()
         showKeyBoardOnBottomsheetExpand(binding.tiPickup)
     }
 
-    //
+
     private fun showKeyBoardOnBottomsheetExpand(editText: EditText = binding.tiDropOff) {
         val imm =
             requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
 
     }
-
-    //
-    private fun selectTextInsideEditText() {
-//        binding.tiDropOff.placeCursorAtEnd()
-    }
-//
-//    private fun EditText.placeCursorAtEnd() {
-//        Selection.setSelection(this.text, this.text.length);
-//
-//    }
-//
-//    private fun suggestions(query: String) {
-//        val sessionToken = AutocompleteSessionToken.newInstance()
-//        val request =
-//            FindAutocompletePredictionsRequest.builder()
-//                .setCountries("AU", "NZ")
-//                .setTypesFilter(listOf(PlaceTypes.ADDRESS))
-//                .setSessionToken(sessionToken)
-//                .setQuery(query)
-//                .build()
-//        Places.initialize(context.get(),BuildConfig.GOOGLE_API_KEY)
-//        val placesClient: PlacesClient = Places.createClient(context.get()!!)
-//            placesClient.findAutocompletePredictions(request)
-//                .addOnSuccessListener { response: FindAutocompletePredictionsResponse ->
-//                    Log.i("TAG", "Place suggestions: $response")
-//                }.addOnFailureListener { exception: Exception? ->
-//                    if (exception is ApiException) {
-//                    }
-//                }
-//
-//    }
 
 }

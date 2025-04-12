@@ -13,18 +13,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
-import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import com.example.uber.R
-import com.example.uber.core.RxBus.RxBus
-import com.example.uber.core.RxBus.RxEvent
-import com.example.uber.core.enums.Markers
 import com.example.uber.core.enums.SheetState
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.interfaces.utils.mode.CheckMode
@@ -85,9 +80,9 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val drivers = mutableMapOf<UUID, DriverLocationMarker>()
     private val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
     private val riderViewModel: RiderViewModel by activityViewModels<RiderViewModel>()
-    private val sharedViewModel : MapAndSheetsSharedViewModel by activityViewModels()
+    private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels()
     private var nearbyVehicles: ShowNearbyVehicleService? = null
-    private var currentSheet : SheetState = SheetState.PICKUP_SHEET
+    private var currentSheet: SheetState = SheetState.PICKUP_SHEET
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,10 +112,13 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         observeConfirmDestinationBtnClicked()
         observeAnnotationClicks()
         observePickUpAndDropInputFocus()
+        observeCurrentlyOpenedSheet()
+        observeRideOptionsSheetExpanded()
     }
 
     private fun initializeNearbyVehicles() {
-        nearbyVehicles = ShowNearbyVehicleService(requireActivity(), viewLifecycleOwner,
+        nearbyVehicles = ShowNearbyVehicleService(
+            requireActivity(), viewLifecycleOwner,
             WeakReference(requireContext())
         )
     }
@@ -167,7 +165,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 //                    requireActivity().onBackPressedDispatcher.onBackPressed()
 //                }
 //            }
-       // }
+        // }
     }
 
     private fun setUpGoogleMap() {
@@ -175,7 +173,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             childFragmentManager.findFragmentById(R.id.googleMap) as SupportMapFragment
         mapFrag.getMapAsync(this)
     }
-
 
 
     private fun initializeBottomSheets(view: View) {
@@ -388,6 +385,9 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
     }
 
+    private fun currentlyOpenedSheet() {
+        sharedViewModel
+    }
 
 
     private fun requestEditTextDropOffFocus() {
@@ -448,15 +448,15 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 //        )
     }
 
-    private fun observePickUpAndDropInputFocus(){
+    private fun observePickUpAndDropInputFocus() {
         sharedViewModel.apply {
-            pickUpInputInFocus.observe(viewLifecycleOwner){
-                if(it){
+            pickUpInputInFocus.observe(viewLifecycleOwner) {
+                if (it) {
                     animateToPickUpLocation()
                 }
             }
-            dropOffInputInFocus.observe(viewLifecycleOwner){
-                if(it){
+            dropOffInputInFocus.observe(viewLifecycleOwner) {
+                if (it) {
                     animateToDropOffLocation()
                 }
             }
@@ -464,10 +464,10 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
 
-    private fun observeAnnotationClicks(){
+    private fun observeAnnotationClicks() {
         sharedViewModel.apply {
-            pickUpAnnotationClick.observe(viewLifecycleOwner){
-                if(it){
+            pickUpAnnotationClick.observe(viewLifecycleOwner) {
+                if (it) {
                     val navHostFragment =
                         childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
                     val navController = navHostFragment?.navController
@@ -476,12 +476,13 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                 }
             }
 
-            dropOffAnnotationClick.observe(viewLifecycleOwner){
-                if(it){
+            dropOffAnnotationClick.observe(viewLifecycleOwner) {
+                if (it) {
                     val navHostFragment =
                         childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
                     val navController = navHostFragment?.navController
-                    navController?.navigate(R.id.bottomSheetManager)                }
+                    navController?.navigate(R.id.bottomSheetManager)
+                }
             }
         }
     }
@@ -593,11 +594,19 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         createRoute(pickUpLatLng, dropOffLatLng)
     }
 
-    private fun observeConfirmDestinationBtnClicked(){
+    private fun observeConfirmDestinationBtnClicked() {
         sharedViewModel.apply {
-            isBtnDestinationClicked.observe(viewLifecycleOwner){
-                if(it){
-                    createRouteAction(sharedViewModel.pickUpPosition.value,sharedViewModel.dropOffPosition.value)
+            isBtnDestinationClicked.observe(viewLifecycleOwner) {
+                if (it) {
+                    createRouteAction(
+                        sharedViewModel.pickUpPosition.value,
+                        sharedViewModel.dropOffPosition.value
+                    )
+                    val navHostFragment =
+                        childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
+                    val navController = navHostFragment?.navController
+                    navController?.navigate(R.id.rideOptionsBottomSheet)
+                    sharedViewModel.setIsDestinationConfirmBtnClicked(false)
                 }
             }
         }
@@ -628,6 +637,41 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             dispatcher(true)
         } else {
             dispatcher(false)
+        }
+    }
+
+    private fun observeCurrentlyOpenedSheet() {
+        sharedViewModel.apply {
+            currentSheet.observe(viewLifecycleOwner) {
+                when (it) {
+                    SheetState.PICKUP_SHEET -> {
+                        routeHelper?.deleteEveryThingOnMap()
+                        showLocationPickerMarker()
+                        if (::googleMap.isInitialized) {
+                            onAddCameraAndMoveListeners()
+                        }
+                    }
+
+                    else -> Unit
+                }
+            }
+        }
+    }
+
+    private fun observeRideOptionsSheetExpanded() {
+        sharedViewModel.apply {
+            sheetOffset.observe(viewLifecycleOwner) {
+                if (bounds != null && ::googleMap.isInitialized) {
+                    googleMap.setPadding(0, 0, 0, it)
+                    googleMap.animateCamera(
+                        CameraUpdateFactory.newLatLngBounds(
+                            bounds!!,
+                            100
+                        )
+                    )
+                }
+            }
+
         }
     }
 

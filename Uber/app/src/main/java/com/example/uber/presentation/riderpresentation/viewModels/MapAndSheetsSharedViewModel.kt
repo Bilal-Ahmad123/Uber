@@ -1,10 +1,11 @@
 package com.example.uber.presentation.riderpresentation.viewModels
 
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
+import com.example.uber.core.enums.SheetState
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -30,6 +31,15 @@ class MapAndSheetsSharedViewModel @Inject constructor(dispatcher: IDispatchers )
 
     private val isDropOffInputInFocus = MutableLiveData<Boolean>(true)
     val dropOffInputInFocus get() = isDropOffInputInFocus
+
+    private val currentOpenedSheet = MutableLiveData<SheetState>(SheetState.PICKUP_SHEET)
+    val currentSheet get() = currentOpenedSheet
+
+    private val rideOptionsSheetCurrentOffset = MutableLiveData<Int>()
+    val sheetOffset get() = rideOptionsSheetCurrentOffset
+
+    private var _bounds : LatLngBounds ? = null
+    val bounds get() = _bounds
 
     fun setPickUpLatLng(pickUpLatLng:LatLng){
         this.pickUpLatLng.postValue(pickUpLatLng)
@@ -61,9 +71,21 @@ class MapAndSheetsSharedViewModel @Inject constructor(dispatcher: IDispatchers )
         isPickInputInFocus.postValue(!value)
     }
 
+    fun setCurrentOpenedSheet(value : SheetState){
+        currentOpenedSheet.postValue(value)
+    }
+
+    fun setRideOptionsSheetOffsetAndBounds(value: Int, bounds: LatLngBounds){
+        rideOptionsSheetCurrentOffset.postValue(value)
+        _bounds = bounds
+    }
+
+
     fun cleanData(){
         pickUpAnnotationClicked.postValue(false)
         dropOffAnnotationClicked.postValue(false)
+        isDropOffInputInFocus.postValue(false)
+        isPickInputInFocus.postValue(false)
     }
 
 

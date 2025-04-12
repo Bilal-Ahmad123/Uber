@@ -238,12 +238,13 @@ class RouteCreationHelper(
         return scaledIcon
     }
 
-    fun deleteEveryThingOnMap() {
-        map.get()?.clear()
-        ShowNearbyVehicleService.drivers.clear()
-        pickUpMarker = null
-        dropOffMarker = null
-    }
+        fun deleteEveryThingOnMap() {
+            map.get()?.clear()
+            ShowNearbyVehicleService.drivers.clear()
+            pickUpMarker = null
+            dropOffMarker = null
+        }
+
 
     private fun createAnnotation(
         latitude: Double,
