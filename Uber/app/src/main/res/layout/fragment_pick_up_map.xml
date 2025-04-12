@@ -1,9 +1,11 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent">
 
-    <FrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -62,7 +64,7 @@
         <ImageView
             android:id="@+id/activity_main_center_location_pin"
             android:layout_width="@dimen/_30sdp"
-            android:layout_height="@dimen/_30sdp"
+            android:layout_height="30dp"
             android:layout_gravity="center"
             android:layout_marginBottom="@dimen/_15sdp"
             android:contentDescription="TODO"
@@ -87,10 +89,25 @@
 
     </FrameLayout>
 
-    <include layout="@layout/bottom_sheet_where_to" />
 
-    <include layout="@layout/ride_options_bottom_sheet" />
+    <LinearLayout
+        android:id="@+id/bottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        android:orientation="vertical"
+        app:behavior_hideable="true"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-    <include layout="@layout/vehicle_details_bottom_sheet"/>
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_bottom_sheet"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:navGraph="@navigation/nav_bottom_sheet_graph"
+            app:defaultNavHost="false" />
+    </LinearLayout>
+
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

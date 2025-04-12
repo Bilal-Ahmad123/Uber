@@ -12,7 +12,7 @@
     android:padding="15dp"
     app:behavior_hideable="true"
     android:clickable="true"
-    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+   >
 
     <View
         android:id="@+id/handlebar"

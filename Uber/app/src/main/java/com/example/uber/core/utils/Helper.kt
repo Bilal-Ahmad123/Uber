@@ -1,25 +1,22 @@
 package com.example.uber.core.utils
 
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import com.example.uber.presentation.riderpresentation.map.RouteCreationHelper
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 
 object Helper {
-    fun calculateTimeWithVehicleTime(time : Int):String{
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.MINUTE, time)
+     fun calculateBounds(latLngBounds:List<LatLng>?): LatLngBounds? {
+        val builder = LatLngBounds.Builder()
+        val latLngList = latLngBounds
 
-        val formatter = SimpleDateFormat("h:mma", Locale.getDefault())
-        val formattedTime = formatter.format(calendar.time).lowercase()
-        return formattedTime
+        if (latLngList == null) {
+            return null
+        }
+
+        latLngList?.forEach {
+            builder.include(it)
+        }
+
+        return builder.build()
     }
-
-    fun showTimeAway(time : Int):String{
-        return "${time} min away"
-    }
-
-    fun showCurrency(fare : Double, currency : String = "PKR"):String{
-        return "${currency} ${fare}"
-    }
-
 }

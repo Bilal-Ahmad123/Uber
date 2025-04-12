@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_bottom_sheet_graph"
+    app:startDestination="@id/bottomSheetManager">
+
+    <fragment
+        android:id="@+id/bottomSheetManager"
+        android:name="com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager"
+        android:label="BottomSheetManager" >
+        <action
+            android:id="@+id/action_bottomSheetManager_to_rideOptionsBottomSheet"
+            app:destination="@id/rideOptionsBottomSheet" />
+    </fragment>
+    <fragment
+        android:id="@+id/rideOptionsBottomSheet"
+        android:name="com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet"
+        android:label="RideOptionsBottomSheet" />
+</navigation>

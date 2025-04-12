@@ -28,7 +28,7 @@ class GenericBottomSheet: BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_dynamic_bottom_sheet, container, false)
-        bottomSheet = view.findViewById(R.id.bottom_sheet)
+//        bottomSheet = view.findViewById(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         customView?.let {

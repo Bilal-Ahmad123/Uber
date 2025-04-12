@@ -13,14 +13,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.lifecycle.ViewModelProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelStoreOwner
 import com.example.uber.R
 import com.example.uber.core.enums.Markers
 import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
 import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
@@ -52,49 +55,18 @@ class RouteCreationHelper(
     private var map: WeakReference<GoogleMap>,
     private var context: WeakReference<Context>,
     private var googleViewModel: WeakReference<GoogleViewModel>,
+    private var sharedViewModel: WeakReference<MapAndSheetsSharedViewModel>,
     private val viewLifecycleOwner: LifecycleOwner,
-    ) : OnMarkerClickListener {
+    private val viewModelStoreOwner: ViewModelStoreOwner,
+) : OnMarkerClickListener {
+
 
     private var pickUpMarker: Marker? = null
 
     private var dropOffMarker: Marker? = null
 
     companion object {
-        var latLngBounds:List<LatLng>? = null
-
-        @Volatile
-        private var instance: RouteCreationHelper? = null
-        fun getInstance(): RouteCreationHelper? {
-            return instance
-        }
-
-        fun initialize(
-            bottomSheetManager: WeakReference<BottomSheetManager>,
-            rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
-            pickUpMapFragment: WeakReference<PickUpMapFragment>,
-            map: WeakReference<GoogleMap>,
-            context: WeakReference<Context>,
-            googleViewModel: WeakReference<GoogleViewModel>,
-            viewLifecycleOwner: LifecycleOwner,
-            ): RouteCreationHelper? {
-            if (instance == null) {
-                synchronized(this) {
-                    if (instance == null) {
-                        instance = RouteCreationHelper(
-                            bottomSheetManager, rideOptionsBottomSheet, pickUpMapFragment,
-                            map, context, googleViewModel, viewLifecycleOwner
-                        )
-                    }
-                }
-            }
-            return instance
-        }
-
-        fun destroyInstance() {
-            if (instance != null) {
-                instance = null
-            }
-        }
+        var latLngBounds: List<LatLng>? = null
     }
 
 
@@ -106,6 +78,7 @@ class RouteCreationHelper(
         observeDirectionsResponse()
 
     }
+
 
     private fun observeDirectionsResponse() {
         googleViewModel.get()?.run {
@@ -146,7 +119,7 @@ class RouteCreationHelper(
         setUpMarkerClickListener()
     }
 
-    private var bounds:LatLngBounds.Builder? = LatLngBounds.Builder()
+    private var bounds: LatLngBounds.Builder? = LatLngBounds.Builder()
 
     private fun animateCameraToFillRoute(routePoints: List<LatLng>) {
         bounds = LatLngBounds.Builder()
@@ -156,12 +129,14 @@ class RouteCreationHelper(
             }
             withContext(Dispatchers.Main) {
                 map.get()?.setPadding(0, 0, 0, 0)
-                map.get()?.animateCamera(
-                    CameraUpdateFactory.newLatLngBounds(
-                        bounds!!.build(),
-                        100
+                if (bounds != null) {
+                    map.get()?.animateCamera(
+                        CameraUpdateFactory.newLatLngBounds(
+                            bounds!!.build(),
+                            100
+                        )
                     )
-                )
+                }
             }
         }
     }
@@ -344,14 +319,20 @@ class RouteCreationHelper(
 //    }
 
     private fun addAnnotationClickListener(marker: Marker) {
-        if(marker.tag != null) {
+        if (marker.tag != null) {
             if (marker.tag?.equals(pickUpMarker?.tag)!!) {
 
-                bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
+                sharedViewModel.get()?.setPickUpAnnotationClicked(true)
+                sharedViewModel.get()?.setPickUpInputInFocus(true)
+
+//                bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
             } else if (marker.tag?.equals(dropOffMarker?.tag)!!) {
-                bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
+//                bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
+                sharedViewModel.get()?.setDropOffInputInFocus(true)
+                sharedViewModel.get()?.setDropOffAnnotationClicked(true)
             }
-            rideOptionsBottomSheet.get()?.hideBottomSheet()
+//            rideOptionsBottomSheet.get()?.hideBottomSheet()
+//            rideOptionsBottomSheet.get()?.vehicleSheet?.hideSheet()
             deleteEveryThingOnMap()
             pickUpMapFragment.get()?.showLocationPickerMarker()
             pickUpMapFragment.get()?.onAddCameraAndMoveListeners()
@@ -376,9 +357,16 @@ class RouteCreationHelper(
             val paddingLeft = 100
             val paddingRight = 100
             val builder = LatLngBounds.Builder()
-            val width:Int? = context.get()?.resources?.displayMetrics?.widthPixels;
-           val height:Int? = context.get()?.resources?.displayMetrics?.heightPixels;
-            map.get()?.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds!!.build(),width!!,height!!, 900))
+            val width: Int? = context.get()?.resources?.displayMetrics?.widthPixels;
+            val height: Int? = context.get()?.resources?.displayMetrics?.heightPixels;
+            map.get()?.moveCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    bounds!!.build(),
+                    width!!,
+                    height!!,
+                    900
+                )
+            )
         }
     }
 

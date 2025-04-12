@@ -19,9 +19,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
+import com.example.uber.core.enums.Markers
 import com.example.uber.core.enums.SheetState
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.interfaces.utils.mode.CheckMode
@@ -35,6 +38,7 @@ import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBo
 import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapboxViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
@@ -68,7 +72,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private lateinit var pickupTextView: EditText
     private lateinit var dropOffTextView: EditText
     private val mapboxViewModel: MapboxViewModel by viewModels()
-    private val googleViewModel: GoogleViewModel by viewModels()
+    private val googleViewModel: GoogleViewModel by activityViewModels<GoogleViewModel>()
     private val socketViewModel: SocketViewModel by activityViewModels()
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = true
@@ -81,8 +85,10 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val drivers = mutableMapOf<UUID, DriverLocationMarker>()
     private val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
     private val riderViewModel: RiderViewModel by activityViewModels<RiderViewModel>()
+    private val sharedViewModel : MapAndSheetsSharedViewModel by activityViewModels()
     private var nearbyVehicles: ShowNearbyVehicleService? = null
     private var currentSheet : SheetState = SheetState.PICKUP_SHEET
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -108,6 +114,9 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             getInitialPickUpLocation()
         }
         handleOnBackPressed()
+        observeConfirmDestinationBtnClicked()
+        observeAnnotationClicks()
+        observePickUpAndDropInputFocus()
     }
 
     private fun initializeNearbyVehicles() {
@@ -117,24 +126,24 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private fun handleOnBackPressed() {
-        requireActivity().onBackPressedDispatcher.addCallback {
-            if(_rideOptionsBottomSheet?.vehicleSheet?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED){
-                _rideOptionsBottomSheet?.vehicleSheet?.hideSheet()
-                _rideOptionsBottomSheet?.showBottomSheet()
-            }
-
-            else if(_rideOptionsBottomSheet?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED){
-                _rideOptionsBottomSheet?.hideBottomSheet()
-                bottomSheetManager?.showBottomSheet()
-                routeHelper?.deleteEveryThingOnMap()
-                showLocationPickerMarker()
-                onAddCameraAndMoveListeners()
-            }
-
-            else {
-                isEnabled = false
-                requireActivity().onBackPressedDispatcher.onBackPressed()
-            }
+//        requireActivity().onBackPressedDispatcher.addCallback {
+//            if(_rideOptionsBottomSheet?.vehicleSheet?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED){
+//                _rideOptionsBottomSheet?.vehicleSheet?.hideSheet()
+//                _rideOptionsBottomSheet?.showBottomSheet()
+//            }
+//
+//            else if(_rideOptionsBottomSheet?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED){
+//                _rideOptionsBottomSheet?.hideBottomSheet()
+//                bottomSheetManager?.showBottomSheet()
+//                routeHelper?.deleteEveryThingOnMap()
+//                showLocationPickerMarker()
+//                onAddCameraAndMoveListeners()
+//            }
+//
+//            else {
+//                isEnabled = false
+//                requireActivity().onBackPressedDispatcher.onBackPressed()
+//            }
 
 //            when (_rideOptionsBottomSheet?.bottomSheetBehaviour()) {
 //                BottomSheetBehavior.STATE_EXPANDED -> {
@@ -158,7 +167,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 //                    requireActivity().onBackPressedDispatcher.onBackPressed()
 //                }
 //            }
-        }
+       // }
     }
 
     private fun setUpGoogleMap() {
@@ -168,27 +177,25 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
 
+
     private fun initializeBottomSheets(view: View) {
         initializeNearbyVehicles()
-        bottomSheetManager =
-            BottomSheetManager.initialize(
-                view,
-                WeakReference(requireContext()),
-                WeakReference(this),
-                viewLifecycleOwner,
-                googleViewModel,
-            )
-        _rideOptionsBottomSheet = RideOptionsBottomSheet(
-            WeakReference(view),
-            requireContext(),
-            requireActivity(),
-            viewLifecycleOwner,
-            WeakReference(nearbyVehicles)
-        )
+        val bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
+
+        // Show the sheet collapsed initially
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+//
+//        _rideOptionsBottomSheet = RideOptionsBottomSheet(
+//            WeakReference(view),
+//            requireContext(),
+//            requireActivity(),
+//            viewLifecycleOwner,
+//            WeakReference(nearbyVehicles)
+//        )
     }
 
     private fun initializeBottomSheetViews() {
-        bottomSheetView = binding.root.findViewById<LinearLayout>(R.id.bottom_sheet)
+//        bottomSheetView = binding.root.findViewById<LinearLayout>(R.id.bottom_sheet)
         pickupTextView = binding.root.findViewById<EditText>(R.id.ti_pickup)
         dropOffTextView = binding.root.findViewById<EditText>(R.id.ti_drop_off)
     }
@@ -211,7 +218,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
-        _rideOptionsBottomSheet?.initializeGoogleMap(WeakReference(googleMap))
+//        _rideOptionsBottomSheet?.initializeGoogleMap(WeakReference(googleMap))
         nearbyVehicles?.startObservingNearbyVehicles(WeakReference(googleMap))
         onAddCameraAndMoveListeners()
         googleMap.setMapStyle(
@@ -234,15 +241,19 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private fun initializeRouteHelper() {
-        RouteCreationHelper.initialize(
+
+
+        routeHelper = RouteCreationHelper(
             WeakReference(bottomSheetManager),
             WeakReference(_rideOptionsBottomSheet),
             WeakReference(this),
             WeakReference(googleMap),
             WeakReference(requireContext()),
             WeakReference(googleViewModel),
-            viewLifecycleOwner)
-        routeHelper = RouteCreationHelper.getInstance()
+            WeakReference(sharedViewModel),
+            viewLifecycleOwner,
+            this
+        )
     }
 
     private fun animateCameraToCurrentLocation(lastKnownLocation: Location?) {
@@ -288,13 +299,13 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private fun cleanUpResources() {
         _binding = null
         onRemoveCameraAndMoveListener()
-        BottomSheetManager.destroyInstance()
         bottomSheetManager = null
         FetchLocation.cleanResources()
-        RouteCreationHelper.destroyInstance()
         routeHelper = null
         _rideOptionsBottomSheet = null
         _compositeDisposable.dispose()
+        sharedViewModel.setIsDestinationConfirmBtnClicked(false)
+        googleViewModel.cleanData()
     }
 
     private val cameraMoveListener = OnCameraMoveListener {
@@ -362,10 +373,11 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private fun setBackButtonOnClickListener() {
         binding.backFbn.setOnClickListener {
-            if (bottomSheetManager?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetManager?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_HIDDEN) {
-                bottomSheetManager?.showBottomSheet()
-            }
-            _rideOptionsBottomSheet?.hideBottomSheet()
+
+//            if (bottomSheetManager?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetManager?.bottomSheetBehaviour() == BottomSheetBehavior.STATE_HIDDEN) {
+//                bottomSheetManager?.showBottomSheet()
+//            }
+//            _rideOptionsBottomSheet?.hideBottomSheet()
             routeHelper?.deleteEveryThingOnMap()
             showLocationPickerMarker()
             if (!_areListenersRegistered) {
@@ -376,8 +388,10 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
     }
 
+
+
     private fun requestEditTextDropOffFocus() {
-        bottomSheetManager?.requestEditTextDropOffFocus()
+//        bottomSheetManager?.requestEditTextDropOffFocus()
     }
 
     override fun onBottomSheetSlide(slideOffset: Float) {
@@ -399,12 +413,12 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         if (SystemInfo.CheckInternetConnection(requireContext())) {
             runCatching {
                 try {
-                    if (isPickupEtInFocus) {
+                    if (sharedViewModel.pickUpInputInFocus.value!!) {
                         googleViewModel.setPickUpLocationName(
                             googleMap.cameraPosition.target.latitude,
                             googleMap.cameraPosition.target.longitude
                         )
-                    } else if (isDropOffEtInFocus) {
+                    } else if (sharedViewModel.dropOffInputInFocus.value!!) {
                         googleViewModel.setDropOffLocationName(
                             googleMap.cameraPosition.target.latitude,
                             googleMap.cameraPosition.target.longitude
@@ -421,17 +435,55 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     @SuppressLint("CheckResult")
     private fun editTextFocusChangeListener() {
-        _compositeDisposable.add(
-            RxBus.listen(RxEvent.EventEditTextFocus::class.java).subscribe {
-                if (it.isPickUpEditTextFocus) {
+//        _compositeDisposable.add(
+//            RxBus.listen(RxEvent.EventEditTextFocus::class.java).subscribe {
+//                if (it.isPickUpEditTextFocus) {
+//                    animateToPickUpLocation()
+//                } else if (it.isDropOffEditTextFocus) {
+//                    animateToDropOffLocation()
+//                }
+//                isPickupEtInFocus = it.isPickUpEditTextFocus
+//                isDropOffEtInFocus = it.isDropOffEditTextFocus
+//            }
+//        )
+    }
+
+    private fun observePickUpAndDropInputFocus(){
+        sharedViewModel.apply {
+            pickUpInputInFocus.observe(viewLifecycleOwner){
+                if(it){
                     animateToPickUpLocation()
-                } else if (it.isDropOffEditTextFocus) {
+                }
+            }
+            dropOffInputInFocus.observe(viewLifecycleOwner){
+                if(it){
                     animateToDropOffLocation()
                 }
-                isPickupEtInFocus = it.isPickUpEditTextFocus
-                isDropOffEtInFocus = it.isDropOffEditTextFocus
             }
-        )
+        }
+    }
+
+
+    private fun observeAnnotationClicks(){
+        sharedViewModel.apply {
+            pickUpAnnotationClick.observe(viewLifecycleOwner){
+                if(it){
+                    val navHostFragment =
+                        childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
+                    val navController = navHostFragment?.navController
+                    navController?.navigate(R.id.bottomSheetManager)
+
+                }
+            }
+
+            dropOffAnnotationClick.observe(viewLifecycleOwner){
+                if(it){
+                    val navHostFragment =
+                        childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
+                    val navController = navHostFragment?.navController
+                    navController?.navigate(R.id.bottomSheetManager)                }
+            }
+        }
     }
 
     private fun getInitialPickUpLocation() {
@@ -506,7 +558,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
 
     private fun showRideOptionsBottomSheet() {
-        _rideOptionsBottomSheet?.showBottomSheet()
+//        _rideOptionsBottomSheet?.showBottomSheet()
         currentSheet = SheetState.RIDE_SHEET
     }
 
@@ -539,6 +591,16 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         dropOffLatLng: LatLng?
     ) {
         createRoute(pickUpLatLng, dropOffLatLng)
+    }
+
+    private fun observeConfirmDestinationBtnClicked(){
+        sharedViewModel.apply {
+            isBtnDestinationClicked.observe(viewLifecycleOwner){
+                if(it){
+                    createRouteAction(sharedViewModel.pickUpPosition.value,sharedViewModel.dropOffPosition.value)
+                }
+            }
+        }
     }
 
 

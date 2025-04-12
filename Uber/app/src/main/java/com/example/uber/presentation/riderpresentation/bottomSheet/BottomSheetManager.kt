@@ -1,109 +1,97 @@
 package com.example.uber.presentation.riderpresentation.bottomSheet
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.text.Selection
-import android.util.Log
+import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.appcompat.widget.AppCompatButton
-import androidx.lifecycle.LifecycleOwner
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.uber.BuildConfig
 import com.example.uber.R
 import com.example.uber.core.RxBus.RxBus
 import com.example.uber.core.RxBus.RxEvent
 import com.example.uber.core.enums.Markers
-import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.data.remote.api.googleMaps.models.SuggetionsResponse.Prediction
 import com.example.uber.data.remote.api.mapBox.models.SuggestionResponse.PlaceDetail
+import com.example.uber.databinding.BottomSheetWhereToBinding
 import com.example.uber.presentation.adapter.PlaceSuggestionAdapter
 import com.example.uber.presentation.animation.AnimationManager
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
-import com.google.android.gms.common.api.ApiException
+import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken
-import com.google.android.libraries.places.api.model.PlaceTypes
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
-import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
+import dagger.hilt.android.AndroidEntryPoint
 import rx.android.schedulers.AndroidSchedulers
-import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
-
-class BottomSheetManager private constructor(
-    private val view: View,
-    private val context: WeakReference<Context>,
-    private val pickUpMapFragmentActions: WeakReference<IActions>,
-    private val viewLifecycleOwner: LifecycleOwner,
-    private val googleViewModel: GoogleViewModel,
-) {
-    private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
-    private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
-    private val whereTo: LinearLayout by lazy { view.findViewById(R.id.cl_where_to) }
-    private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+@AndroidEntryPoint
+class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
+    //    private lateinit var view: View
+//    private lateinit var context: WeakReference<Context>
+//    private lateinit var pickUpMapFragmentActions: WeakReference<IActions>
+//    private lateinit var viewLifecycleOwner: LifecycleOwner
+//    private lateinit var  googleViewModel: GoogleViewModel
+//    private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
+//    private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
+//    private val whereTo: LinearLayout by lazy { view.findViewById(R.id.cl_where_to) }
+//    private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
     private var isPickupEtInFocus = false
     private var isDropOffEtInFocus = false
-    private val et_pickup: EditText by lazy { view.findViewById(R.id.ti_pickup) }
-    private val et_drop_off: EditText by lazy { view.findViewById(R.id.ti_drop_off) }
-    private val bottomSheetHeading: TextView by lazy { view.findViewById(R.id.tv_bottom_sheet_heading) }
-    private val tv_pin_location: TextView = view.findViewById(R.id.tv_pin_location)
-    private val llSetLocationOnMap: LinearLayout by lazy { view.findViewById(R.id.ll_set_location_on_map) }
-    private val btn_confirm_destination: AppCompatButton by lazy { view.findViewById(R.id.btn_confirm_destination) }
-    private val recyclerView: RecyclerView by lazy { view.findViewById(R.id.recyclerView) }
-    private val lineView: View by lazy { view.findViewById<View>(R.id.lineView) }
+
+    //    private val et_pickup: EditText by lazy { view.findViewById(R.id.ti_pickup) }
+//    private val et_drop_off: EditText by lazy { view.findViewById(R.id.ti_drop_off) }
+//    private val bottomSheetHeading: TextView by lazy { view.findViewById(R.id.tv_bottom_sheet_heading) }
+//    private val tv_pin_location: TextView = view.findViewById(R.id.tv_pin_location)
+//    private val llSetLocationOnMap: LinearLayout by lazy { view.findViewById(R.id.ll_set_location_on_map) }
+//    private val btn_confirm_destination: AppCompatButton by lazy { view.findViewById(R.id.btn_confirm_destination) }
+//    private val recyclerView: RecyclerView by lazy { view.findViewById(R.id.recyclerView) }
+//    private val lineView: View by lazy { view.findViewById<View>(R.id.lineView) }
     private lateinit var placeSuggestionAdapter: PlaceSuggestionAdapter
+    private lateinit var binding: BottomSheetWhereToBinding
+    private lateinit var bottomSheet: LinearLayout
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private val googleViewModel: GoogleViewModel by activityViewModels<GoogleViewModel>()
+    private val sharedViewModel : MapAndSheetsSharedViewModel by activityViewModels()
 
-    companion object {
-        @Volatile
-        private var instance: BottomSheetManager? = null
-        fun initialize(
-            view: View,
-            context: WeakReference<Context>,
-            pickUpMapFragmentActions: WeakReference<IActions>,
-            viewLifecycleOwner: LifecycleOwner,
-            googleViewModel: GoogleViewModel,
-        ): BottomSheetManager? {
-            if (instance == null) {
-                synchronized(this) {
-                    if (instance == null) {
-                        instance = BottomSheetManager(
-                            view,
-                            context,
-                            pickUpMapFragmentActions,
-                            viewLifecycleOwner,
-                            googleViewModel
-                        )
-                    }
-                }
-            }
-            return instance
-        }
 
-        fun getInstance(): BottomSheetManager? {
-            return instance
-        }
-
-        fun destroyInstance() {
-            if (instance != null) {
-                instance = null
-            }
-        }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        editTextFocusChangeListener()
+        setUpObservers()
+        initializeSheetProperties()
     }
 
-    init {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = BottomSheetWhereToBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
         setUpBottomSheet()
-        setUpObservers()
+
+
+    }
+
+
+    private fun initializeSheetProperties() {
+        setUpBottomSheet()
         setLocationOnMapLinearLayoutOnClickListener()
         setEditTextDropOffInFocus()
         editTextFocusChangeListener()
@@ -111,23 +99,25 @@ class BottomSheetManager private constructor(
         debounce()
         setUpRecyclerViewAdapter()
     }
-
     private fun debounce() {
         pickUpLocationDebounce()
         dropOffLocationDebounce()
     }
 
+    //
     private fun setUpBottomSheet() {
         setBottomSheetStyle()
         setupBottomSheetCallback()
         confirmDestinationBtnClickListener()
     }
 
+
     private fun setUpObservers() {
         observePickUpLocationChanges()
         observeDropOffLocationChanges()
         observeSuggestedPlaceDetail()
     }
+
 
     private fun setupBottomSheetCallback() {
         bottomSheetBehavior.addBottomSheetCallback(object :
@@ -137,14 +127,15 @@ class BottomSheetManager private constructor(
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                pickUpMapFragmentActions.get()?.onBottomSheetSlide(slideOffset)
+//                pickUpMapFragmentActions.get()?.onBottomSheetSlide(slideOffset)
                 fadeInOutBottomSheetContent(slideOffset)
                 showPickUpDropOffContent(slideOffset)
             }
         })
     }
 
-
+    //
+//
     private fun handleStateChange(newState: Int) {
 
         when (newState) {
@@ -157,7 +148,7 @@ class BottomSheetManager private constructor(
             }
 
             BottomSheetBehavior.STATE_EXPANDED -> {
-                if (isPickupEtInFocus)
+                if (sharedViewModel.pickUpInputInFocus.value!!)
                     requestEditTextPickUpFocus()
                 else
                     requestEditTextDropOffFocus()
@@ -165,48 +156,49 @@ class BottomSheetManager private constructor(
         }
     }
 
+    //
     private fun hideKeyBoard() {
         if (isPickupEtInFocus) {
-            this.et_pickup?.let { view ->
+            binding.tiPickup.let { view ->
                 val imm =
-                    context.get()
+                    context
                         ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         } else {
-            this.et_drop_off?.let { view ->
+            binding.tiDropOff.let { view ->
                 val imm =
-                    context.get()
+                    context
                         ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
         }
     }
 
-
     private fun setBottomSheetStyle() {
+        bottomSheet = requireActivity().findViewById<LinearLayout>(R.id.bottomSheet)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         bottomSheet.layoutParams.height =
-            (context.get()!!.resources.displayMetrics.heightPixels * 0.95).toInt()
+            (requireContext().resources.displayMetrics.heightPixels * 0.95).toInt()
         bottomSheetBehavior.peekHeight =
-            (context.get()!!.resources.displayMetrics.heightPixels * 0.32).toInt()
+            (requireContext().resources.displayMetrics.heightPixels * 0.32).toInt()
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         bottomSheetBehavior.isHideable = false
     }
 
     private fun fadeInOutBottomSheetContent(slideOffset: Float) {
-        bottomSheetContentll.apply {
+        binding.llplanYourRide.apply {
             if (slideOffset <= 0.5f) {
                 when {
                     isPickupEtInFocus -> {
-                        bottomSheetHeading.text = "Set your pickup spot"
-                        btn_confirm_destination.text = "Confirm pickup"
+                        binding.tvBottomSheetHeading.text = "Set your pickup spot"
+                        binding.btnConfirmDestination.text = "Confirm pickup"
                     }
 
                     isDropOffEtInFocus -> {
-                        bottomSheetHeading.text =
+                        binding.tvBottomSheetHeading.text =
                             context.getString(R.string.set_your_destination)
-                        btn_confirm_destination.text = "Confirm destination"
-
+                        binding.btnConfirmDestination.text = "Confirm destination"
                     }
                 }
                 visibility = View.VISIBLE
@@ -218,8 +210,9 @@ class BottomSheetManager private constructor(
         }
     }
 
+    //
     private fun showPickUpDropOffContent(slideOffset: Float) {
-        whereTo.apply {
+        binding.clWhereTo.apply {
             if (slideOffset >= 0.5f) {
                 visibility = View.VISIBLE
                 alpha = (slideOffset - 0.5f) * 2
@@ -230,17 +223,18 @@ class BottomSheetManager private constructor(
         }
     }
 
+
     private fun Activity.dismissKeyboard() {
         val inputMethodManager =
             getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         if (inputMethodManager.isAcceptingText)
-            inputMethodManager.hideSoftInputFromWindow(et_pickup.windowToken, 0)
+            inputMethodManager.hideSoftInputFromWindow(binding.tiPickup.windowToken, 0)
     }
 
     private fun observePickUpLocationChanges() {
         with(googleViewModel) {
             pickUpLocationName.observe(viewLifecycleOwner) {
-                et_pickup.setText(it)
+                binding.tiPickup.setText(it)
                 updateLocationText(it)
             }
         }
@@ -250,7 +244,7 @@ class BottomSheetManager private constructor(
     private fun observeDropOffLocationChanges() {
         with(googleViewModel) {
             dropOffLocationName.observe(viewLifecycleOwner) {
-                et_drop_off.setText(it)
+                binding.tiDropOff.setText(it)
                 updateLocationText(it)
             }
         }
@@ -258,18 +252,19 @@ class BottomSheetManager private constructor(
 
 
     private fun setLocationOnMapLinearLayoutOnClickListener() {
-        llSetLocationOnMap.setOnClickListener {
+        binding.llSetLocationOnMap.setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
     }
 
 
     private fun updateLocationText(longName: String) {
-        tv_pin_location.text = longName
+        binding.tvPinLocation.text = longName
     }
 
+
     private fun checkInternetConnection(dispatcher: () -> Unit) {
-        if (SystemInfo.CheckInternetConnection(context.get()!!)) {
+        if (SystemInfo.CheckInternetConnection(requireContext())) {
             try {
                 dispatcher.invoke()
             } catch (e: Exception) {
@@ -279,8 +274,10 @@ class BottomSheetManager private constructor(
     }
 
     private fun setEditTextDropOffInFocus() {
-        et_drop_off.requestFocus()
+        if(sharedViewModel.pickUpInputInFocus.value!!) requestEditTextPickUpFocus()
+        else if(sharedViewModel.dropOffInputInFocus.value!!) requestEditTextDropOffFocus()
     }
+
 
     private fun hideBottomSheet() {
         bottomSheetBehavior.isHideable = true
@@ -292,33 +289,53 @@ class BottomSheetManager private constructor(
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         if (etAnnotationFocusListener != null) {
             when (etAnnotationFocusListener) {
-                Markers.PICK_UP -> et_pickup.requestFocus()
-                Markers.DROP_OFF -> et_drop_off.requestFocus()
+                Markers.PICK_UP -> binding.tiPickup.requestFocus()
+                Markers.DROP_OFF -> binding.tiDropOff.requestFocus()
             }
         }
     }
+
+    private fun observeAnnotationClicks(){
+        sharedViewModel.apply {
+            pickUpAnnotationClick.observe(viewLifecycleOwner){
+                if(it){
+                    showBottomSheet(Markers.PICK_UP)
+                }
+            }
+
+            dropOffAnnotationClick.observe(viewLifecycleOwner){
+                if(it){
+                    showBottomSheet(Markers.DROP_OFF)
+                }
+            }
+        }
+    }
+
 
     fun bottomSheetBehaviour(): Int {
         return bottomSheetBehavior.state
     }
 
     private fun editTextFocusChangeListener() {
-        et_pickup.setOnFocusChangeListener { view, b ->
+        binding.tiPickup.setOnFocusChangeListener { view, b ->
             if (b) {
-                RxBus.publish(RxEvent.EventEditTextFocus(true, false))
-                isPickupEtInFocus = true
-                isDropOffEtInFocus = false
+                sharedViewModel.setPickUpInputInFocus(true)
+                sharedViewModel.setDropOffInputInFocus(false)
+//                RxBus.publish(RxEvent.EventEditTextFocus(true, false))
+//                isPickupEtInFocus = true
+//                isDropOffEtInFocus = false
             }
         }
-        et_drop_off.setOnFocusChangeListener { view, b ->
-            RxBus.publish(RxEvent.EventEditTextFocus(false, true))
+        binding.tiDropOff.setOnFocusChangeListener { view, b ->
+//            RxBus.publish(RxEvent.EventEditTextFocus(false, true))
             if (b) {
-                isPickupEtInFocus = false
-                isDropOffEtInFocus = true
+                sharedViewModel.setDropOffInputInFocus(true)
+                sharedViewModel.setPickUpInputInFocus(false)
+//                isPickupEtInFocus = false
+//                isDropOffEtInFocus = true
             }
         }
     }
-
 
     private fun getPlacesSuggestions(place: String) {
         googleViewModel.getPlacesSuggestion(place)
@@ -338,8 +355,8 @@ class BottomSheetManager private constructor(
         placeSuggestionAdapter = PlaceSuggestionAdapter { place ->
             executeSearchedPlace(place)
         }
-        recyclerView.layoutManager = LinearLayoutManager(context.get())
-        recyclerView.adapter = placeSuggestionAdapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.adapter = placeSuggestionAdapter
         setItemRecyclerViewItemDivider()
     }
 
@@ -367,6 +384,7 @@ class BottomSheetManager private constructor(
         googleViewModel.retrieveSuggestedPlaceDetail(place.googleId)
     }
 
+
     private fun observeSuggestedPlaceDetail() {
         googleViewModel.run {
             retrieveSuggestedPlaceDetail.observe(viewLifecycleOwner) {
@@ -380,24 +398,24 @@ class BottomSheetManager private constructor(
     }
 
     private fun setItemRecyclerViewItemDivider() {
-        view.context.let {
-            val dividerItemDecoration = MaterialDividerItemDecoration(
-                it,
-                MaterialDividerItemDecoration.VERTICAL
-            ).apply {
-                dividerInsetEnd = 10
-                dividerInsetStart = 16
-            }
-            recyclerView.addItemDecoration(dividerItemDecoration)
+        val dividerItemDecoration = MaterialDividerItemDecoration(
+            requireContext(),
+            MaterialDividerItemDecoration.VERTICAL
+        ).apply {
+            dividerInsetEnd = 10
+            dividerInsetStart = 16
+
         }
+        binding.recyclerView.addItemDecoration(dividerItemDecoration)
     }
 
     private fun translateOnXAxis() {
-        AnimationManager.animateToEndOfScreenAndScale(lineView, context = context.get()!!)
+        AnimationManager.animateToEndOfScreenAndScale(binding.lineView, context = requireContext())
     }
 
+    //
     private fun pickUpLocationDebounce() {
-        RxTextView.textChanges(et_pickup).debounce(500, TimeUnit.MILLISECONDS)
+        RxTextView.textChanges(binding.tiPickup).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
                 googleViewModel.getPlacesSuggestion(it.toString())
                 getPlacesSuggestions(it.toString())
@@ -406,7 +424,7 @@ class BottomSheetManager private constructor(
     }
 
     private fun dropOffLocationDebounce() {
-        RxTextView.textChanges(et_drop_off).debounce(500, TimeUnit.MILLISECONDS)
+        RxTextView.textChanges(binding.tiDropOff).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
                 getPlacesSuggestions(it.toString())
                 translateOnXAxis()
@@ -414,16 +432,17 @@ class BottomSheetManager private constructor(
     }
 
     private fun confirmDestinationBtnClickListener() {
-        btn_confirm_destination.setOnClickListener {
+        binding.btnConfirmDestination.setOnClickListener {
             createRouteAndHideSheet()
         }
     }
+
 
     private fun createRoute(
         pickUpLatLng: LatLng? = null,
         dropOffLatLng: LatLng? = null
     ) {
-        pickUpMapFragmentActions.get()?.createRouteAction(pickUpLatLng, dropOffLatLng)
+        sharedViewModel.setIsDestinationConfirmBtnClicked(true)
     }
 
     private fun createRouteAndHideSheet(
@@ -435,6 +454,7 @@ class BottomSheetManager private constructor(
         hideKeyBoard()
         updateLocationInViewModel(pickUpLatLng, dropOffLatLng)
     }
+
 
     private fun updateLocationInViewModel(
         pickUpLatLng: LatLng? = null,
@@ -448,57 +468,61 @@ class BottomSheetManager private constructor(
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun clearRecyclerViewAdapter() {
         searchedResults.clear()
         placeSuggestionAdapter.notifyDataSetChanged()
     }
 
     fun requestEditTextDropOffFocus() {
-        et_drop_off.requestFocus()
+        binding.tiDropOff.requestFocus()
         selectTextInsideEditText()
         showKeyBoardOnBottomsheetExpand()
     }
 
+    //
     private fun requestEditTextPickUpFocus() {
-        et_pickup.requestFocus()
-        showKeyBoardOnBottomsheetExpand(et_pickup)
+        binding.tiPickup.requestFocus()
+        showKeyBoardOnBottomsheetExpand(binding.tiPickup)
     }
 
-    private fun showKeyBoardOnBottomsheetExpand(editText: EditText = et_drop_off) {
+    //
+    private fun showKeyBoardOnBottomsheetExpand(editText: EditText = binding.tiDropOff) {
         val imm =
-            context.get()?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
 
     }
 
+    //
     private fun selectTextInsideEditText() {
-        et_drop_off.placeCursorAtEnd()
+//        binding.tiDropOff.placeCursorAtEnd()
     }
-
-    private fun EditText.placeCursorAtEnd() {
-        Selection.setSelection(this.text, this.text.length);
-
-    }
-
-    private fun suggestions(query: String) {
-        val sessionToken = AutocompleteSessionToken.newInstance()
-        val request =
-            FindAutocompletePredictionsRequest.builder()
-                .setCountries("AU", "NZ")
-                .setTypesFilter(listOf(PlaceTypes.ADDRESS))
-                .setSessionToken(sessionToken)
-                .setQuery(query)
-                .build()
-        Places.initialize(context.get(),BuildConfig.GOOGLE_API_KEY)
-        val placesClient: PlacesClient = Places.createClient(context.get()!!)
-            placesClient.findAutocompletePredictions(request)
-                .addOnSuccessListener { response: FindAutocompletePredictionsResponse ->
-                    Log.i("TAG", "Place suggestions: $response")
-                }.addOnFailureListener { exception: Exception? ->
-                    if (exception is ApiException) {
-                    }
-                }
-
-    }
+//
+//    private fun EditText.placeCursorAtEnd() {
+//        Selection.setSelection(this.text, this.text.length);
+//
+//    }
+//
+//    private fun suggestions(query: String) {
+//        val sessionToken = AutocompleteSessionToken.newInstance()
+//        val request =
+//            FindAutocompletePredictionsRequest.builder()
+//                .setCountries("AU", "NZ")
+//                .setTypesFilter(listOf(PlaceTypes.ADDRESS))
+//                .setSessionToken(sessionToken)
+//                .setQuery(query)
+//                .build()
+//        Places.initialize(context.get(),BuildConfig.GOOGLE_API_KEY)
+//        val placesClient: PlacesClient = Places.createClient(context.get()!!)
+//            placesClient.findAutocompletePredictions(request)
+//                .addOnSuccessListener { response: FindAutocompletePredictionsResponse ->
+//                    Log.i("TAG", "Place suggestions: $response")
+//                }.addOnFailureListener { exception: Exception? ->
+//                    if (exception is ApiException) {
+//                    }
+//                }
+//
+//    }
 
 }

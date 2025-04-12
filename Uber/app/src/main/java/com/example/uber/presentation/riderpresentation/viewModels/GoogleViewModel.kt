@@ -134,4 +134,11 @@ class GoogleViewModel @Inject constructor(
 
         }
     }
+
+    fun cleanData(){
+        _dropOffLatitude = 0.0
+        _pickUpLatitude = 0.0
+        _pickUpLongitude = 0.0
+        _dropOffLongitude = 0.0
+    }
 }
