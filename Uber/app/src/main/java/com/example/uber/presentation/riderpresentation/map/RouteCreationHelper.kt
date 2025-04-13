@@ -321,62 +321,14 @@ class RouteCreationHelper(
                 sharedViewModel.get()?.setPickUpAnnotationClicked(true)
                 sharedViewModel.get()?.setPickUpInputInFocus(true)
 
-//                bottomSheetManager.get()?.showBottomSheet(Markers.PICK_UP)
             } else if (marker.tag?.equals(dropOffMarker?.tag)!!) {
-//                bottomSheetManager.get()?.showBottomSheet(Markers.DROP_OFF)
                 sharedViewModel.get()?.setDropOffInputInFocus(true)
                 sharedViewModel.get()?.setDropOffAnnotationClicked(true)
             }
-//            rideOptionsBottomSheet.get()?.hideBottomSheet()
-//            rideOptionsBottomSheet.get()?.vehicleSheet?.hideSheet()
             deleteEveryThingOnMap()
-            pickUpMapFragment.get()?.showLocationPickerMarker()
-            pickUpMapFragment.get()?.onAddCameraAndMoveListeners()
         }
     }
 
-
-//
-//    private fun animateMapToFitRoutes() {
-//        mCouroutineScope?.launch(Dispatchers.IO) {
-//            latLngBounds = decodeGeometryStringToRoutes()
-//            withContext(Dispatchers.Main) {
-//                animateToRespectivePadding()
-//            }
-//        }
-//
-//    }
-
-    fun animateToRespectivePadding(padding: Int = 500) {
-        if (map.get() != null && latLngBounds != null) {
-            val paddingTop = 100
-            val paddingLeft = 100
-            val paddingRight = 100
-            val builder = LatLngBounds.Builder()
-            val width: Int? = context.get()?.resources?.displayMetrics?.widthPixels;
-            val height: Int? = context.get()?.resources?.displayMetrics?.heightPixels;
-            map.get()?.moveCamera(
-                CameraUpdateFactory.newLatLngBounds(
-                    bounds!!.build(),
-                    width!!,
-                    height!!,
-                    900
-                )
-            )
-        }
-    }
-
-//    private fun setMapZoomLevel() {
-//        map.get()?.cameraPosition = CameraPosition.Builder().zoom(1.00).build()
-//    }
-
-    fun directionsApiResult() {
-
-    }
-
-    private fun decodePolyline() {
-
-    }
 
     private fun setUpMarkerClickListener() {
         map.get()?.setOnMarkerClickListener(this)

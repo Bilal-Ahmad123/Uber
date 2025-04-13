@@ -153,6 +153,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
             (requireContext().resources.displayMetrics.heightPixels * 0.32).toInt()
         bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         bottomSheetBehavior?.isHideable = false
+        bottomSheetBehavior?.isDraggable = true
     }
 
     private fun fadeInOutBottomSheetContent(slideOffset: Float) {
