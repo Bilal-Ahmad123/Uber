@@ -27,17 +27,20 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.divider.MaterialDividerItemDecoration
 import com.jakewharton.rxbinding.widget.RxTextView
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
-    private lateinit var placeSuggestionAdapter: PlaceSuggestionAdapter
-    private lateinit var binding: BottomSheetWhereToBinding
+    private var placeSuggestionAdapter: PlaceSuggestionAdapter? = null
+    private var binding: BottomSheetWhereToBinding ? = null
     private var bottomSheet: LinearLayout? = null
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
     private val googleViewModel: GoogleViewModel by activityViewModels<GoogleViewModel>()
     private val sharedViewModel : MapAndSheetsSharedViewModel by activityViewModels()
+    private val disposables = CompositeDisposable()
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -55,7 +58,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         savedInstanceState: Bundle?
     ): View? {
         binding = BottomSheetWhereToBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding?.root
     }
 
     override fun onResume() {
@@ -128,18 +131,18 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
     private fun hideKeyBoard() {
         if (sharedViewModel.pickUpInputInFocus.value!!) {
-            binding.tiPickup.let { view ->
+            binding?.tiPickup.let { view ->
                 val imm =
                     context
                         ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+                imm?.hideSoftInputFromWindow(view?.windowToken, 0)
             }
         } else if(sharedViewModel.dropOffInputInFocus.value!!) {
-            binding.tiDropOff.let { view ->
+            binding?.tiDropOff.let { view ->
                 val imm =
                     context
                         ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+                imm?.hideSoftInputFromWindow(view?.windowToken, 0)
             }
         }
     }
@@ -157,18 +160,18 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
     }
 
     private fun fadeInOutBottomSheetContent(slideOffset: Float) {
-        binding.llplanYourRide.apply {
+        binding?.llplanYourRide?.apply {
             if (slideOffset <= 0.5f) {
                 when {
                     sharedViewModel.pickUpInputInFocus.value!! -> {
-                        binding.tvBottomSheetHeading.text = "Set your pickup spot"
-                        binding.btnConfirmDestination.text = "Confirm pickup"
+                        binding?.tvBottomSheetHeading?.text = "Set your pickup spot"
+                        binding?.btnConfirmDestination?.text = "Confirm pickup"
                     }
 
                     sharedViewModel.dropOffInputInFocus.value!! -> {
-                        binding.tvBottomSheetHeading.text =
-                            context.getString(R.string.set_your_destination)
-                        binding.btnConfirmDestination.text = "Confirm destination"
+                        binding?.tvBottomSheetHeading?.text =
+                            context?.getString(R.string.set_your_destination)
+                        binding?.btnConfirmDestination?.text = "Confirm destination"
                     }
                 }
                 visibility = View.VISIBLE
@@ -181,7 +184,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
     }
 
     private fun showPickUpDropOffContent(slideOffset: Float) {
-        binding.clWhereTo.apply {
+        binding?.clWhereTo?.apply {
             if (slideOffset >= 0.5f) {
                 visibility = View.VISIBLE
                 alpha = (slideOffset - 0.5f) * 2
@@ -195,7 +198,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
     private fun observePickUpLocationChanges() {
         with(googleViewModel) {
             pickUpLocationName.observe(viewLifecycleOwner) {
-                binding.tiPickup.setText(it)
+                binding?.tiPickup?.setText(it)
                 updateLocationText(it)
             }
         }
@@ -205,7 +208,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
     private fun observeDropOffLocationChanges() {
         with(googleViewModel) {
             dropOffLocationName.observe(viewLifecycleOwner) {
-                binding.tiDropOff.setText(it)
+                binding?.tiDropOff?.setText(it)
                 updateLocationText(it)
             }
         }
@@ -213,14 +216,14 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
 
     private fun setLocationOnMapLinearLayoutOnClickListener() {
-        binding.llSetLocationOnMap.setOnClickListener {
+        binding?.llSetLocationOnMap?.setOnClickListener {
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
         }
     }
 
 
     private fun updateLocationText(longName: String) {
-        binding.tvPinLocation.text = longName
+        binding?.tvPinLocation?.text = longName
     }
 
     private fun setEditTextDropOffInFocus() {
@@ -246,12 +249,12 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
     }
 
     private fun editTextFocusChangeListener() {
-        binding.tiPickup.setOnFocusChangeListener { view, b ->
+        binding?.tiPickup?.setOnFocusChangeListener { view, b ->
             if (b) {
                 sharedViewModel.setPickUpInputInFocus(true)
             }
         }
-        binding.tiDropOff.setOnFocusChangeListener { view, b ->
+        binding?.tiDropOff?.setOnFocusChangeListener { view, b ->
             if (b) {
                 sharedViewModel.setDropOffInputInFocus(true)
             }
@@ -276,14 +279,14 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         placeSuggestionAdapter = PlaceSuggestionAdapter { place ->
             executeSearchedPlace(place)
         }
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.adapter = placeSuggestionAdapter
+        binding?.recyclerView?.layoutManager = LinearLayoutManager(requireContext())
+        binding?.recyclerView?.adapter = placeSuggestionAdapter
         setItemRecyclerViewItemDivider()
     }
 
     private var searchedResults: MutableList<PlaceDetail> = mutableListOf()
     private fun showSuggestedPlacesOnBottomSheet(searchedResults: MutableList<PlaceDetail>) {
-        placeSuggestionAdapter.submitList(searchedResults)
+        placeSuggestionAdapter?.submitList(searchedResults)
         this.searchedResults = searchedResults
     }
 
@@ -291,8 +294,11 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         super.onDestroyView()
         bottomSheetBehavior = null
         sharedViewModel.cleanData()
-        binding.tiPickup.onFocusChangeListener = null
-        binding.tiDropOff.onFocusChangeListener = null
+        binding?.tiPickup?.onFocusChangeListener = null
+        binding?.tiDropOff?.onFocusChangeListener = null
+        binding = null
+        bottomSheet = null
+        placeSuggestionAdapter = null
     }
     private fun extractSearchedResults(suggestions: List<Prediction>?): MutableList<PlaceDetail> {
         val searchedResults: MutableList<PlaceDetail> = mutableListOf()
@@ -337,32 +343,40 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
             dividerInsetStart = 16
 
         }
-        binding.recyclerView.addItemDecoration(dividerItemDecoration)
+        binding?.recyclerView?.addItemDecoration(dividerItemDecoration)
     }
 
     private fun translateOnXAxis() {
-        AnimationManager.animateToEndOfScreenAndScale(binding.lineView, context = requireContext())
+        binding?.let {
+            AnimationManager.animateToEndOfScreenAndScale(
+                binding!!.lineView,
+                context = requireContext()
+            )
+        }
     }
 
     private fun pickUpLocationDebounce() {
-        RxTextView.textChanges(binding.tiPickup).debounce(500, TimeUnit.MILLISECONDS)
+        RxTextView.textChanges(binding!!.tiPickup).debounce(500, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread()).subscribe {
                 googleViewModel.getPlacesSuggestion(it.toString())
                 getPlacesSuggestions(it.toString())
                 translateOnXAxis()
             }
+
     }
 
     private fun dropOffLocationDebounce() {
-        RxTextView.textChanges(binding.tiDropOff).debounce(500, TimeUnit.MILLISECONDS)
-            .observeOn(AndroidSchedulers.mainThread()).subscribe {
-                getPlacesSuggestions(it.toString())
-                translateOnXAxis()
-            }
+        if(binding != null) {
+            RxTextView.textChanges(binding!!.tiDropOff).debounce(500, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread()).subscribe {
+                    getPlacesSuggestions(it.toString())
+                    translateOnXAxis()
+                }
+        }
     }
 
     private fun confirmDestinationBtnClickListener() {
-        binding.btnConfirmDestination.setOnClickListener {
+        binding?.btnConfirmDestination?.setOnClickListener {
             createRouteAndHideSheet()
         }
     }
@@ -399,17 +413,17 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
     }
 
     fun requestEditTextDropOffFocus() {
-        binding.tiDropOff.requestFocus()
+        binding?.tiDropOff?.requestFocus()
         showKeyBoardOnBottomsheetExpand()
     }
 
     private fun requestEditTextPickUpFocus() {
-        binding.tiPickup.requestFocus()
-        showKeyBoardOnBottomsheetExpand(binding.tiPickup)
+        binding?.tiPickup?.requestFocus()
+        showKeyBoardOnBottomsheetExpand(binding?.tiPickup)
     }
 
 
-    private fun showKeyBoardOnBottomsheetExpand(editText: EditText = binding.tiDropOff) {
+    private fun showKeyBoardOnBottomsheetExpand(editText: EditText? = binding?.tiDropOff) {
         val imm =
             requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         imm?.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)

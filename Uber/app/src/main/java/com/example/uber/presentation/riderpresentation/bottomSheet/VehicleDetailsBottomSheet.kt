@@ -44,6 +44,8 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
         return binding?.root
     }
 
+
+
     private fun handleBackPressed() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             requireActivity()
@@ -65,6 +67,12 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
         adjustMapForBottomSheet(1f)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+        bottomSheet = null
+        sharedViewModel.vehicleSelected(null)
+    }
     private fun initializeVehicleDetails(vehicle: NearbyVehicles) {
         binding?.apply {
             Glide.with(requireContext()).load(vehicle.image)
