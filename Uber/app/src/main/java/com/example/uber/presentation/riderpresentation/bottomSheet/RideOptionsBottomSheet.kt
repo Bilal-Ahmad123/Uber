@@ -41,7 +41,6 @@ class RideOptionsBottomSheet() : Fragment(R.layout.ride_options_bottom_sheet) {
     private lateinit var bottomSheet: LinearLayout
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private val locationViewModel : LocationViewModel by activityViewModels<LocationViewModel>()
-    private var nearbyVehicleService: ShowNearbyVehicleService ? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -50,7 +49,6 @@ class RideOptionsBottomSheet() : Fragment(R.layout.ride_options_bottom_sheet) {
         setupBottomSheetCallback()
         observeNearbyVehiclesList()
         getNearbyVehicles()
-        initializeNearbyVehicleService()
         sharedViewModel.setCurrentOpenedSheet(SheetState.RIDE_SHEET)
     }
 
@@ -118,18 +116,15 @@ class RideOptionsBottomSheet() : Fragment(R.layout.ride_options_bottom_sheet) {
         )
     }
 
-    private fun initializeNearbyVehicleService(){
-        nearbyVehicleService = ShowNearbyVehicleService(this,this, WeakReference(requireContext()))
-    }
+
 
     private fun createRecyclerViewAdapter(nearbyVehicles: List<NearbyVehicles>) {
         val adapter = CarListAdapter(nearbyVehicles)
         adapter.onItemClicked = {it,isSelectedAgain->
-            nearbyVehicleService?.onCarItemListClickListener(it)
             if(isSelectedAgain){
                 findNavController().navigate(R.id.vehicleDetailsBottomSheet)
                 sharedViewModel.setSelectedVehicle(it)
-                sharedViewModel.setCurrentOpenedSheet(SheetState.VEHICLE_SHEET)
+                sharedViewModel.vehicleSelected(it)
             }
         }
 

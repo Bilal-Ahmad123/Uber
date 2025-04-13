@@ -42,6 +42,9 @@ class MapAndSheetsSharedViewModel @Inject constructor(dispatcher: IDispatchers )
     private var selectedVehicle : NearbyVehicles ? = null
     val vehicleSelected get() = selectedVehicle
 
+    private var vehicleGotSelected  = MutableLiveData<NearbyVehicles>()
+    val vehicleSelect get() = vehicleGotSelected
+
     private var _bounds : LatLngBounds ? = null
     val bounds get() = _bounds
 
@@ -87,6 +90,11 @@ class MapAndSheetsSharedViewModel @Inject constructor(dispatcher: IDispatchers )
     fun setSelectedVehicle(value : NearbyVehicles){
         selectedVehicle = value
     }
+
+    fun vehicleSelected(value : NearbyVehicles){
+        vehicleGotSelected.postValue(value)
+    }
+
 
 
     fun cleanData(){

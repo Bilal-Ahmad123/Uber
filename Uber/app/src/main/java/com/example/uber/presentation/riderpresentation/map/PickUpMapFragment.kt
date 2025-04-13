@@ -72,6 +72,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private var currentLocation: Location? = null
     private val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels()
+    private var nearbyVehicleService: ShowNearbyVehicleService ? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,7 +101,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         observePickUpAndDropInputFocus()
         observeCurrentlyOpenedSheet()
         observeRideOptionsSheetExpanded()
-        sharedViewModel.setDropOffInputInFocus(true)
+        observeVehicleClicked()
     }
 
 
@@ -138,6 +139,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         ifNetworkOrGPSDisabled()
         initializeRouteHelper()
         enableMyLocation()
+        initializeNearbyVehicleService()
     }
 
     private fun enableMyLocation() {
@@ -542,6 +544,20 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
     }
 
+    private fun initializeNearbyVehicleService(){
+        nearbyVehicleService = ShowNearbyVehicleService(this,this, WeakReference(requireContext()),socketViewModel)
+        nearbyVehicleService?.startObservingNearbyVehicles(WeakReference(googleMap))
+    }
+
+    private fun observeVehicleClicked(){
+        sharedViewModel.apply {
+            vehicleSelect.observe(viewLifecycleOwner){
+                if(it != null){
+                    nearbyVehicleService?.onCarItemListClickListener(it)
+                }
+            }
+        }
+    }
 }
 
 

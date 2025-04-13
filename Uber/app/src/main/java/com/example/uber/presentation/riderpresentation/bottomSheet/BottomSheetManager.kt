@@ -72,6 +72,7 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         debounce()
         setUpRecyclerViewAdapter()
         sharedViewModel.setCurrentOpenedSheet(SheetState.PICKUP_SHEET)
+        sharedViewModel.setDropOffInputInFocus(true)
     }
     private fun debounce() {
         pickUpLocationDebounce()

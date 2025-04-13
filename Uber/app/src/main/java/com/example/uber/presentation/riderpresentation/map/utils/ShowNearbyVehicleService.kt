@@ -26,12 +26,9 @@ class ShowNearbyVehicleService(
     private val viewModelStoreOwner: ViewModelStoreOwner,
     private val viewLifecycleOwner: LifecycleOwner,
     private val context: WeakReference<Context>,
+    private val socketViewModel: SocketViewModel
 ) {
     private lateinit var googleMap: WeakReference<GoogleMap>
-
-    private val socketViewModel: SocketViewModel by lazy {
-        ViewModelProvider(viewModelStoreOwner)[SocketViewModel::class.java]
-    }
 
     companion object {
         val drivers = mutableMapOf<UUID, DriverLocationMarker>()
