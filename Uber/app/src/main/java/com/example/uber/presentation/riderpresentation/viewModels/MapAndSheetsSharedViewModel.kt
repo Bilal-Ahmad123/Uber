@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.enums.SheetState
+import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +38,9 @@ class MapAndSheetsSharedViewModel @Inject constructor(dispatcher: IDispatchers )
 
     private val rideOptionsSheetCurrentOffset = MutableLiveData<Int>()
     val sheetOffset get() = rideOptionsSheetCurrentOffset
+
+    private var selectedVehicle : NearbyVehicles ? = null
+    val vehicleSelected get() = selectedVehicle
 
     private var _bounds : LatLngBounds ? = null
     val bounds get() = _bounds
@@ -80,10 +84,12 @@ class MapAndSheetsSharedViewModel @Inject constructor(dispatcher: IDispatchers )
         _bounds = bounds
     }
 
+    fun setSelectedVehicle(value : NearbyVehicles){
+        selectedVehicle = value
+    }
+
 
     fun cleanData(){
-        pickUpAnnotationClicked.postValue(false)
-        dropOffAnnotationClicked.postValue(false)
         isDropOffInputInFocus.postValue(false)
         isPickInputInFocus.postValue(false)
     }

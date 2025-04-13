@@ -13,14 +13,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelStoreOwner
 import com.example.uber.R
 import com.example.uber.core.enums.Markers
-import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
-import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
@@ -49,15 +45,12 @@ import java.util.Arrays
 
 
 class RouteCreationHelper(
-    private var bottomSheetManager: WeakReference<BottomSheetManager>,
-    private var rideOptionsBottomSheet: WeakReference<RideOptionsBottomSheet>,
     private var pickUpMapFragment: WeakReference<PickUpMapFragment>,
     private var map: WeakReference<GoogleMap>,
     private var context: WeakReference<Context>,
     private var googleViewModel: WeakReference<GoogleViewModel>,
     private var sharedViewModel: WeakReference<MapAndSheetsSharedViewModel>,
     private val viewLifecycleOwner: LifecycleOwner,
-    private val viewModelStoreOwner: ViewModelStoreOwner,
 ) : OnMarkerClickListener {
 
 
@@ -110,13 +103,15 @@ class RouteCreationHelper(
     @SuppressLint("ResourceType")
     private fun createAnimatedRoute(line: String) {
         val routePoints: List<LatLng> = decodePolyLine(line)
-        latLngBounds = routePoints
-        addMarkerToRouteStartAndRouteEnd()
-        MapAnimator.animateRoute(map.get()!!, routePoints)
-        MapAnimator.setPrimaryLineColor(Color.parseColor("#000000"))
-        MapAnimator.setSecondaryLineColor(Color.parseColor("#ffffff"))
-        animateCameraToFillRoute(routePoints)
-        setUpMarkerClickListener()
+        if (routePoints.size > 1) {
+            latLngBounds = routePoints
+            addMarkerToRouteStartAndRouteEnd()
+            MapAnimator.animateRoute(map.get()!!, routePoints)
+            MapAnimator.setPrimaryLineColor(Color.parseColor("#000000"))
+            MapAnimator.setSecondaryLineColor(Color.parseColor("#ffffff"))
+            animateCameraToFillRoute(routePoints)
+            setUpMarkerClickListener()
+        }
     }
 
     private var bounds: LatLngBounds.Builder? = LatLngBounds.Builder()
@@ -238,12 +233,12 @@ class RouteCreationHelper(
         return scaledIcon
     }
 
-        fun deleteEveryThingOnMap() {
-            map.get()?.clear()
-            ShowNearbyVehicleService.drivers.clear()
-            pickUpMarker = null
-            dropOffMarker = null
-        }
+    fun deleteEveryThingOnMap() {
+        map.get()?.clear()
+        ShowNearbyVehicleService.drivers.clear()
+        pickUpMarker = null
+        dropOffMarker = null
+    }
 
 
     private fun createAnnotation(

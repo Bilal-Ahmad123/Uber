@@ -1,6 +1,5 @@
 package com.example.uber.presentation.riderpresentation.bottomSheet
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
@@ -14,9 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.uber.R
-import com.example.uber.core.RxBus.RxBus
-import com.example.uber.core.RxBus.RxEvent
-import com.example.uber.core.enums.Markers
 import com.example.uber.core.enums.SheetState
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.data.remote.api.googleMaps.models.SuggetionsResponse.Prediction
@@ -36,26 +32,6 @@ import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
-    //    private lateinit var view: View
-//    private lateinit var context: WeakReference<Context>
-//    private lateinit var pickUpMapFragmentActions: WeakReference<IActions>
-//    private lateinit var viewLifecycleOwner: LifecycleOwner
-//    private lateinit var  googleViewModel: GoogleViewModel
-//    private val bottomSheet: View = view.findViewById(R.id.bottom_sheet)
-//    private val bottomSheetContentll: LinearLayout by lazy { view.findViewById(R.id.llplan_your_ride) }
-//    private val whereTo: LinearLayout by lazy { view.findViewById(R.id.cl_where_to) }
-//    private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-    private var isPickupEtInFocus = false
-    private var isDropOffEtInFocus = false
-
-    //    private val et_pickup: EditText by lazy { view.findViewById(R.id.ti_pickup) }
-//    private val et_drop_off: EditText by lazy { view.findViewById(R.id.ti_drop_off) }
-//    private val bottomSheetHeading: TextView by lazy { view.findViewById(R.id.tv_bottom_sheet_heading) }
-//    private val tv_pin_location: TextView = view.findViewById(R.id.tv_pin_location)
-//    private val llSetLocationOnMap: LinearLayout by lazy { view.findViewById(R.id.ll_set_location_on_map) }
-//    private val btn_confirm_destination: AppCompatButton by lazy { view.findViewById(R.id.btn_confirm_destination) }
-//    private val recyclerView: RecyclerView by lazy { view.findViewById(R.id.recyclerView) }
-//    private val lineView: View by lazy { view.findViewById<View>(R.id.lineView) }
     private lateinit var placeSuggestionAdapter: PlaceSuggestionAdapter
     private lateinit var binding: BottomSheetWhereToBinding
     private var bottomSheet: LinearLayout? = null
@@ -66,7 +42,6 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        editTextFocusChangeListener()
         setUpObservers()
         initializeSheetProperties()
     }
@@ -85,9 +60,6 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
     override fun onResume() {
         super.onResume()
-        setUpBottomSheet()
-
-
     }
 
 
@@ -106,13 +78,11 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         dropOffLocationDebounce()
     }
 
-    //
     private fun setUpBottomSheet() {
         setBottomSheetStyle()
         setupBottomSheetCallback()
         confirmDestinationBtnClickListener()
     }
-
 
     private fun setUpObservers() {
         observePickUpLocationChanges()
@@ -129,15 +99,12 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-//                pickUpMapFragmentActions.get()?.onBottomSheetSlide(slideOffset)
                 fadeInOutBottomSheetContent(slideOffset)
                 showPickUpDropOffContent(slideOffset)
             }
         })
     }
 
-    //
-//
     private fun handleStateChange(newState: Int) {
 
         when (newState) {
@@ -152,22 +119,21 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
             BottomSheetBehavior.STATE_EXPANDED -> {
                 if (sharedViewModel.pickUpInputInFocus.value!!)
                     requestEditTextPickUpFocus()
-                else
+                else if(sharedViewModel.dropOffInputInFocus.value!!)
                     requestEditTextDropOffFocus()
             }
         }
     }
 
-    //
     private fun hideKeyBoard() {
-        if (isPickupEtInFocus) {
+        if (sharedViewModel.pickUpInputInFocus.value!!) {
             binding.tiPickup.let { view ->
                 val imm =
                     context
                         ?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.hideSoftInputFromWindow(view.windowToken, 0)
             }
-        } else {
+        } else if(sharedViewModel.dropOffInputInFocus.value!!) {
             binding.tiDropOff.let { view ->
                 val imm =
                     context
@@ -192,12 +158,12 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         binding.llplanYourRide.apply {
             if (slideOffset <= 0.5f) {
                 when {
-                    isPickupEtInFocus -> {
+                    sharedViewModel.pickUpInputInFocus.value!! -> {
                         binding.tvBottomSheetHeading.text = "Set your pickup spot"
                         binding.btnConfirmDestination.text = "Confirm pickup"
                     }
 
-                    isDropOffEtInFocus -> {
+                    sharedViewModel.dropOffInputInFocus.value!! -> {
                         binding.tvBottomSheetHeading.text =
                             context.getString(R.string.set_your_destination)
                         binding.btnConfirmDestination.text = "Confirm destination"
@@ -212,7 +178,6 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         }
     }
 
-    //
     private fun showPickUpDropOffContent(slideOffset: Float) {
         binding.clWhereTo.apply {
             if (slideOffset >= 0.5f) {
@@ -223,14 +188,6 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
                 visibility = View.GONE
             }
         }
-    }
-
-
-    private fun Activity.dismissKeyboard() {
-        val inputMethodManager =
-            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        if (inputMethodManager.isAcceptingText)
-            inputMethodManager.hideSoftInputFromWindow(binding.tiPickup.windowToken, 0)
     }
 
     private fun observePickUpLocationChanges() {
@@ -264,20 +221,20 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         binding.tvPinLocation.text = longName
     }
 
+    private fun setEditTextDropOffInFocus() {
+        sharedViewModel.apply {
+            pickUpInputInFocus.observe(viewLifecycleOwner){
+                if (it){
+                    requestEditTextPickUpFocus()
+                }
+            }
 
-    private fun checkInternetConnection(dispatcher: () -> Unit) {
-        if (SystemInfo.CheckInternetConnection(requireContext())) {
-            try {
-                dispatcher.invoke()
-            } catch (e: Exception) {
-
+            dropOffInputInFocus.observe(viewLifecycleOwner){
+                if (it){
+                    requestEditTextDropOffFocus()
+                }
             }
         }
-    }
-
-    private fun setEditTextDropOffInFocus() {
-        if(sharedViewModel.pickUpInputInFocus.value!!) requestEditTextPickUpFocus()
-        else if(sharedViewModel.dropOffInputInFocus.value!!) requestEditTextDropOffFocus()
     }
 
 
@@ -286,46 +243,13 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         bottomSheetBehavior?.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    fun showBottomSheet(etAnnotationFocusListener: Markers? = null) {
-        bottomSheetBehavior?.isHideable = false
-        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-        if (etAnnotationFocusListener != null) {
-            when (etAnnotationFocusListener) {
-                Markers.PICK_UP -> binding.tiPickup.requestFocus()
-                Markers.DROP_OFF -> binding.tiDropOff.requestFocus()
-            }
-        }
-    }
-
-    private fun observeAnnotationClicks(){
-        sharedViewModel.apply {
-            pickUpAnnotationClick.observe(viewLifecycleOwner){
-                if(it){
-                    showBottomSheet(Markers.PICK_UP)
-                }
-            }
-
-            dropOffAnnotationClick.observe(viewLifecycleOwner){
-                if(it){
-                    showBottomSheet(Markers.DROP_OFF)
-                }
-            }
-        }
-    }
-
-
-
     private fun editTextFocusChangeListener() {
         binding.tiPickup.setOnFocusChangeListener { view, b ->
             if (b) {
                 sharedViewModel.setPickUpInputInFocus(true)
-//                RxBus.publish(RxEvent.EventEditTextFocus(true, false))
-//                isPickupEtInFocus = true
-//                isDropOffEtInFocus = false
             }
         }
         binding.tiDropOff.setOnFocusChangeListener { view, b ->
-//            RxBus.publish(RxEvent.EventEditTextFocus(false, true))
             if (b) {
                 sharedViewModel.setDropOffInputInFocus(true)
             }
@@ -363,8 +287,10 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        sharedViewModel.cleanData()
         bottomSheetBehavior = null
+        sharedViewModel.cleanData()
+        binding.tiPickup.onFocusChangeListener = null
+        binding.tiDropOff.onFocusChangeListener = null
     }
     private fun extractSearchedResults(suggestions: List<Prediction>?): MutableList<PlaceDetail> {
         val searchedResults: MutableList<PlaceDetail> = mutableListOf()
@@ -468,12 +394,6 @@ class BottomSheetManager : Fragment(R.layout.bottom_sheet_where_to) {
         dropOffLatLng?.let {
             googleViewModel.setDropOffLocationName(it.latitude, it.longitude)
         }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    private fun clearRecyclerViewAdapter() {
-        searchedResults.clear()
-        placeSuggestionAdapter.notifyDataSetChanged()
     }
 
     fun requestEditTextDropOffFocus() {

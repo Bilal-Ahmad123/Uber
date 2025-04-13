@@ -15,5 +15,13 @@
     <fragment
         android:id="@+id/rideOptionsBottomSheet"
         android:name="com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet"
-        android:label="RideOptionsBottomSheet" />
+        android:label="RideOptionsBottomSheet" >
+        <action
+            android:id="@+id/action_rideOptionsBottomSheet_to_vehicleDetailsBottomSheet"
+            app:destination="@id/vehicleDetailsBottomSheet" />
+    </fragment>
+    <fragment
+        android:id="@+id/vehicleDetailsBottomSheet"
+        android:name="com.example.uber.presentation.riderpresentation.bottomSheet.VehicleDetailsBottomSheet"
+        android:label="VehicleDetailsBottomSheet" />
 </navigation>

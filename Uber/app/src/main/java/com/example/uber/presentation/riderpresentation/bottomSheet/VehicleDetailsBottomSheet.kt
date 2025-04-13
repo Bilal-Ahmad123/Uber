@@ -1,104 +1,75 @@
 package com.example.uber.presentation.riderpresentation.bottomSheet
 
-import android.content.Context
-import android.util.Log
+import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import androidx.activity.addCallback
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.example.uber.R
-import com.example.uber.core.utils.Helper
 import com.example.uber.core.utils.StringHelper
+import com.example.uber.databinding.VehicleDetailsBottomSheetBinding
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
-import com.example.uber.presentation.riderpresentation.map.RouteCreationHelper
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
+import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.button.MaterialButton
-import java.lang.ref.WeakReference
 
 
-class VehicleDetailsBottomSheet(
-    private val view: WeakReference<View>,
-    private val context: Context
-) {
+class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_sheet) {
 
-    private val image : ImageView by lazy { view.get()!!.findViewById(R.id.vehicle_image) }
-    private val vehicleName : TextView by lazy { view.get()!!.findViewById(R.id.vehicle_name) }
-    private val maxSeats : TextView by lazy { view.get()!!.findViewById(R.id.max_seats) }
-    private val fare : TextView by lazy { view.get()!!.findViewById(R.id.fare) }
-    private val timeWillReachOn : TextView by lazy { view.get()!!.findViewById(R.id.time_of_arrival) }
-    private val minsAway : TextView by lazy { view.get()!!.findViewById(R.id.mins_away) }
-    private val vehicleDescription : TextView by lazy { view.get()!!.findViewById(R.id.vehicle_description) }
-    private val chooseVehicle : MaterialButton by lazy { view.get()!!.findViewById(R.id.choose_vehicle) }
+    private var binding: VehicleDetailsBottomSheetBinding? = null
+    private val sharedViewModel : MapAndSheetsSharedViewModel by activityViewModels<MapAndSheetsSharedViewModel>()
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setBottomSheetStyle()
+        initializeVehicleDetails(sharedViewModel.vehicleSelected!!)
+        handleBackPressed()
+    }
 
-    private val bottomSheet: View by lazy {  view.get()!!.findViewById(R.id.vehicle_details_sheet)}
-    private val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-    private lateinit var googleMap: WeakReference<GoogleMap>
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = VehicleDetailsBottomSheetBinding.inflate(inflater, container, false)
+        return binding?.root
+    }
+
+    private fun handleBackPressed() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            requireActivity()
+                .findNavController(R.id.nav_host_bottom_sheet)
+                .popBackStack()
+        }
+    }
 
 
     private fun setBottomSheetStyle() {
+        val bottomSheet = requireActivity().findViewById<LinearLayout>(R.id.bottomSheet)
+        val bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
         bottomSheet.layoutParams.height =
-            (context.resources.displayMetrics.heightPixels * 0.55).toInt()
+            (requireContext().resources.displayMetrics.heightPixels * 0.55).toInt()
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         bottomSheetBehavior.isHideable = false
+        bottomSheetBehavior.isDraggable = false
     }
 
-    fun bottomSheetBehaviour(): Int {
-        return bottomSheetBehavior.state
-    }
-
-
-    fun showSheet(vehicle : NearbyVehicles){
-        bottomSheetBehavior.isHideable = false
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        initializeVehicleDetails(vehicle)
-        adjustMapForBottomSheet(1f)
-    }
-
-
-    private fun initializeVehicleDetails(vehicle: NearbyVehicles){
-            Glide.with(view.get()!!.context).load(vehicle.image)
-                .into(image)
+    private fun initializeVehicleDetails(vehicle: NearbyVehicles) {
+        binding?.apply {
+            Glide.with(requireContext()).load(vehicle.image)
+                .into(vehicleImage)
             vehicleName.text = vehicle.name
             maxSeats.text = vehicle.seats.toString()
-            timeWillReachOn.text = StringHelper.calculateTimeWithVehicleTime(vehicle.time)
+            timeOfArrival.text = StringHelper.calculateTimeWithVehicleTime(vehicle.time)
             minsAway.text = StringHelper.showTimeAway(vehicle.time)
             fare.text = StringHelper.showCurrency(vehicle.fare)
             vehicleDescription.text = vehicle.description
-            chooseVehicle.text = "Choose "+vehicle.name
-    }
-
-
-    init {
-        setBottomSheetStyle()
-        hideSheet()
-    }
-
-
-    fun hideSheet() {
-        bottomSheetBehavior.isHideable = true
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-    }
-
-    fun adjustMapForBottomSheet(slideOffset: Float) {
-
-       val  bounds = Helper.calculateBounds(RouteCreationHelper.latLngBounds) ?: return
-        val totalSheetHeight = bottomSheet.height
-        val mapPaddingBottom = (slideOffset * totalSheetHeight).toInt()
-
-        googleMap.get()?.setPadding(0, 0, 0, mapPaddingBottom)
-        googleMap.get()?.animateCamera(
-            CameraUpdateFactory.newLatLngBounds(
-                bounds,
-                100
-            )
-        )
-    }
-
-    fun initializeGoogleMap(googleMap: WeakReference<GoogleMap>) {
-        this.googleMap = googleMap
+            chooseVehicle.text = "Choose " + vehicle.name
+        }
     }
 
 }

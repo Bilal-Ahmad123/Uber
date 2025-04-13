@@ -140,6 +140,8 @@ class GoogleViewModel @Inject constructor(
         _pickUpLatitude = 0.0
         _pickUpLongitude = 0.0
         _dropOffLongitude = 0.0
+        _pickUpLocationName.postValue("")
+        _dropOffLocationName.postValue("")
     }
 
     fun cleanRetreiveSuggestedData(){
