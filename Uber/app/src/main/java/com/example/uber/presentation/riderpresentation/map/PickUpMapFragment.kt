@@ -208,6 +208,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         sharedViewModel.setIsDestinationConfirmBtnClicked(false)
         sharedViewModel.cleanData()
         googleViewModel.cleanData()
+        ShowNearbyVehicleService.drivers.clear()
     }
 
     private val cameraMoveListener = OnCameraMoveListener {

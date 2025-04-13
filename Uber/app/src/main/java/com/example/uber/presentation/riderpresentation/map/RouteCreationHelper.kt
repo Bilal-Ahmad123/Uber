@@ -202,42 +202,13 @@ class RouteCreationHelper(
         return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
-//    private fun addMarkerAnnotation(
-//        pickUpLatitude: Double,
-//        pickUpLongitude: Double,
-//        dropOffLatitude: Double,
-//        dropOffLongitude: Double
-//    ) {
-//        symbolManager?.iconAllowOverlap = true
-//        symbolManager?.iconIgnorePlacement = true
-//        val symbolOptionsPickUpAnnotation = SymbolOptions()
-//            .withLatLng(LatLng(pickUpLatitude, pickUpLongitude))
-//            .withIconImage("pickup-marker-annotation")
-//            .withIconOffset(arrayOf(0f, -30f))
-//
-//
-//        symbolManager?.create(symbolOptionsPickUpAnnotation)
-//
-//        val symbolOptionsDropOffAnnotation = SymbolOptions()
-//            .withLatLng(LatLng(dropOffLatitude, dropOffLongitude))
-//            .withIconImage("dropoff-marker-annotation")
-//            .withIconOffset(arrayOf(0f, -30f))
-//        symbolManager?.create(symbolOptionsDropOffAnnotation)
-//    }
-
-
-    private fun scaleBitMapImageSize(icon: Bitmap): Bitmap? {
-        val scaledIcon = icon?.let {
-            Bitmap.createScaledBitmap(it, 20, 20, false)
-        }
-        return scaledIcon
-    }
 
     fun deleteEveryThingOnMap() {
         map.get()?.clear()
         ShowNearbyVehicleService.drivers.clear()
         pickUpMarker = null
         dropOffMarker = null
+        bounds = null
     }
 
 
@@ -306,13 +277,6 @@ class RouteCreationHelper(
         return bitmap
     }
 
-
-//    fun clearResources() {
-//        mCouroutineScope = null
-//        lineManager = null
-//        symbolManager = null
-//        destroyInstance()
-//    }
 
     private fun addAnnotationClickListener(marker: Marker) {
         if (marker.tag != null) {
