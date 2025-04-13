@@ -120,6 +120,7 @@ object FetchLocation {
     }
 
     fun cleanResources() {
+        locationCallback2?.let { fusedLocationClient?.removeLocationUpdates(it) }
         fusedLocationClient = null;
     }
 

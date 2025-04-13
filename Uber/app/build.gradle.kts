@@ -86,6 +86,7 @@ android {
 dependencies {
     implementation("com.google.android.libraries.places:places:3.2.0")
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.androidx.core.animation)
     var nav_version = "2.3.5"
     var room_version = "2.2.3"
 

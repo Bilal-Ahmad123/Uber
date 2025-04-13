@@ -25,6 +25,7 @@ import com.example.uber.core.enums.SheetState
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.utils.FetchLocation
+import com.example.uber.core.utils.Helper
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
@@ -151,7 +152,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private fun initializeRouteHelper() {
         routeHelper = RouteCreationHelper(
-            WeakReference(this),
             WeakReference(googleMap),
             WeakReference(requireContext()),
             WeakReference(googleViewModel),
@@ -212,14 +212,20 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private val cameraMoveListener = OnCameraMoveListener {
+        Helper.animatePinWidth(binding.activityMainCenterLocationPin as View,50,binding.activityMainCenterLocationPin.width)
         if (binding.currLocationBtn.visibility != View.VISIBLE) {
             fadeInUserLocationButton()
+//            binding.activityMainCenterLocationPin.animate().translationY(40f).start()
+
+
         }
 //        socketViewModel.sendMessage("hello")
 
     }
 
     private val cameraIdleListener = OnCameraIdleListener {
+        Helper.animatePinWidth(binding.activityMainCenterLocationPin as View,binding.activityMainCenterLocationPin.width,600,800L)
+//        binding.activityMainCenterLocationPin.animate().translationY(0f).start()
         ifNetworkOrGPSDisabled {
             if (!it) {
                 if (!isPopulatingLocation) {
@@ -546,7 +552,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private fun initializeNearbyVehicleService(){
-        nearbyVehicleService = ShowNearbyVehicleService(this,this, WeakReference(requireContext()),socketViewModel)
+        nearbyVehicleService = ShowNearbyVehicleService(this, WeakReference(requireContext()),socketViewModel)
         nearbyVehicleService?.startObservingNearbyVehicles(WeakReference(googleMap))
     }
 

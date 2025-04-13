@@ -45,7 +45,6 @@ import java.util.Arrays
 
 
 class RouteCreationHelper(
-    private var pickUpMapFragment: WeakReference<PickUpMapFragment>,
     private var map: WeakReference<GoogleMap>,
     private var context: WeakReference<Context>,
     private var googleViewModel: WeakReference<GoogleViewModel>,

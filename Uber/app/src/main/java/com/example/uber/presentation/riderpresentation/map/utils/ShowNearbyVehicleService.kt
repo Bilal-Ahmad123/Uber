@@ -23,7 +23,6 @@ import java.lang.ref.WeakReference
 import java.util.UUID
 
 class ShowNearbyVehicleService(
-    private val viewModelStoreOwner: ViewModelStoreOwner,
     private val viewLifecycleOwner: LifecycleOwner,
     private val context: WeakReference<Context>,
     private val socketViewModel: SocketViewModel
