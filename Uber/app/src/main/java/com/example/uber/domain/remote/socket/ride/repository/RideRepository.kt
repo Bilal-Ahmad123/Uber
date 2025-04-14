@@ -1,6 +1,6 @@
 package com.example.uber.domain.remote.socket.ride.repository
 
-import com.example.uber.data.remote.api.backend.rider.socket.api.SocketManager
+import com.example.uber.domain.remote.socket.SocketRepository.SocketManager
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideRequest
 import com.example.uber.data.remote.api.backend.rider.socket.ride.repository.RideRepository
 import javax.inject.Inject
