@@ -1,8 +1,8 @@
 package com.example.uber.di.Network
 
-import com.example.uber.data.remote.api.backend.rider.location.api.SocketManager
-import com.example.uber.data.remote.api.backend.rider.location.repository.SocketRepository
-import com.example.uber.domain.remote.location.repository.SocketRepositoryImpl
+import com.example.uber.data.remote.api.backend.rider.socket.api.SocketManager
+import com.example.uber.data.remote.api.backend.rider.socket.location.repository.SocketRepository
+import com.example.uber.domain.remote.socket.location.repository.SocketRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

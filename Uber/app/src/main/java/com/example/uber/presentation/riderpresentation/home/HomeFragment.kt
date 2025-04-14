@@ -2,7 +2,6 @@ package com.example.uber.presentation.riderpresentation.home
 
 import android.Manifest
 import android.content.Context
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,19 +12,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
-import com.example.uber.core.utils.BitMapCreator
 import com.example.uber.core.utils.FetchLocation
-import com.example.uber.core.utils.HRMarkerAnimation
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.databinding.FragmentHomeBinding
-import com.example.uber.domain.local.location.model.DriverLocationMarker
-import com.example.uber.domain.remote.location.model.UpdateLocation
+import com.example.uber.domain.remote.socket.location.model.UpdateLocation
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import com.example.uber.presentation.splash.viewmodel.RiderRoomViewModel
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

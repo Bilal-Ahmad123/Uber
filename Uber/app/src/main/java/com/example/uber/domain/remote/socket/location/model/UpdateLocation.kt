@@ -1,4 +1,4 @@
-package com.example.uber.domain.remote.location.model
+package com.example.uber.domain.remote.socket.location.model
 
 import java.util.UUID
 

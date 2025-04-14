@@ -1,4 +1,4 @@
-package com.example.uber.data.remote.api.backend.rider.location.model
+package com.example.uber.data.remote.api.backend.rider.socket.location.model
 
 import java.util.UUID
 

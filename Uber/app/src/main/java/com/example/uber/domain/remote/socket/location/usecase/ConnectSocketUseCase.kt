@@ -1,6 +1,6 @@
-package com.example.uber.domain.remote.location.usecase
+package com.example.uber.domain.remote.socket.location.usecase
 
-import com.example.uber.data.remote.api.backend.rider.location.repository.SocketRepository
+import com.example.uber.data.remote.api.backend.rider.socket.location.repository.SocketRepository
 import okhttp3.WebSocketListener
 import javax.inject.Inject
 

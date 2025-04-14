@@ -1,9 +1,7 @@
-package com.example.uber.data.remote.api.backend.rider.location.api
+package com.example.uber.data.remote.api.backend.rider.socket.api
 
 import android.util.Log
-import com.example.uber.data.remote.api.backend.rider.location.mapper.UpdateDriverLocation
-import com.example.uber.data.remote.api.backend.rider.location.mapper.toData
-import com.example.uber.domain.remote.location.model.UpdateLocation
+import com.example.uber.data.remote.api.backend.rider.socket.location.mapper.UpdateDriverLocation
 import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
 import kotlinx.coroutines.CoroutineScope
@@ -43,9 +41,9 @@ class SocketManager @Inject constructor() {
         }
     }
 
-    fun send(location: UpdateLocation) {
+    fun<T> send(location: T, method : String) {
         runCatching {
-            hubConnection.send("UpdateLocation", location.toData())
+            hubConnection.send(method, location)
         }.onFailure {
             Log.d("SocketManager", "Error sending message: ${it.message}")
         }
