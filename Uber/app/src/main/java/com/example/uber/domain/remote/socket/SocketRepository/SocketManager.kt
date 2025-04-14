@@ -9,8 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SocketManager : SocketBroker {
+class SocketManager @Inject constructor(): SocketBroker {
     private var hubConnection: HubConnection ? = null
     private val connectedToSocket = MutableSharedFlow<Boolean>()
 

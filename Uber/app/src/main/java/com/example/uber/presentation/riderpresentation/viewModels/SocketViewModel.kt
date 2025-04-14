@@ -39,15 +39,9 @@ class SocketViewModel @Inject constructor(
     private val connectedToSocket = MutableSharedFlow<Boolean>()
     val socketConnected = connectedToSocket.asSharedFlow()
     private val receivedMessages = mutableListOf<String>()
+
     fun connectToSocket(url: String) {
-        val listener = object : WebSocketListener() {
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                Log.d("SocketViewModel", "Received message: $text")
-                receivedMessages.add(text)
-                _messages.postValue(receivedMessages)
-            }
-        }
-        connectToSocketUseCase(url, listener)
+        connectToSocketUseCase(url)
     }
     fun disconnectFromSocket() {
         disconnectFromSocketUseCase()

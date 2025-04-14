@@ -12,8 +12,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
+import javax.inject.Inject
 
-class LocationRepositoryImpl(private val socketManager: SocketBroker): LocationRepository {
+class LocationRepositoryImpl @Inject constructor(private val socketManager: SocketBroker): LocationRepository {
     private val driver = MutableSharedFlow<UpdateDriverLocation>()
     private val driverLocationUpdates = driver.asSharedFlow()
 
