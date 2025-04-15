@@ -16,6 +16,7 @@ import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.databinding.FragmentHomeBinding
 import com.example.uber.domain.remote.socket.location.model.UpdateLocation
+import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import com.example.uber.presentation.splash.viewmodel.RiderRoomViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,7 +31,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private val socketViewModel: SocketViewModel by activityViewModels<SocketViewModel>()
     private val riderRoomViewModel: RiderRoomViewModel by viewModels()
-
+    private val locationViewModel : LocationViewModel  by activityViewModels<LocationViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -115,8 +116,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun startObservingNearbyDrivers(){
-        socketViewModel.startObservingDriversLocation()
-        socketViewModel.observeDriversLocations()
+        locationViewModel.startObservingDriversLocation()
+        locationViewModel.observeDriversLocations()
     }
 
     private fun observeSocketConnected(){

@@ -65,7 +65,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private var isPopulatingLocation = false
     private val mapboxViewModel: MapboxViewModel by viewModels()
     private val googleViewModel: GoogleViewModel by activityViewModels<GoogleViewModel>()
-    private val socketViewModel: SocketViewModel by activityViewModels()
     private var routeHelper: RouteCreationHelper? = null
     private var _areListenersRegistered = false
     private lateinit var mapFrag: SupportMapFragment
@@ -552,7 +551,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private fun initializeNearbyVehicleService(){
-        nearbyVehicleService = ShowNearbyVehicleService(this, WeakReference(requireContext()),socketViewModel)
+        nearbyVehicleService = ShowNearbyVehicleService(this, WeakReference(requireContext()),locationViewModel)
         nearbyVehicleService?.startObservingNearbyVehicles(WeakReference(googleMap))
     }
 

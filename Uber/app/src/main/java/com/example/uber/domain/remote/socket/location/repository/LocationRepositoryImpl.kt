@@ -1,7 +1,9 @@
 package com.example.uber.domain.remote.socket.location.repository
 
 import android.util.Log
+import com.example.uber.core.utils.SocketMethods
 import com.example.uber.data.remote.api.backend.rider.socket.location.mapper.UpdateDriverLocation
+import com.example.uber.data.remote.api.backend.rider.socket.location.mapper.toData
 import com.example.uber.data.remote.api.backend.rider.socket.location.repository.LocationRepository
 import com.example.uber.data.remote.api.backend.rider.socket.socketBroker.service.SocketBroker
 import com.example.uber.domain.remote.socket.location.model.UpdateLocation
@@ -19,14 +21,15 @@ class LocationRepositoryImpl @Inject constructor(private val socketManager: Sock
     private val driverLocationUpdates = driver.asSharedFlow()
 
     override fun send(location: UpdateLocation, method: String) {
-        socketManager.send(location,"UpdateLocation")
+        socketManager.send(location.toData(),SocketMethods.UPDATE_LOCATION)
     }
 
     override fun startObservingDriverLocationUpdates() {
         runCatching {
             socketManager.apply {
+                Log.d("HubConnectionInstance1",getHubConnection().hashCode().toString())
                 if(getHubConnection() != null){
-                    getHubConnection()?.on("DriverLocationUpdate",
+                    getHubConnection()?.on(SocketMethods.DRIVER_LOCATION_UPDATES,
                         { userId: String, longitude: Double, latitude: Double, vehicleType: String ->
                             CoroutineScope(Dispatchers.IO).launch {
                                 Log.d(

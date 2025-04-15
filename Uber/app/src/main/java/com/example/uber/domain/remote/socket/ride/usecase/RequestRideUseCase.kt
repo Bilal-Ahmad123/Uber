@@ -5,7 +5,7 @@ import com.example.uber.data.remote.api.backend.rider.socket.ride.repository.Rid
 import javax.inject.Inject
 
 class RequestRideUseCase @Inject constructor(private val rideRepository: RideRepository) {
-    operator fun invoke(rideRequest: RideRequest){
+     operator fun invoke(rideRequest: RideRequest){
         rideRepository.sendRideRequest(rideRequest)
     }
 }

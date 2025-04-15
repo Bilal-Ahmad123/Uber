@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class SocketManager @Inject constructor(): SocketBroker {
+@Singleton
+class SocketManager @Inject constructor() : SocketBroker {
     private var hubConnection: HubConnection ? = null
     private val connectedToSocket = MutableSharedFlow<Boolean>()
 
@@ -20,6 +22,7 @@ class SocketManager @Inject constructor(): SocketBroker {
             hubConnection = HubConnectionBuilder.create(url)
                 .withTransport(com.microsoft.signalr.TransportEnum.LONG_POLLING)
                 .build()
+            Log.d("HubConnectionInstance",hubConnection.hashCode().toString())
             hubConnection?.start()?.subscribe({
                 CoroutineScope(Dispatchers.IO).launch {
                     connectedToSocket.emit(true)

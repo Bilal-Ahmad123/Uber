@@ -26,16 +26,10 @@ class SocketViewModel @Inject constructor(
     private val connectToSocketUseCase: ConnectSocketUseCase,
     private val disconnectFromSocketUseCase: DisconnectSocketUseCase,
     private val sendMessageUseCase: SendMessageUseCase,
-    private val startObservingDriversLocationUseCase: StartObservingDriverLocationUseCase,
-    private val observeDriversLocationsUseCase: ObserveDriverLocationUseCase,
     private val observeConnectedToSocketUseCase: ObserveConnectedToSocket,
     private val dispatcher: IDispatchers,
 ) : BaseViewModel(dispatcher) {
-    private val _messages = MutableLiveData<List<String>>()
-    val messages: LiveData<List<String>> get() = _messages
-    private val _driverLocation = MutableSharedFlow<UpdateDriverLocation>()
-    val driverLocation: SharedFlow<UpdateDriverLocation>
-        get() = _driverLocation.asSharedFlow()
+
     private val connectedToSocket = MutableSharedFlow<Boolean>()
     val socketConnected = connectedToSocket.asSharedFlow()
     private val receivedMessages = mutableListOf<String>()
@@ -50,17 +44,7 @@ class SocketViewModel @Inject constructor(
         sendMessageUseCase(location)
     }
 
-    fun startObservingDriversLocation(){
-        startObservingDriversLocationUseCase()
-    }
 
-    fun observeDriversLocations(){
-        launchOnBack {
-            observeDriversLocationsUseCase().collect{
-                _driverLocation.emit(it)
-            }
-        }
-    }
 
     fun observeConnectedToSocket(){
         launchOnBack {

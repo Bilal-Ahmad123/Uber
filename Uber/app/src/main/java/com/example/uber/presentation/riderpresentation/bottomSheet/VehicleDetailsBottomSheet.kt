@@ -9,30 +9,39 @@ import androidx.activity.addCallback
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.example.uber.R
 import com.example.uber.core.enums.SheetState
 import com.example.uber.core.utils.Helper
 import com.example.uber.core.utils.StringHelper
+import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideRequest
 import com.example.uber.databinding.VehicleDetailsBottomSheetBinding
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
 import com.example.uber.presentation.riderpresentation.map.RouteCreationHelper
+import com.example.uber.presentation.riderpresentation.map.viewmodels.RideViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_sheet) {
 
     private var binding: VehicleDetailsBottomSheetBinding? = null
-    private val sharedViewModel : MapAndSheetsSharedViewModel by activityViewModels<MapAndSheetsSharedViewModel>()
-    private var bottomSheet : LinearLayout ? = null
+    private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels<MapAndSheetsSharedViewModel>()
+    private var bottomSheet: LinearLayout? = null
+    private val rideViewModel: RideViewModel by viewModels<RideViewModel>()
+    private val riderViewModel: RiderViewModel by activityViewModels<RiderViewModel>()
+    private val googleViewModel: GoogleViewModel by activityViewModels<GoogleViewModel>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setBottomSheetStyle()
         initializeVehicleDetails(sharedViewModel.vehicleSelected!!)
         handleBackPressed()
-
+        setUpChooseVehicleClickListener()
     }
 
     override fun onCreateView(
@@ -43,7 +52,6 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
         binding = VehicleDetailsBottomSheetBinding.inflate(inflater, container, false)
         return binding?.root
     }
-
 
 
     private fun handleBackPressed() {
@@ -73,6 +81,7 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
         bottomSheet = null
         sharedViewModel.vehicleSelected(null)
     }
+
     private fun initializeVehicleDetails(vehicle: NearbyVehicles) {
         binding?.apply {
             Glide.with(requireContext()).load(vehicle.image)
@@ -93,6 +102,20 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
             val totalSheetHeight = bottomSheet?.height
             val mapPaddingBottom = (slideOffset * totalSheetHeight!!).toInt()
             sharedViewModel.setRideOptionsSheetOffsetAndBounds(mapPaddingBottom, bounds)
+        }
+    }
+
+    private fun setUpChooseVehicleClickListener() {
+        binding?.chooseVehicle?.setOnClickListener {
+            rideViewModel.requestRide(
+                RideRequest(
+                    riderViewModel.riderId!!,
+                    googleViewModel.pickUpLongitude,
+                    googleViewModel.pickUpLatitude,
+                    googleViewModel.dropOffLatitude,
+                    googleViewModel.dropOffLongitude
+                )
+            )
         }
     }
 

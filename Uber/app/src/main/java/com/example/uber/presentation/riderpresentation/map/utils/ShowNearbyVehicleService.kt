@@ -13,6 +13,7 @@ import com.example.uber.core.utils.BitMapCreator
 import com.example.uber.core.utils.HRMarkerAnimation
 import com.example.uber.domain.local.location.model.DriverLocationMarker
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
+import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -25,7 +26,7 @@ import java.util.UUID
 class ShowNearbyVehicleService(
     private val viewLifecycleOwner: LifecycleOwner,
     private val context: WeakReference<Context>,
-    private val socketViewModel: SocketViewModel
+    private val locationViewModel: LocationViewModel
 ) {
     private lateinit var googleMap: WeakReference<GoogleMap>
 
@@ -37,7 +38,7 @@ class ShowNearbyVehicleService(
     fun startObservingNearbyVehicles(googleMap: WeakReference<GoogleMap>) {
         this.googleMap = googleMap
         viewLifecycleOwner.lifecycleScope.launch {
-            with(socketViewModel) {
+            with(locationViewModel) {
                 driverLocation.collectLatest {
                     if (!drivers.containsKey(it.driverId)) {
                         var carMarker = R.drawable.ic_car
