@@ -211,29 +211,42 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private val cameraMoveListener = OnCameraMoveListener {
-        Helper.animatePinWidth(binding.activityMainCenterLocationPin as View,50,binding.activityMainCenterLocationPin.width)
-        if (binding.currLocationBtn.visibility != View.VISIBLE) {
-            fadeInUserLocationButton()
+        if(sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
+            Helper.animatePinWidth(
+                binding.activityMainCenterLocationPin as View,
+                50,
+                binding.activityMainCenterLocationPin.width
+            )
+            if (binding.currLocationBtn.visibility != View.VISIBLE) {
+                fadeInUserLocationButton()
 //            binding.activityMainCenterLocationPin.animate().translationY(40f).start()
 
 
-        }
+            }
 //        socketViewModel.sendMessage("hello")
+        }
 
     }
 
     private val cameraIdleListener = OnCameraIdleListener {
-        Helper.animatePinWidth(binding.activityMainCenterLocationPin as View,binding.activityMainCenterLocationPin.width,600,800L)
+        if(sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
+            Helper.animatePinWidth(
+                binding.activityMainCenterLocationPin as View,
+                binding.activityMainCenterLocationPin.width,
+                600,
+                800L
+            )
 //        binding.activityMainCenterLocationPin.animate().translationY(0f).start()
-        ifNetworkOrGPSDisabled {
-            if (!it) {
-                if (!isPopulatingLocation) {
-                    fetchLocation()
+            ifNetworkOrGPSDisabled {
+                if (!it) {
+                    if (!isPopulatingLocation) {
+                        fetchLocation()
+                    }
                 }
             }
-        }
-        if (routeHelper != null) {
-            routeHelper?.onCameraIdle()
+            if (routeHelper != null) {
+                routeHelper?.onCameraIdle()
+            }
         }
     }
 
@@ -422,7 +435,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         )
 
         hideLocationPickerMarker()
-        onRemoveCameraAndMoveListener()
         routeHelper?.createRoute(
             LatLng(
                 pickUp.longitude,
