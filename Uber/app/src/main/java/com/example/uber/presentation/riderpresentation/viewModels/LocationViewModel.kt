@@ -19,7 +19,7 @@ class LocationViewModel @Inject constructor(
     private val observeDriversLocationsUseCase: ObserveDriverLocationUseCase,
 ) : BaseViewModel(dispatcher) {
     private val _driverLocation = MutableSharedFlow<UpdateDriverLocation>()
-    val driverLocation: SharedFlow<UpdateDriverLocation>
+    val  driverLocation: SharedFlow<UpdateDriverLocation>
         get() = _driverLocation.asSharedFlow()
     private var _pickUpLocation: LatLng? = null
     val pickUpLocation get() = _pickUpLocation

@@ -1,7 +1,9 @@
 package com.example.uber.core.common
 
 object Constants_API {
-    const val BACKEND_API = "http://192.168.18.65:5231/"
-    const val BACKEND_AUTH_API = "http://192.168.18.65:5232/"
-    const val BACKEND_RIDER_API = "http://192.168.18.65:5213/"
+    private const val END_POINT = "192.168.43.14"
+    const val BACKEND_API = "http://${END_POINT}:5231/"
+    const val BACKEND_AUTH_API = "http://${END_POINT}:5232/"
+    const val BACKEND_RIDER_API = "http://${END_POINT}:5213/"
+    const val SOCKET_API = "ws://${END_POINT}:5213/riderhub"
 }

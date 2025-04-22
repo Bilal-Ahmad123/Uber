@@ -27,7 +27,6 @@ class LocationRepositoryImpl @Inject constructor(private val socketManager: Sock
     override fun startObservingDriverLocationUpdates() {
         runCatching {
             socketManager.apply {
-                Log.d("HubConnectionInstance1",getHubConnection().hashCode().toString())
                 if(getHubConnection() != null){
                     getHubConnection()?.on(SocketMethods.DRIVER_LOCATION_UPDATES,
                         { userId: String, longitude: Double, latitude: Double, vehicleType: String ->

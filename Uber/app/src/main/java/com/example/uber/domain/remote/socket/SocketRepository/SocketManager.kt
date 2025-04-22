@@ -22,7 +22,6 @@ class SocketManager @Inject constructor() : SocketBroker {
             hubConnection = HubConnectionBuilder.create(url)
                 .withTransport(com.microsoft.signalr.TransportEnum.LONG_POLLING)
                 .build()
-            Log.d("HubConnectionInstance",hubConnection.hashCode().toString())
             hubConnection?.start()?.subscribe({
                 CoroutineScope(Dispatchers.IO).launch {
                     connectedToSocket.emit(true)

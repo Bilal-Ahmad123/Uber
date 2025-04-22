@@ -212,11 +212,11 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private val cameraMoveListener = OnCameraMoveListener {
         if(sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
-            Helper.animatePinWidth(
-                binding.activityMainCenterLocationPin as View,
-                50,
-                binding.activityMainCenterLocationPin.width
-            )
+//            Helper.animatePinWidth(
+//                binding.activityMainCenterLocationPin as View,
+//                50,
+//                binding.activityMainCenterLocationPin.width
+//            )
             if (binding.currLocationBtn.visibility != View.VISIBLE) {
                 fadeInUserLocationButton()
 //            binding.activityMainCenterLocationPin.animate().translationY(40f).start()
@@ -230,12 +230,12 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private val cameraIdleListener = OnCameraIdleListener {
         if(sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
-            Helper.animatePinWidth(
-                binding.activityMainCenterLocationPin as View,
-                binding.activityMainCenterLocationPin.width,
-                600,
-                800L
-            )
+//            Helper.animatePinWidth(
+//                binding.activityMainCenterLocationPin as View,
+//                binding.activityMainCenterLocationPin.width,
+//                600,
+//                800L
+//            )
 //        binding.activityMainCenterLocationPin.animate().translationY(0f).start()
             ifNetworkOrGPSDisabled {
                 if (!it) {
@@ -537,9 +537,9 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                         showLocationPickerMarker()
                         if (::googleMap.isInitialized) {
                             onAddCameraAndMoveListeners()
+                            googleMap.setPadding(0,0,0,0)
                         }
                     }
-
                     else -> Unit
                 }
             }

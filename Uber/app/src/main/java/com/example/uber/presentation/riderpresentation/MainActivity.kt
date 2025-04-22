@@ -31,7 +31,7 @@ import java.util.UUID
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
-    private lateinit var binding: ActivityMainBinding
+    private var binding: ActivityMainBinding? = null
     private var currentNightMode: Int = 0
     private val ll_nointernet: View by lazy { findViewById(R.id.noInternetConnection) }
     private val ll_no_location_service: View by lazy { findViewById(R.id.ll_no_location_service) }
@@ -43,11 +43,11 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+        setContentView(binding?.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding!!.root) { view, insets ->
             val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val navBarHeight = systemBarsInsets.bottom
-            if (binding.bottomNavigationView.visibility == View.VISIBLE) {
+            if (binding?.bottomNavigationView?.visibility == View.VISIBLE) {
                 view.setPadding(0, 0, 0, 0)
             } else {
                 view.setPadding(0, 0, 0, navBarHeight)
@@ -98,13 +98,13 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.pickUpMapFragment -> {
-                    binding.bottomNavigationView.visibility = View.GONE
+                    binding?.bottomNavigationView?.visibility = View.GONE
                 }
 
-                else -> binding.bottomNavigationView.visibility = View.VISIBLE
+                else -> binding?.bottomNavigationView?.visibility = View.VISIBLE
             }
             supportActionBar?.hide()
-            binding.bottomNavigationView.setupWithNavController(navController)
+            binding?.bottomNavigationView?.setupWithNavController(navController)
         }
     }
 
@@ -160,5 +160,10 @@ class MainActivity : AppCompatActivity() {
         val bundle = intent.extras
         val riderId = bundle?.getSerializable(AppConstants.RiderId) as UUID
         riderViewModel.setRiderId(riderId)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
     }
 }

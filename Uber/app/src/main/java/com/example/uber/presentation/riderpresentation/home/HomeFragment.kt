@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.uber.R
+import com.example.uber.core.common.Constants_API
 import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.databinding.FragmentHomeBinding
@@ -66,7 +67,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun connectToSocket(riderId: UUID) {
-        socketViewModel.connectToSocket("ws://192.168.18.65:5213/riderhub?riderId=${riderId}")
+        socketViewModel.connectToSocket("${Constants_API.SOCKET_API}?riderId=${riderId}")
     }
 
     private fun setUpWhereToClickListener() {
