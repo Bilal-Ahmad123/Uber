@@ -33,7 +33,7 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
     private var binding: VehicleDetailsBottomSheetBinding? = null
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels<MapAndSheetsSharedViewModel>()
     private var bottomSheet: LinearLayout? = null
-    private val rideViewModel: RideViewModel by viewModels<RideViewModel>()
+    private val rideViewModel: RideViewModel by activityViewModels<RideViewModel>()
     private val riderViewModel: RiderViewModel by activityViewModels<RiderViewModel>()
     private val googleViewModel: GoogleViewModel by activityViewModels<GoogleViewModel>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -116,6 +116,8 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
                     googleViewModel.dropOffLongitude
                 )
             )
+            rideViewModel.startObservingRideRequestAccepted()
+            sharedViewModel.setCurrentOpenedSheet(SheetState.RIDE_REQUESTED)
         }
     }
 

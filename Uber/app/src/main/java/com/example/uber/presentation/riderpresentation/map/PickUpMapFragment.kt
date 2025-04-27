@@ -4,41 +4,32 @@ package com.example.uber.presentation.riderpresentation.map
 import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.LinearLayout
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import com.example.uber.R
 import com.example.uber.core.enums.SheetState
 import com.example.uber.core.interfaces.IActions
 import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.utils.FetchLocation
-import com.example.uber.core.utils.Helper
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.core.utils.system.SystemInfo
 import com.example.uber.databinding.FragmentPickUpMapBinding
-import com.example.uber.domain.local.location.model.DriverLocationMarker
-import com.example.uber.presentation.riderpresentation.bottomSheet.BottomSheetManager
-import com.example.uber.presentation.riderpresentation.bottomSheet.RideOptionsBottomSheet
 import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
+import com.example.uber.presentation.riderpresentation.map.viewmodels.RideViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapboxViewModel
-import com.example.uber.presentation.riderpresentation.viewModels.RiderViewModel
-import com.example.uber.presentation.riderpresentation.viewModels.SocketViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -47,13 +38,13 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.rxjava3.disposables.CompositeDisposable
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
-import java.util.UUID
 import kotlin.math.abs
 
 
@@ -72,8 +63,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private var currentLocation: Location? = null
     private val locationViewModel: LocationViewModel by activityViewModels<LocationViewModel>()
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels()
-    private var nearbyVehicleService: ShowNearbyVehicleService ? = null
-
+    private var nearbyVehicleService: ShowNearbyVehicleService? = null
+    private val rideViewModel: RideViewModel by activityViewModels<RideViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -102,8 +93,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         observeCurrentlyOpenedSheet()
         observeRideOptionsSheetExpanded()
         observeVehicleClicked()
+        observeRideAccepted()
     }
-
 
 
     private fun setUpGoogleMap() {
@@ -211,7 +202,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private val cameraMoveListener = OnCameraMoveListener {
-        if(sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
+        if (sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
 //            Helper.animatePinWidth(
 //                binding.activityMainCenterLocationPin as View,
 //                50,
@@ -229,7 +220,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     }
 
     private val cameraIdleListener = OnCameraIdleListener {
-        if(sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
+        if (sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
 //            Helper.animatePinWidth(
 //                binding.activityMainCenterLocationPin as View,
 //                binding.activityMainCenterLocationPin.width,
@@ -392,7 +383,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                         location!!.latitude, location.longitude
                     )
                     googleViewModel.setDropOffLocationName(
-                        location.latitude,location.longitude
+                        location.latitude, location.longitude
                     )
                 }
             }
@@ -537,9 +528,25 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                         showLocationPickerMarker()
                         if (::googleMap.isInitialized) {
                             onAddCameraAndMoveListeners()
-                            googleMap.setPadding(0,0,0,0)
+                            googleMap.setPadding(0, 0, 0, 0)
                         }
                     }
+
+                    SheetState.RIDE_ACCEPTED -> {
+                        val navHostFragment =
+                            childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
+                        val navController = navHostFragment?.navController
+                        navController?.navigate(R.id.rideAcceptedSheet)
+                    }
+
+                    SheetState.RIDE_REQUESTED -> {
+                        Log.d("RideRequested","Sheet")
+                        val navHostFragment =
+                            childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
+                        val navController = navHostFragment?.navController
+                        navController?.navigate(R.id.rideRequestedSheet)
+                    }
+
                     else -> Unit
                 }
             }
@@ -562,15 +569,28 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
     }
 
-    private fun initializeNearbyVehicleService(){
-        nearbyVehicleService = ShowNearbyVehicleService(this, WeakReference(requireContext()),locationViewModel)
+    private fun initializeNearbyVehicleService() {
+        nearbyVehicleService =
+            ShowNearbyVehicleService(this, WeakReference(requireContext()), locationViewModel)
         nearbyVehicleService?.startObservingNearbyVehicles(WeakReference(googleMap))
     }
 
-    private fun observeVehicleClicked(){
+    private fun observeRideAccepted() {
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            rideViewModel.rideAccept.observe(viewLifecycleOwner) {
+                val navHostFragment =
+                    childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
+                val navController = navHostFragment?.navController
+                navController?.navigate(R.id.rideAcceptedSheet)
+            }
+            }
+    }
+
+    private fun observeVehicleClicked() {
         sharedViewModel.apply {
-            vehicleSelect.observe(viewLifecycleOwner){
-                if(it != null){
+            vehicleSelect.observe(viewLifecycleOwner) {
+                if (it != null) {
                     nearbyVehicleService?.onCarItemListClickListener(it)
                 }
             }

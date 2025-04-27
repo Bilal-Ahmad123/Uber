@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_bottom_sheet_graph"
     app:startDestination="@id/bottomSheetManager">
 
@@ -23,5 +24,23 @@
     <fragment
         android:id="@+id/vehicleDetailsBottomSheet"
         android:name="com.example.uber.presentation.riderpresentation.bottomSheet.VehicleDetailsBottomSheet"
-        android:label="VehicleDetailsBottomSheet" />
+        android:label="VehicleDetailsBottomSheet" >
+        <action
+            android:id="@+id/action_vehicleDetailsBottomSheet_to_rideRequestedSheet"
+            app:destination="@id/rideRequestedSheet" />
+    </fragment>
+    <fragment
+        android:id="@+id/rideAcceptedSheet"
+        android:name="com.example.uber.presentation.riderpresentation.bottomSheet.RideAcceptedSheet"
+        android:label="fragment_ride_accepted_sheet"
+        tools:layout="@layout/fragment_ride_accepted_sheet" />
+    <fragment
+        android:id="@+id/rideRequestedSheet"
+        android:name="com.example.uber.presentation.riderpresentation.bottomSheet.RideRequestedSheet"
+        android:label="fragment_ride_requested_sheet"
+        tools:layout="@layout/fragment_ride_requested_sheet" >
+        <action
+            android:id="@+id/action_rideRequestedSheet_to_rideAcceptedSheet"
+            app:destination="@id/rideAcceptedSheet" />
+    </fragment>
 </navigation>

@@ -4,5 +4,8 @@ enum class SheetState {
     RIDE_SHEET,
     VEHICLE_SHEET,
     PICKUP_SHEET,
-    NONE
+    RIDE_ACCEPTED,
+    RIDE_REQUESTED,
+    NONE,
+
 }
