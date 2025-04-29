@@ -2,7 +2,6 @@ package com.example.uber.core.utils
 
 import android.animation.ValueAnimator
 import android.view.View
-import com.example.uber.presentation.riderpresentation.map.RouteCreationHelper
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 

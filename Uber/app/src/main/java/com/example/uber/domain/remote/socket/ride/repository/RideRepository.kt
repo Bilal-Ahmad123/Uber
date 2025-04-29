@@ -3,6 +3,7 @@ package com.example.uber.domain.remote.socket.ride.repository
 import com.example.uber.core.utils.SocketMethods
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideAccepted
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideRequest
+import com.example.uber.data.remote.api.backend.rider.socket.ride.model.TripLocation
 import com.example.uber.data.remote.api.backend.rider.socket.ride.repository.RideRepository
 import com.example.uber.data.remote.api.backend.rider.socket.socketBroker.service.SocketBroker
 import kotlinx.coroutines.CoroutineScope
@@ -17,11 +18,12 @@ import javax.inject.Inject
 class RideRepository @Inject constructor(private val socketManager: SocketBroker) : RideRepository {
     private val socketScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val rideAccepted = MutableSharedFlow<RideAccepted>()
+    private val tripLocations = MutableSharedFlow<TripLocation>()
     override fun sendRideRequest(rideRequest: RideRequest) {
         socketManager.send(rideRequest, SocketMethods.REQUEST_RIDE)
     }
 
-    override fun startObservingRideAcceptedEvent():Flow<RideAccepted> {
+    override fun startObservingRideAcceptedEvent(): Flow<RideAccepted> {
         socketManager.apply {
             getHubConnection()?.let {
                 it.on(
@@ -51,4 +53,31 @@ class RideRepository @Inject constructor(private val socketManager: SocketBroker
     }
 
     override fun observeRideAccepted() = rideAccepted
+
+    override fun observeTrip(): Flow<TripLocation> {
+        socketManager.apply {
+            getHubConnection()?.let {
+                it.on(
+                    SocketMethods.TRIP_UPDATES,
+                    { rideId: String, driverId: String, latitude: Double, longitude: Double ->
+                        socketScope.launch {
+                            tripLocations.emit(
+                                TripLocation(
+                                    UUID.fromString(rideId),
+                                    UUID.fromString(driverId),
+                                    latitude,
+                                    longitude
+                                )
+                            )
+                        }
+                    },
+                    String::class.java,
+                    String::class.java,
+                    Double::class.java,
+                    Double::class.java
+                )
+            }
+        }
+        return tripLocations
+    }
 }

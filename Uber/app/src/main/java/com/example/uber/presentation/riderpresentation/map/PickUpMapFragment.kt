@@ -23,7 +23,10 @@ import com.example.uber.core.interfaces.utils.mode.CheckMode
 import com.example.uber.core.utils.FetchLocation
 import com.example.uber.core.utils.permissions.PermissionManagers
 import com.example.uber.core.utils.system.SystemInfo
+import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideAccepted
 import com.example.uber.databinding.FragmentPickUpMapBinding
+import com.example.uber.presentation.riderpresentation.map.Routes.RouteCreationHelper
+import com.example.uber.presentation.riderpresentation.map.Routes.TripRoute
 import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
 import com.example.uber.presentation.riderpresentation.map.viewmodels.RideViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
@@ -39,11 +42,9 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -65,6 +66,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels()
     private var nearbyVehicleService: ShowNearbyVehicleService? = null
     private val rideViewModel: RideViewModel by activityViewModels<RideViewModel>()
+    private var tripRoute : TripRoute? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -203,31 +205,16 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
     private val cameraMoveListener = OnCameraMoveListener {
         if (sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
-//            Helper.animatePinWidth(
-//                binding.activityMainCenterLocationPin as View,
-//                50,
-//                binding.activityMainCenterLocationPin.width
-//            )
+
             if (binding.currLocationBtn.visibility != View.VISIBLE) {
                 fadeInUserLocationButton()
-//            binding.activityMainCenterLocationPin.animate().translationY(40f).start()
-
-
             }
-//        socketViewModel.sendMessage("hello")
         }
 
     }
 
     private val cameraIdleListener = OnCameraIdleListener {
         if (sharedViewModel.currentSheet.value == SheetState.PICKUP_SHEET) {
-//            Helper.animatePinWidth(
-//                binding.activityMainCenterLocationPin as View,
-//                binding.activityMainCenterLocationPin.width,
-//                600,
-//                800L
-//            )
-//        binding.activityMainCenterLocationPin.animate().translationY(0f).start()
             ifNetworkOrGPSDisabled {
                 if (!it) {
                     if (!isPopulatingLocation) {
@@ -540,7 +527,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                     }
 
                     SheetState.RIDE_REQUESTED -> {
-                        Log.d("RideRequested","Sheet")
+                        Log.d("RideRequested", "Sheet")
                         val navHostFragment =
                             childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
                         val navController = navHostFragment?.navController
@@ -579,12 +566,15 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
         viewLifecycleOwner.lifecycleScope.launch {
             rideViewModel.rideAccept.observe(viewLifecycleOwner) {
+                val bundle = Bundle()
+                bundle.putParcelable("ride_request",it)
                 val navHostFragment =
                     childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
                 val navController = navHostFragment?.navController
                 navController?.navigate(R.id.rideAcceptedSheet)
+                startTrip(it)
             }
-            }
+        }
     }
 
     private fun observeVehicleClicked() {
@@ -596,6 +586,22 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             }
         }
     }
+
+    private fun startTrip(ride:RideAccepted){
+        tripRoute = TripRoute(
+            WeakReference(googleMap),
+            googleViewModel,
+            this,
+            locationViewModel,
+            rideViewModel
+        )
+        locationViewModel?.pickUpLocation?.let {
+            ride?.let { r->
+                tripRoute?.createRoute(LatLng(it.latitude,it.longitude),LatLng(r.latitude,r.longitude))
+            }
+        }
+    }
+
 }
 
 

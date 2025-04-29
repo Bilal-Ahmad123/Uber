@@ -1,4 +1,4 @@
-package com.example.uber.presentation.riderpresentation.map
+package com.example.uber.presentation.riderpresentation.map.Routes
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -17,7 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.example.uber.R
 import com.example.uber.core.enums.Markers
-import com.example.uber.presentation.riderpresentation.map.utils.ShowNearbyVehicleService
+import com.example.uber.presentation.riderpresentation.map.utils.CustomMapAnimator
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -31,10 +31,10 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
-import com.logicbeanzs.uberpolylineanimation.MapAnimator
 import dagger.hilt.android.internal.managers.ViewComponentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +52,8 @@ class RouteCreationHelper(
     private val viewLifecycleOwner: LifecycleOwner,
 ) : OnMarkerClickListener {
 
-
+    private var foregroundPolyline: Polyline? = null
+    private var backgroundPolyline: Polyline? = null
     private var pickUpMarker: Marker? = null
 
     private var dropOffMarker: Marker? = null
@@ -105,9 +106,11 @@ class RouteCreationHelper(
         if (routePoints.size > 1) {
             latLngBounds = routePoints
             addMarkerToRouteStartAndRouteEnd()
-            MapAnimator.animateRoute(map.get()!!, routePoints)
-            MapAnimator.setPrimaryLineColor(Color.parseColor("#000000"))
-            MapAnimator.setSecondaryLineColor(Color.parseColor("#ffffff"))
+            val (fg, bg) = CustomMapAnimator.animateRoute(map.get()!!, routePoints)
+            foregroundPolyline = fg
+            backgroundPolyline = bg
+            CustomMapAnimator.setPrimaryLineColor(Color.parseColor("#000000"))
+            CustomMapAnimator.setSecondaryLineColor(Color.parseColor("#ffffff"))
             animateCameraToFillRoute(routePoints)
             setUpMarkerClickListener()
         }
@@ -203,10 +206,14 @@ class RouteCreationHelper(
 
 
     fun deleteEveryThingOnMap() {
-        map.get()?.clear()
-        ShowNearbyVehicleService.drivers.clear()
+        pickUpMarker?.remove()
+        dropOffMarker?.remove()
         pickUpMarker = null
         dropOffMarker = null
+        foregroundPolyline?.remove()
+        backgroundPolyline?.remove()
+        foregroundPolyline = null
+        backgroundPolyline = null
         bounds = null
     }
 

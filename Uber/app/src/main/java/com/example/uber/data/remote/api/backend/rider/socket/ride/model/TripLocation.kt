@@ -1,14 +1,10 @@
 package com.example.uber.data.remote.api.backend.rider.socket.ride.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import java.util.UUID
 
-@Parcelize
-data class RideAccepted(
-    val riderId :UUID,
-    val driverId: UUID,
+data class TripLocation(
     val rideId: UUID,
+    val driverId: UUID,
     val latitude: Double,
     val longitude: Double
-) : Parcelable
+)

@@ -6,6 +6,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("com.google.gms.google-services")
     id("com.apollographql.apollo") version "4.1.1"
+    id("kotlin-parcelize")
 }
 secrets {
     // To add your Maps API key to this project:

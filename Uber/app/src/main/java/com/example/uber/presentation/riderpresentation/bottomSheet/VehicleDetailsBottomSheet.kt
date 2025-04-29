@@ -9,7 +9,6 @@ import androidx.activity.addCallback
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.example.uber.R
@@ -19,7 +18,7 @@ import com.example.uber.core.utils.StringHelper
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideRequest
 import com.example.uber.databinding.VehicleDetailsBottomSheetBinding
 import com.example.uber.domain.remote.general.model.response.NearbyVehicles
-import com.example.uber.presentation.riderpresentation.map.RouteCreationHelper
+import com.example.uber.presentation.riderpresentation.map.Routes.RouteCreationHelper
 import com.example.uber.presentation.riderpresentation.map.viewmodels.RideViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
