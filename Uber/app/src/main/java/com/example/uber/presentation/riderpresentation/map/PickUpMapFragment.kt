@@ -33,6 +33,7 @@ import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewMode
 import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapboxViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.TripViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnCameraIdleListener
@@ -66,6 +67,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels()
     private var nearbyVehicleService: ShowNearbyVehicleService? = null
     private val rideViewModel: RideViewModel by activityViewModels<RideViewModel>()
+    private val tripViewModel:TripViewModel by viewModels<TripViewModel>()
     private var tripRoute : TripRoute? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -572,6 +574,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                     childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
                 val navController = navHostFragment?.navController
                 navController?.navigate(R.id.rideAcceptedSheet)
+                routeHelper?.deleteEveryThingOnMap()
                 startTrip(it)
             }
         }
@@ -590,10 +593,11 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private fun startTrip(ride:RideAccepted){
         tripRoute = TripRoute(
             WeakReference(googleMap),
-            googleViewModel,
             this,
             locationViewModel,
-            rideViewModel
+            rideViewModel,
+            tripViewModel,
+            WeakReference(requireContext())
         )
         locationViewModel?.pickUpLocation?.let {
             ride?.let { r->

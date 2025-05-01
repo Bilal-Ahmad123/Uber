@@ -1,23 +1,37 @@
 package com.example.uber.presentation.riderpresentation.map.Routes
 
+import android.app.Activity
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.location.Location
+import android.util.DisplayMetrics
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.example.uber.R
+import com.example.uber.core.utils.BitMapCreator
 import com.example.uber.core.utils.HRMarkerAnimation
 import com.example.uber.core.utils.PolyUtilExtension
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.TripLocation
 import com.example.uber.presentation.riderpresentation.map.viewmodels.RideViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.LocationViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.TripViewModel
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.PolyUtil
+import dagger.hilt.android.internal.managers.ViewComponentManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -25,10 +39,11 @@ import java.lang.ref.WeakReference
 
 class TripRoute(
     private val googleMap: WeakReference<GoogleMap>,
-    private val googleViewModel: GoogleViewModel,
     private val viewLifecycleOwner: LifecycleOwner,
     private val locationViewModel: LocationViewModel,
-    private val rideViewModel: RideViewModel
+    private val rideViewModel: RideViewModel,
+    private val tripViewModel: TripViewModel,
+    private val context: WeakReference<Context>
 ) {
     private var driverMarker: Marker? = null
     private var oldLocation: Location? = null
@@ -40,7 +55,7 @@ class TripRoute(
         driverInitialLocation: LatLng,
     ) {
         riderPickUpLocation = pickUpLocation
-        googleViewModel.directionsRequest(pickUpLocation, driverInitialLocation)
+        tripViewModel.directionsRequest(pickUpLocation, driverInitialLocation)
         observeDirectionsResponse()
         observeTripUpdates()
         startObservingTripUpdates()
@@ -48,7 +63,7 @@ class TripRoute(
     }
 
     private fun observeDirectionsResponse() {
-        googleViewModel?.run {
+        tripViewModel?.run {
             viewLifecycleOwner.lifecycleScope.launch {
                 directions.collectLatest {
                     if (it?.data!!.routes.isNotEmpty()) {
@@ -75,7 +90,8 @@ class TripRoute(
                 it.addAll(routePoints)
                 polyline = googleMap.get()?.addPolyline(it)
             }
-
+            pickUpMarker()
+            addAnnotation()
         }
     }
 
@@ -125,14 +141,15 @@ class TripRoute(
     }
 
     private fun checkIfDriverLocationOnRoute(trip: TripLocation) {
-        if (!PolyUtil.isLocationOnPath(
+
+        if (routePoints!= null && !PolyUtil.isLocationOnPath(
                 LatLng(trip.latitude, trip.longitude),
                 routePoints,
                 true,
                 50.0
             )
         ) {
-            googleViewModel.directionsRequest(
+            tripViewModel.directionsRequest(
                 riderPickUpLocation!!,
                 LatLng(trip.latitude, trip.longitude)
             )
@@ -143,7 +160,6 @@ class TripRoute(
         routePoints?.let {
             mLastLocation?.let {a->
                 val (index,closestPoint) = PolyUtilExtension.getNearestPointOnRoute(LatLng(a.latitude,a.longitude),it)
-                Log.d("Index",index.toString())
                 val trimmedPoints= routePoints?.subList(0,index)
 
                 trimmedPoints?.let {b->
@@ -151,6 +167,82 @@ class TripRoute(
                 }
             }
         }
+    }
+
+    fun clear(){
+        polylineOptions = null
+        polyline = null
+        mLastLocation = null
+        oldLocation = null
+        driverMarker = null
+    }
+
+    private fun addAnnotation(){
+        val marker_view: View =
+            (context.get()
+                ?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(
+                R.layout.custom_marker,
+                null
+            )
+       val addressSrc =  marker_view.findViewById<View>(com.example.uber.R.id.addressTxt) as TextView
+        addressSrc.text = "Pickup Spot"
+
+        riderPickUpLocation?.let {
+            val marker_opt_source = MarkerOptions().position(
+                LatLng(
+                    it.latitude,
+                    it.longitude
+                )
+            )
+
+            marker_opt_source.icon(
+                BitmapDescriptorFactory.fromBitmap(
+                    createDrawableFromView(
+                        context.get()!!,
+                        marker_view
+                    )
+                )
+            ).anchor(0.00f, 0.20f);
+            googleMap.get()?.addMarker(marker_opt_source);
+        }
+    }
+
+    private fun createDrawableFromView(context: Context, view: View): Bitmap {
+        val mContext =
+            if (context is ViewComponentManager.FragmentContextWrapper) context.baseContext else context
+        val displayMetrics = DisplayMetrics()
+        (mContext as Activity).windowManager.defaultDisplay.getMetrics(displayMetrics)
+        view.layoutParams =
+            RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+            )
+        view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels)
+        view.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
+        view.buildDrawingCache()
+        val bitmap =
+            Bitmap.createBitmap(view.measuredWidth, view.measuredHeight, Bitmap.Config.ARGB_8888)
+
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+
+        return bitmap
+    }
+
+    private fun pickUpMarker() {
+        riderPickUpLocation?.let {
+            googleMap.get()?.addMarker(
+                MarkerOptions()
+                    .position(
+                        LatLng(
+                            it.latitude,
+                            it.longitude
+                        )
+                    )
+                    .icon(BitMapCreator.bitmapDescriptorFromVector(context.get()!!, R.drawable.circle))
+            )
+        }
+
     }
 
 }

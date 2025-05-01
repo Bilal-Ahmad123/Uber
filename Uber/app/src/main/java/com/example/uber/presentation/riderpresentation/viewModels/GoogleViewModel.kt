@@ -52,6 +52,7 @@ class GoogleViewModel @Inject constructor(
     val retrieveSuggestedPlaceDetail get() = _retrieveSuggestedPlaceDetail
 
 
+
     fun geoCodeLocation(latitude: Double, longitude: Double) {
         launchOnBack {
             _locationName.postValue(Resource.Loading())

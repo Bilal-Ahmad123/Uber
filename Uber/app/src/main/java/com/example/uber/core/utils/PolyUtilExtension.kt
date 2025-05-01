@@ -4,6 +4,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
 
+//Since PolyUtil is a Java class and Java doesn't support extension methods so as a result had to create a static PolyUtilExtensions
 object PolyUtilExtension {
     fun getNearestPointOnRoute(position: LatLng, routes: List<LatLng>):Pair<Int,LatLng> {
         var minDistance: Double = Double.MAX_VALUE

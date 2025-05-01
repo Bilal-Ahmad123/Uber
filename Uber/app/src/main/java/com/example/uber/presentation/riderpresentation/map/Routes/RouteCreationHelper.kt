@@ -18,6 +18,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.example.uber.R
 import com.example.uber.core.enums.Markers
+import com.example.uber.core.utils.BitMapCreator
 import com.example.uber.presentation.riderpresentation.map.utils.CustomMapAnimator
 import com.example.uber.presentation.riderpresentation.viewModels.GoogleViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
@@ -57,6 +58,8 @@ class RouteCreationHelper(
     private var foregroundPolyline: Polyline? = null
     private var backgroundPolyline: Polyline? = null
     private var pickUpMarker: Marker? = null
+    private var circularMarker:Marker? = null
+    private var boxMarker:Marker? = null
 
     private var dropOffMarker: Marker? = null
 
@@ -148,7 +151,7 @@ class RouteCreationHelper(
 
     private fun dropOffMarker() {
 
-        map.get()?.addMarker(
+        boxMarker = map.get()?.addMarker(
             MarkerOptions()
                 .position(
                     LatLng(
@@ -156,7 +159,7 @@ class RouteCreationHelper(
                         googleViewModel.get()!!.dropOffLongitude
                     )
                 )
-                .icon(bitmapDescriptorFromVector(context.get()!!, R.drawable.box))
+                .icon(BitMapCreator.bitmapDescriptorFromVector(context.get()!!, R.drawable.box))
         )
         createAnnotation(
             googleViewModel.get()?.dropOffLatitude!!,
@@ -167,7 +170,7 @@ class RouteCreationHelper(
     }
 
     private fun pickUpMarker() {
-        map.get()?.addMarker(
+        circularMarker = map.get()?.addMarker(
             MarkerOptions()
                 .position(
                     LatLng(
@@ -175,7 +178,7 @@ class RouteCreationHelper(
                         googleViewModel.get()!!.pickUpLongitude
                     )
                 )
-                .icon(bitmapDescriptorFromVector(context.get()!!, R.drawable.circle))
+                .icon(BitMapCreator.bitmapDescriptorFromVector(context.get()!!, R.drawable.circle))
         )
         createAnnotation(
             googleViewModel.get()?.pickUpLatitude!!,
@@ -185,27 +188,6 @@ class RouteCreationHelper(
         )
 
     }
-
-
-    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor {
-        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
-        vectorDrawable!!.setBounds(
-            0,
-            0,
-            30,
-            30
-        )
-        val bitmap = Bitmap.createBitmap(
-            30,
-            30,
-            Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(bitmap)
-        vectorDrawable!!.draw(canvas)
-        return BitmapDescriptorFactory.fromBitmap(bitmap)
-    }
-
-
     fun deleteEveryThingOnMap() {
         pickUpMarker?.remove()
         dropOffMarker?.remove()
@@ -215,6 +197,10 @@ class RouteCreationHelper(
         backgroundPolyline?.remove()
         foregroundPolyline = null
         backgroundPolyline = null
+        circularMarker?.remove()
+        boxMarker?.remove()
+        circularMarker = null
+        boxMarker = null
         bounds = null
     }
 
@@ -344,28 +330,22 @@ class RouteCreationHelper(
     }
 
     private fun showCurvedPolyline(p1: LatLng, p2: LatLng, k: Double) {
-        //Calculate distance and heading between two points
         val d = SphericalUtil.computeDistanceBetween(p1, p2)
         val h = SphericalUtil.computeHeading(p1, p2)
 
-        //Midpoint position
         val p = SphericalUtil.computeOffset(p1, d * 0.5, h)
 
-        //Apply some mathematics to calculate position of the circle center
         val x = (1 - k * k) * d * 0.5 / (2 * k)
         val r = (1 + k * k) * d * 0.5 / (2 * k)
 
         val c = SphericalUtil.computeOffset(p, x, h + 90.0)
 
-        //Polyline options
         val options: PolylineOptions = PolylineOptions()
         val pattern = Arrays.asList(Dash(30f), Gap(20f))
 
-        //Calculate heading between circle center and two points
         val h1 = SphericalUtil.computeHeading(c, p1)
         val h2 = SphericalUtil.computeHeading(c, p2)
 
-        //Calculate positions of points on circle border and add them to polyline options
         val numpoints = 100
         val step = (h2 - h1) / numpoints
 
