@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import androidx.fragment.app.activityViewModels
 import com.example.uber.R
 import com.example.uber.core.utils.Helper
+import com.example.uber.databinding.FragmentRideRequestedSheetBinding
 import com.example.uber.presentation.riderpresentation.map.Routes.RouteCreationHelper
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.google.android.gms.maps.model.LatLngBounds
@@ -18,6 +19,7 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels<MapAndSheetsSharedViewModel>()
     private var bottomSheet: LinearLayout? = null
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
+    private var binding:FragmentRideRequestedSheetBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -27,7 +29,8 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_ride_requested_sheet, container, false)
+        binding = FragmentRideRequestedSheetBinding.inflate(inflater,container,false)
+        return binding?.root
     }
 
 
@@ -44,12 +47,11 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
 
         bottomSheet?.layoutParams?.height =
-            (requireContext().resources.displayMetrics.heightPixels * 0.70).toInt()
-        bottomSheetBehavior?.peekHeight =
             (requireContext().resources.displayMetrics.heightPixels * 0.32).toInt()
-        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
         bottomSheetBehavior?.isHideable = false
-        bottomSheetBehavior?.isDraggable = true
+        bottomSheetBehavior?.isDraggable = false
+        adjustMapForBottomSheet(Helper.calculateSheetOffSet((bottomSheet!!.parent as View).height,bottomSheetBehavior!!.peekHeight,bottomSheet!!.top))
     }
 
     private fun setupBottomSheetCallback() {

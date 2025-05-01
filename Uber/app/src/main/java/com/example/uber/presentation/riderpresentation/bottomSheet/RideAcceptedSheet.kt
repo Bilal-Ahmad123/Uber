@@ -33,7 +33,6 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d("ViewCreated","dwded");
         setBottomSheetStyle()
         setupBottomSheetCallback()
 

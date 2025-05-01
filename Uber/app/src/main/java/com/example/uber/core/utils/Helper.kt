@@ -34,4 +34,15 @@ object Helper {
 
         animator.start()
     }
+
+    fun calculateSheetOffSet(height: Int, peekHeight: Int,sheetTop:Int):Float {
+        val collapsedY = height - peekHeight
+        val expandedY = 0f // top of screen
+
+        val currentOffset = height - sheetTop
+
+        val normalizedOffset = (collapsedY - sheetTop) / (collapsedY - expandedY)
+        return normalizedOffset
+
+    }
 }

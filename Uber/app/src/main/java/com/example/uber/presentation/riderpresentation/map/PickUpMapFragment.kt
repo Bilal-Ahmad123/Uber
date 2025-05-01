@@ -545,7 +545,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private fun observeRideOptionsSheetExpanded() {
         sharedViewModel.apply {
             sheetOffset.observe(viewLifecycleOwner) {
-                if (bounds != null && ::googleMap.isInitialized && (currentSheet.value == SheetState.RIDE_SHEET || currentSheet.value == SheetState.VEHICLE_SHEET)) {
+                if (bounds != null && ::googleMap.isInitialized && (currentSheet.value == SheetState.RIDE_SHEET || currentSheet.value == SheetState.VEHICLE_SHEET || currentSheet.value == SheetState.RIDE_REQUESTED)) {
                     googleMap.setPadding(0, 0, 0, it)
                     googleMap.animateCamera(
                         CameraUpdateFactory.newLatLngBounds(
