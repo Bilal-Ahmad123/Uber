@@ -415,13 +415,13 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         hideLocationPickerMarker()
         routeHelper?.createRoute(
             LatLng(
+                pickUp.latitude,
                 pickUp.longitude,
-                pickUp.latitude
-            ),
+                ),
             LatLng(
+                dropOff.latitude,
                 dropOff.longitude,
-                dropOff.latitude
-            )
+                )
         )
         locationViewModel.setPickUpLocation(pickUp)
     }

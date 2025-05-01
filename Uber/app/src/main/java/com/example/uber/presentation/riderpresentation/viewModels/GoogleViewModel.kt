@@ -17,6 +17,8 @@ import com.example.uber.domain.local.location.usecase.LocationUseCase
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -30,8 +32,8 @@ class GoogleViewModel @Inject constructor(
 
     private val _locationName = MutableLiveData<Resource<GeoCodingGoogleMapsResponse>>()
     val locationName get() = _locationName
-    private val _directions = MutableLiveData<Resource<DirectionsResponse>>()
-    val directions get() = _directions
+    private val _directions = MutableSharedFlow<Resource<DirectionsResponse>?>()
+    val directions get() = _directions.asSharedFlow()
     private var _pickUpLatitude: Double = 0.0
     private var _pickUpLongitude: Double = 0.0
     val pickUpLatitude get() = _pickUpLatitude
@@ -72,7 +74,7 @@ class GoogleViewModel @Inject constructor(
         launchOnBack {
             val response = googleUseCase.directionsRequest(origin, destination)
             Log.d("directionsRequest", "directionsRequest: $response")
-            _directions.postValue(handleResponse<DirectionsResponse>(response))
+            _directions.emit(handleResponse<DirectionsResponse>(response))
         }
     }
 

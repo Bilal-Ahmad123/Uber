@@ -15,6 +15,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.example.uber.R
 import com.example.uber.core.enums.Markers
 import com.example.uber.presentation.riderpresentation.map.utils.CustomMapAnimator
@@ -38,6 +39,7 @@ import com.google.maps.android.SphericalUtil
 import dagger.hilt.android.internal.managers.ViewComponentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
@@ -75,22 +77,21 @@ class RouteCreationHelper(
 
     private fun observeDirectionsResponse() {
         googleViewModel.get()?.run {
-
-            directions.observe(viewLifecycleOwner) {
-                Log.d("observeDirectionsResponse", "observeDirectionsResponse: ${it.data}")
-                if (it.data!!.routes.isNotEmpty()) {
-
-                    createAnimatedRoute(it.data!!.routes[0].overview_polyline!!.points)
+            viewLifecycleOwner.lifecycleScope.launch {
+                directions.collectLatest { a->
+                if (a?.data!!.routes.isNotEmpty()) {
+                    createAnimatedRoute(a.data!!.routes[0].overview_polyline!!.points)
                 } else {
-                    showCurvedPolyline(
-                        LatLng(
-                            googleViewModel.get()!!.pickUpLatitude,
-                            googleViewModel.get()!!.pickUpLongitude
-                        ), LatLng(
-                            googleViewModel.get()!!.dropOffLatitude,
-                            googleViewModel.get()!!.dropOffLongitude
-                        ), 0.5
-                    )
+//                    showCurvedPolyline(
+//                        LatLng(
+//                            googleViewModel.get()!!.pickUpLatitude,
+//                            googleViewModel.get()!!.pickUpLongitude
+//                        ), LatLng(
+//                            googleViewModel.get()!!.dropOffLatitude,
+//                            googleViewModel.get()!!.dropOffLongitude
+//                        ), 0.5
+//                    )
+                }
                 }
             }
         }

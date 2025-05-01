@@ -22,8 +22,8 @@ import javax.inject.Inject
         destination: LatLng
     ): Response<DirectionsResponse> {
         return googleApi.directionsRequest(
-            "${origin.longitude},${origin.latitude}",
-            "${destination.longitude},${destination.latitude}"
+            "${origin.latitude},${origin.longitude}",
+            "${destination.latitude},${destination.longitude}"
         )
     }
 
