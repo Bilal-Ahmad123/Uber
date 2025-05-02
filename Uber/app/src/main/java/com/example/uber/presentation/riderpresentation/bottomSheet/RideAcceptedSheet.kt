@@ -7,7 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import com.example.uber.R
 import com.example.uber.core.utils.Helper
 import com.example.uber.presentation.riderpresentation.map.Routes.RouteCreationHelper
@@ -30,11 +32,19 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
     ): View? {
         return inflater.inflate(R.layout.fragment_ride_accepted_sheet, container, false)
     }
+    private fun handleBackPressed() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            requireActivity()
+                .findNavController(R.id.nav_host_bottom_sheet)
+                .popBackStack()
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setBottomSheetStyle()
         setupBottomSheetCallback()
+        handleBackPressed()
 
     }
 
@@ -73,5 +83,12 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
                 adjustMapForBottomSheet(slideOffset)
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bounds = null
+        bottomSheet = null
+        bottomSheetBehavior = null
     }
 }

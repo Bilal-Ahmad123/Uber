@@ -95,7 +95,7 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
         }
     }
 
-    fun adjustMapForBottomSheet(slideOffset: Float) {
+    private fun adjustMapForBottomSheet(slideOffset: Float) {
         val bounds = Helper.calculateBounds(RouteCreationHelper.latLngBounds) ?: return
         bottomSheet?.doOnLayout {
             val totalSheetHeight = bottomSheet?.height

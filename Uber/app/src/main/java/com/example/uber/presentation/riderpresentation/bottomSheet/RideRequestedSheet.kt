@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.findNavController
 import com.example.uber.R
 import com.example.uber.core.utils.Helper
 import com.example.uber.databinding.FragmentRideRequestedSheetBinding
@@ -37,10 +39,17 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setBottomSheetStyle()
-        setupBottomSheetCallback()
+        handleBackPressed()
 
     }
 
+    private fun handleBackPressed() {
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            requireActivity()
+                .findNavController(R.id.nav_host_bottom_sheet)
+                .popBackStack()
+        }
+    }
     private var bounds: LatLngBounds? = null
     private fun setBottomSheetStyle() {
         bottomSheet = requireActivity().findViewById<LinearLayout>(R.id.bottomSheet)
@@ -54,27 +63,21 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
         adjustMapForBottomSheet(Helper.calculateSheetOffSet((bottomSheet!!.parent as View).height,bottomSheetBehavior!!.peekHeight,bottomSheet!!.top))
     }
 
-    private fun setupBottomSheetCallback() {
-        bottomSheetBehavior?.addBottomSheetCallback(bottomSheetCallBack)
-    }
 
 
-    fun adjustMapForBottomSheet(slideOffset: Float) {
+    private fun adjustMapForBottomSheet(slideOffset: Float) {
         bounds = Helper.calculateBounds(RouteCreationHelper.latLngBounds) ?: return
         val totalSheetHeight = bottomSheet?.height
         val mapPaddingBottom = (slideOffset * totalSheetHeight!!).toInt()
         sharedViewModel.setRideOptionsSheetOffsetAndBounds(mapPaddingBottom, bounds!!)
     }
 
-    private val bottomSheetCallBack = object : BottomSheetBehavior.BottomSheetCallback() {
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-        }
 
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            if (slideOffset == 0.0f || slideOffset == 1f) {
-                adjustMapForBottomSheet(slideOffset)
-            }
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bounds = null
+        bottomSheet = null
+        bottomSheetBehavior = null
     }
 
 }
