@@ -18,7 +18,6 @@ import javax.inject.Inject
 class RideRepository @Inject constructor(private val socketManager: SocketBroker) : RideRepository {
     private val socketScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val rideAccepted = MutableSharedFlow<RideAccepted>()
-    private val tripLocations = MutableSharedFlow<TripLocation>()
     override fun sendRideRequest(rideRequest: RideRequest) {
         socketManager.send(rideRequest, SocketMethods.REQUEST_RIDE)
     }
@@ -54,30 +53,4 @@ class RideRepository @Inject constructor(private val socketManager: SocketBroker
 
     override fun observeRideAccepted() = rideAccepted
 
-    override fun observeTrip(): Flow<TripLocation> {
-        socketManager.apply {
-            getHubConnection()?.let {
-                it.on(
-                    SocketMethods.TRIP_UPDATES,
-                    { rideId: String, driverId: String, latitude: Double, longitude: Double ->
-                        socketScope.launch {
-                            tripLocations.emit(
-                                TripLocation(
-                                    UUID.fromString(rideId),
-                                    UUID.fromString(driverId),
-                                    latitude,
-                                    longitude
-                                )
-                            )
-                        }
-                    },
-                    String::class.java,
-                    String::class.java,
-                    Double::class.java,
-                    Double::class.java
-                )
-            }
-        }
-        return tripLocations
-    }
 }

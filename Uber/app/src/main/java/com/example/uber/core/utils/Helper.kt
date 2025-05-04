@@ -1,9 +1,11 @@
 package com.example.uber.core.utils
 
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.view.View
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import java.util.concurrent.TimeUnit
 
 object Helper {
      fun calculateBounds(latLngBounds:List<LatLng>?): LatLngBounds? {
@@ -37,12 +39,21 @@ object Helper {
 
     fun calculateSheetOffSet(height: Int, peekHeight: Int,sheetTop:Int):Float {
         val collapsedY = height - peekHeight
-        val expandedY = 0f // top of screen
+        val expandedY = 0f
 
         val currentOffset = height - sheetTop
 
         val normalizedOffset = (collapsedY - sheetTop) / (collapsedY - expandedY)
         return normalizedOffset
 
+    }
+
+    @SuppressLint("DefaultLocale")
+    fun convertMeterToMiles(meters:Int):Double{
+        return String.format("%.2f", meters/1609.344).toDouble()
+    }
+
+    fun convertSecondsToMinutes(seconds:Int):Int{
+        return seconds/60
     }
 }

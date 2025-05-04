@@ -10,6 +10,7 @@ import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import com.example.uber.R
+import com.example.uber.core.enums.SheetState
 import com.example.uber.core.utils.Helper
 import com.example.uber.databinding.FragmentRideRequestedSheetBinding
 import com.example.uber.presentation.riderpresentation.map.Routes.RouteCreationHelper
@@ -45,6 +46,7 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
 
     private fun handleBackPressed() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            sharedViewModel.setCurrentOpenedSheet(SheetState.VEHICLE_SHEET)
             requireActivity()
                 .findNavController(R.id.nav_host_bottom_sheet)
                 .popBackStack()

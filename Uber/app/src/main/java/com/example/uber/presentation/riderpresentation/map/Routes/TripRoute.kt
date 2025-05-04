@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.uber.R
 import com.example.uber.core.utils.BitMapCreator
 import com.example.uber.core.utils.HRMarkerAnimation
+import com.example.uber.core.utils.Helper
 import com.example.uber.core.utils.PolyUtilExtension
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.TripLocation
 import com.example.uber.presentation.riderpresentation.map.viewmodels.RideViewModel
@@ -50,6 +51,8 @@ class TripRoute(
     private var mLastLocation: Location? = null
     private var riderPickUpLocation: LatLng? = null
     private var polylineOptions: PolylineOptions? = null
+    private var distanceSrc:TextView? = null
+    private var distanceAnnotation:Marker? = null
     fun createRoute(
         pickUpLocation: LatLng,
         driverInitialLocation: LatLng,
@@ -82,16 +85,20 @@ class TripRoute(
         val routePoints: List<LatLng> = PolyUtil.decode(line)
         if (routePoints.size > 1) {
             this.routePoints = routePoints
-            polylineOptions = PolylineOptions()
-                .width(5f)
-                .color(Color.BLUE)
+            polyline?.remove()
+            if (polylineOptions == null) {
+                polylineOptions = PolylineOptions()
+                    .width(5f)
+                    .color(Color.BLUE)
 
-            polylineOptions?.let {
-                it.addAll(routePoints)
-                polyline = googleMap.get()?.addPolyline(it)
+                polylineOptions?.let {
+                    it.addAll(routePoints)
+                    polyline = googleMap.get()?.addPolyline(it)
+                }
+                pickUpMarker()
+                addAnnotation()
+                addDistanceAnnotation()
             }
-            pickUpMarker()
-            addAnnotation()
         }
     }
 
@@ -120,7 +127,7 @@ class TripRoute(
     private var tripJob: Job? = null
     private fun observeTripUpdates() {
         tripJob = viewLifecycleOwner.lifecycleScope.launch {
-            rideViewModel.apply {
+            tripViewModel.apply {
                 tripUpdates.collectLatest { a ->
                     mLastLocation = Location("").apply {
                         latitude = a.latitude
@@ -129,6 +136,7 @@ class TripRoute(
                     animateMarker()
                     checkIfDriverLocationOnRoute(a)
                     removeTravelledPolyLine()
+                    changeDistanceAnnotationPosition(LatLng(a.latitude,a.longitude),a.distance)
                 }
             }
         }
@@ -136,7 +144,7 @@ class TripRoute(
 
     private fun startObservingTripUpdates() {
         viewLifecycleOwner.lifecycleScope.launch {
-            rideViewModel.observeTripLocation()
+            tripViewModel.observeTripLocation()
         }
     }
 
@@ -175,6 +183,8 @@ class TripRoute(
         mLastLocation = null
         oldLocation = null
         driverMarker = null
+        distanceSrc = null
+        distanceAnnotation = null
     }
 
     private fun addAnnotation(){
@@ -203,9 +213,41 @@ class TripRoute(
                     )
                 )
             ).anchor(0.00f, 0.20f);
+            distanceAnnotation = googleMap.get()?.addMarker(marker_opt_source);
+        }
+    }
+
+    private fun addDistanceAnnotation(){
+        val marker_view: View =
+            (context.get()
+                ?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(
+                R.layout.custom_marker,
+                null
+            )
+        distanceSrc =  marker_view.findViewById<View>(com.example.uber.R.id.addressTxt) as TextView
+        distanceSrc?.text = "Miles"
+
+        riderPickUpLocation?.let {
+            val marker_opt_source = MarkerOptions().position(
+                LatLng(
+                    it.latitude,
+                    it.longitude
+                )
+            )
+
+            marker_opt_source.icon(
+                BitmapDescriptorFactory.fromBitmap(
+                    createDrawableFromView(
+                        context.get()!!,
+                        marker_view
+                    )
+                )
+            ).anchor(0.00f, 0.20f);
             googleMap.get()?.addMarker(marker_opt_source);
         }
     }
+
+
 
     private fun createDrawableFromView(context: Context, view: View): Bitmap {
         val mContext =
@@ -243,6 +285,11 @@ class TripRoute(
             )
         }
 
+    }
+
+    private fun changeDistanceAnnotationPosition(value:LatLng,distance:Int){
+        distanceAnnotation?.position = value
+        distanceSrc?.text = "${Helper.convertMeterToMiles(distance)} miles"
     }
 
 }

@@ -43,7 +43,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -67,8 +66,8 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels()
     private var nearbyVehicleService: ShowNearbyVehicleService? = null
     private val rideViewModel: RideViewModel by activityViewModels<RideViewModel>()
-    private val tripViewModel:TripViewModel by viewModels<TripViewModel>()
-    private var tripRoute : TripRoute? = null
+    private val tripViewModel: TripViewModel by viewModels<TripViewModel>()
+    private var tripRoute: TripRoute? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -419,13 +418,14 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             LatLng(
                 pickUp.latitude,
                 pickUp.longitude,
-                ),
+            ),
             LatLng(
                 dropOff.latitude,
                 dropOff.longitude,
-                )
+            )
         )
         locationViewModel.setPickUpLocation(pickUp)
+        sharedViewModel.setCurrentOpenedSheet(SheetState.RIDE_SHEET)
     }
 
     private fun hideLocationPickerMarker() {
@@ -529,7 +529,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
                     }
 
                     SheetState.RIDE_REQUESTED -> {
-                        Log.d("RideRequested", "Sheet")
                         val navHostFragment =
                             childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
                         val navController = navHostFragment?.navController
@@ -568,8 +567,6 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
 
         viewLifecycleOwner.lifecycleScope.launch {
             rideViewModel.rideAccept.observe(viewLifecycleOwner) {
-                val bundle = Bundle()
-                bundle.putParcelable("ride_request",it)
                 val navHostFragment =
                     childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
                 val navController = navHostFragment?.navController
@@ -590,7 +587,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
         }
     }
 
-    private fun startTrip(ride:RideAccepted){
+    private fun startTrip(ride: RideAccepted) {
         tripRoute = TripRoute(
             WeakReference(googleMap),
             this,
@@ -600,8 +597,11 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
             WeakReference(requireContext())
         )
         locationViewModel?.pickUpLocation?.let {
-            ride?.let { r->
-                tripRoute?.createRoute(LatLng(it.latitude,it.longitude),LatLng(r.latitude,r.longitude))
+            ride?.let { r ->
+                tripRoute?.createRoute(
+                    LatLng(it.latitude, it.longitude),
+                    LatLng(r.latitude, r.longitude)
+                )
             }
         }
     }

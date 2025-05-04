@@ -9,5 +9,4 @@ interface RideRepository {
     fun sendRideRequest(rideRequest : RideRequest):Unit
     fun startObservingRideAcceptedEvent():Flow<RideAccepted>
     fun observeRideAccepted():Flow<RideAccepted>
-    fun observeTrip():Flow<TripLocation>
 }

@@ -9,19 +9,26 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.activity.addCallback
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.example.uber.R
 import com.example.uber.core.utils.Helper
+import com.example.uber.databinding.FragmentRideAcceptedSheetBinding
 import com.example.uber.presentation.riderpresentation.map.Routes.RouteCreationHelper
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
+import com.example.uber.presentation.riderpresentation.viewModels.TripViewModel
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels<MapAndSheetsSharedViewModel>()
     private var bottomSheet: LinearLayout? = null
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
+    private val tripViewModel:TripViewModel by activityViewModels<TripViewModel>()
+    private var binding:FragmentRideAcceptedSheetBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -30,7 +37,8 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_ride_accepted_sheet, container, false)
+        binding = FragmentRideAcceptedSheetBinding.inflate(inflater,container,false)
+        return binding?.root
     }
     private fun handleBackPressed() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
@@ -45,7 +53,7 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
         setBottomSheetStyle()
         setupBottomSheetCallback()
         handleBackPressed()
-
+        observeTimeAndDistanceFromTrip()
     }
 
     private var bounds: LatLngBounds? = null
@@ -85,10 +93,24 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
         }
     }
 
+    private fun observeTimeAndDistanceFromTrip(){
+        viewLifecycleOwner.lifecycleScope.launch {
+            tripViewModel.tripUpdates.collectLatest { trip->
+                updateTimeAndDistanceOnSheet(trip.time)
+            }
+        }
+    }
+
+    private fun updateTimeAndDistanceOnSheet(value:Int){
+        binding?.timeToReach?.text = Helper.convertSecondsToMinutes(value).toString()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        bottomSheetBehavior?.removeBottomSheetCallback(bottomSheetCallBack)
         bounds = null
         bottomSheet = null
         bottomSheetBehavior = null
+        binding = null
     }
 }

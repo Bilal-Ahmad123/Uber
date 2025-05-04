@@ -45,11 +45,11 @@ class RideOptionsBottomSheet() : Fragment(R.layout.ride_options_bottom_sheet) {
         setupBottomSheetCallback()
         observeNearbyVehiclesList()
         getNearbyVehicles()
-        sharedViewModel.setCurrentOpenedSheet(SheetState.RIDE_SHEET)
     }
 
     private fun handleBackPressed() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            sharedViewModel.setCurrentOpenedSheet(SheetState.PICKUP_SHEET)
             requireActivity()
                 .findNavController(R.id.nav_host_bottom_sheet)
                 .popBackStack()

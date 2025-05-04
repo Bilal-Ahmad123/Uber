@@ -1,6 +1,5 @@
 package com.example.uber.presentation.riderpresentation.map.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.asLiveData
 import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
@@ -8,7 +7,7 @@ import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideAcce
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideRequest
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.TripLocation
 import com.example.uber.domain.remote.socket.ride.usecase.ObserveRideAcceptedUseCase
-import com.example.uber.domain.remote.socket.ride.usecase.ObserveTripLocationsUseCase
+import com.example.uber.domain.remote.socket.trip.usecase.ObserveTripLocationsUseCase
 import com.example.uber.domain.remote.socket.ride.usecase.RequestRideUseCase
 import com.example.uber.domain.remote.socket.ride.usecase.StartObservingRideAcceptedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +21,6 @@ class RideViewModel @Inject constructor(
     private val rideRequestUseCase: RequestRideUseCase,
     private val startObservingRideAcceptedUseCase: StartObservingRideAcceptedUseCase,
     private val observeRideAcceptedUseCase: ObserveRideAcceptedUseCase,
-    private val observeTripLocationsUseCase: ObserveTripLocationsUseCase,
     dispatcher: IDispatchers
 ) : BaseViewModel(dispatcher) {
     private val rideAccepted = MutableSharedFlow<RideAccepted>()
@@ -30,8 +28,6 @@ class RideViewModel @Inject constructor(
     //There was a good reason for doing this
     val rideAccept get() = rideAccepted.asLiveData()
 
-    private val tripLocation = MutableSharedFlow<TripLocation>()
-    val tripUpdates get() = tripLocation.asSharedFlow()
     fun requestRide(requestRide: RideRequest) {
         launchOnBack {
             rideRequestUseCase(requestRide)
@@ -54,13 +50,6 @@ class RideViewModel @Inject constructor(
         }
     }
 
-    fun observeTripLocation(){
-        launchOnBack {
-            observeTripLocationsUseCase().collectLatest {
-                tripLocation.emit(it)
-            }
-        }
-    }
 
 
 }

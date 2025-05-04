@@ -55,9 +55,11 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
 
     private fun handleBackPressed() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+            sharedViewModel.setCurrentOpenedSheet(SheetState.RIDE_SHEET)
             requireActivity()
                 .findNavController(R.id.nav_host_bottom_sheet)
                 .popBackStack()
+
         }
     }
 
