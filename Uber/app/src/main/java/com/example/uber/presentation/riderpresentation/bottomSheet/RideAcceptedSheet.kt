@@ -19,8 +19,10 @@ import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSh
 import com.example.uber.presentation.riderpresentation.viewModels.TripViewModel
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
@@ -54,6 +56,7 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
         setupBottomSheetCallback()
         handleBackPressed()
         observeTimeAndDistanceFromTrip()
+        observeDriverReachedPickup()
     }
 
     private var bounds: LatLngBounds? = null
@@ -96,13 +99,29 @@ class RideAcceptedSheet : Fragment(R.layout.fragment_ride_accepted_sheet) {
     private fun observeTimeAndDistanceFromTrip(){
         viewLifecycleOwner.lifecycleScope.launch {
             tripViewModel.tripUpdates.collectLatest { trip->
-                updateTimeAndDistanceOnSheet(trip.time)
+                withContext(Dispatchers.Main) {
+                    updateTimeAndDistanceOnSheet(trip.time)
+                }
             }
         }
     }
 
     private fun updateTimeAndDistanceOnSheet(value:Int){
         binding?.timeToReach?.text = Helper.convertSecondsToMinutes(value).toString()
+    }
+
+    private fun observeDriverReachedPickup(){
+        viewLifecycleOwner.lifecycleScope.launch {
+            tripViewModel.driverReachedPickUpSpot().collectLatest {
+                if(it.reached){
+                    changeDriverStatusText()
+                }
+            }
+        }
+    }
+
+    private fun changeDriverStatusText(){
+        binding?.driverStatus?.text = "Driver Reached Your Pickup Location"
     }
 
     override fun onDestroyView() {

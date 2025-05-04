@@ -58,6 +58,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
+        android:id="@+id/driver_status"
+        android:layout_gravity="center"
+        android:textSize="@dimen/_12ssp"
+        android:text="Driver on way"/>
+    <TextView
+        android:layout_marginTop="@dimen/_30sdp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
         android:layout_gravity="center"
         android:textSize="@dimen/_12ssp"
         android:text="Ride details"/>

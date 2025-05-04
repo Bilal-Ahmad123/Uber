@@ -3,6 +3,7 @@ package com.example.uber.domain.remote.socket.trip.repository
 import com.example.uber.core.utils.SocketMethods
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.TripLocation
 import com.example.uber.data.remote.api.backend.rider.socket.socketBroker.service.SocketBroker
+import com.example.uber.data.remote.api.backend.rider.socket.trip.model.DriverReachedPickUpSpot
 import com.example.uber.data.remote.api.backend.rider.socket.trip.repository.TripRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +18,7 @@ class TripRepositoryImpl @Inject constructor(private val socketManager: SocketBr
     TripRepository {
     private val socketScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val tripLocations = MutableSharedFlow<TripLocation>()
+    private val reachedPickUpSpot = MutableSharedFlow<DriverReachedPickUpSpot>()
     override fun observeTrip(): Flow<TripLocation> {
         socketManager.apply {
             getHubConnection()?.let {
@@ -46,5 +48,32 @@ class TripRepositoryImpl @Inject constructor(private val socketManager: SocketBr
             }
         }
         return tripLocations
+    }
+
+    override fun driverReachedPickUpSpot(): Flow<DriverReachedPickUpSpot> {
+        socketManager.apply {
+            getHubConnection()?.let {
+                it.on(
+                    SocketMethods.DRIVER_REACHED_PICKUP_SPOT,
+                    { riderId: String, driverId: String, rideId: String, reached:Boolean ->
+                        socketScope.launch {
+                            reachedPickUpSpot.emit(
+                                DriverReachedPickUpSpot(
+                                    UUID.fromString(riderId),
+                                    UUID.fromString(driverId),
+                                    UUID.fromString(rideId),
+                                    reached
+                                )
+                            )
+                        }
+                    },
+                    String::class.java,
+                    String::class.java,
+                    String::class.java,
+                    Boolean::class.java,
+                )
+            }
+        }
+        return reachedPickUpSpot
     }
 }

@@ -6,4 +6,5 @@ object SocketMethods {
     const val UPDATE_LOCATION = "UpdateLocation"
     const val RIDE_ACCEPTED = "RideAccepted"
     const val TRIP_UPDATES = "TripUpdates"
+    const val DRIVER_REACHED_PICKUP_SPOT = "DriverReachedPickUpSpot"
 }

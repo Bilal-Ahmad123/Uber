@@ -33,9 +33,11 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.maps.android.PolyUtil
 import dagger.hilt.android.internal.managers.ViewComponentManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 class TripRoute(
@@ -51,8 +53,6 @@ class TripRoute(
     private var mLastLocation: Location? = null
     private var riderPickUpLocation: LatLng? = null
     private var polylineOptions: PolylineOptions? = null
-    private var distanceSrc:TextView? = null
-    private var distanceAnnotation:Marker? = null
     fun createRoute(
         pickUpLocation: LatLng,
         driverInitialLocation: LatLng,
@@ -97,20 +97,19 @@ class TripRoute(
                 }
                 pickUpMarker()
                 addAnnotation()
-                addDistanceAnnotation()
             }
         }
     }
 
     private fun addMarker(driverInitialLocation: LatLng) {
-        driverMarker = googleMap.get()?.addMarker(
-            MarkerOptions().position(
-                LatLng(
-                    driverInitialLocation.latitude,
-                    driverInitialLocation.longitude
-                )
-            )
-        )
+//        driverMarker = googleMap.get()?.addMarker(
+//            MarkerOptions().position(
+//                LatLng(
+//                    driverInitialLocation.latitude,
+//                    driverInitialLocation.longitude
+//                )
+//            )
+//        )
     }
 
     private fun animateMarker() {
@@ -136,7 +135,6 @@ class TripRoute(
                     animateMarker()
                     checkIfDriverLocationOnRoute(a)
                     removeTravelledPolyLine()
-                    changeDistanceAnnotationPosition(LatLng(a.latitude,a.longitude),a.distance)
                 }
             }
         }
@@ -183,8 +181,6 @@ class TripRoute(
         mLastLocation = null
         oldLocation = null
         driverMarker = null
-        distanceSrc = null
-        distanceAnnotation = null
     }
 
     private fun addAnnotation(){
@@ -213,39 +209,10 @@ class TripRoute(
                     )
                 )
             ).anchor(0.00f, 0.20f);
-            distanceAnnotation = googleMap.get()?.addMarker(marker_opt_source);
+           googleMap.get()?.addMarker(marker_opt_source);
         }
     }
 
-    private fun addDistanceAnnotation(){
-        val marker_view: View =
-            (context.get()
-                ?.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater).inflate(
-                R.layout.custom_marker,
-                null
-            )
-        distanceSrc =  marker_view.findViewById<View>(com.example.uber.R.id.addressTxt) as TextView
-        distanceSrc?.text = "Miles"
-
-        riderPickUpLocation?.let {
-            val marker_opt_source = MarkerOptions().position(
-                LatLng(
-                    it.latitude,
-                    it.longitude
-                )
-            )
-
-            marker_opt_source.icon(
-                BitmapDescriptorFactory.fromBitmap(
-                    createDrawableFromView(
-                        context.get()!!,
-                        marker_view
-                    )
-                )
-            ).anchor(0.00f, 0.20f);
-            googleMap.get()?.addMarker(marker_opt_source);
-        }
-    }
 
 
 
@@ -287,9 +254,6 @@ class TripRoute(
 
     }
 
-    private fun changeDistanceAnnotationPosition(value:LatLng,distance:Int){
-        distanceAnnotation?.position = value
-        distanceSrc?.text = "${Helper.convertMeterToMiles(distance)} miles"
-    }
+
 
 }

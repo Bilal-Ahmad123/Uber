@@ -66,7 +66,7 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels()
     private var nearbyVehicleService: ShowNearbyVehicleService? = null
     private val rideViewModel: RideViewModel by activityViewModels<RideViewModel>()
-    private val tripViewModel: TripViewModel by viewModels<TripViewModel>()
+    private val tripViewModel: TripViewModel by activityViewModels<TripViewModel>()
     private var tripRoute: TripRoute? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
