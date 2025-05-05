@@ -5,10 +5,12 @@ import com.example.uber.core.Dispatchers.IDispatchers
 import com.example.uber.core.base.BaseViewModel
 import com.example.uber.core.common.Resource
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.TripLocation
+import com.example.uber.data.remote.api.backend.rider.socket.trip.model.DriverReachedDropOffSpot
 import com.example.uber.data.remote.api.backend.rider.socket.trip.model.DriverReachedPickUpSpot
 import com.example.uber.data.remote.api.googleMaps.models.directionsResponse.DirectionsResponse
 import com.example.uber.domain.remote.google.usecase.GoogleUseCase
 import com.example.uber.domain.remote.socket.ride.usecase.ObserveRideAcceptedUseCase
+import com.example.uber.domain.remote.socket.trip.usecase.DriverReachedDropOffSpotUseCase
 import com.example.uber.domain.remote.socket.trip.usecase.DriverReachedPickUpSpotUseCase
 import com.example.uber.domain.remote.socket.trip.usecase.ObserveTripLocationsUseCase
 import com.google.android.gms.maps.model.LatLng
@@ -25,7 +27,8 @@ class TripViewModel @Inject constructor(
     dispatcher: IDispatchers,
     private val googleUseCase: GoogleUseCase,
     private val observeTripLocationsUseCase: ObserveTripLocationsUseCase,
-    private val driverReachedPickUpSpotUseCase: DriverReachedPickUpSpotUseCase
+    private val driverReachedPickUpSpotUseCase: DriverReachedPickUpSpotUseCase,
+    private val driverReachedDropOffSpotUseCase: DriverReachedDropOffSpotUseCase
     ) : BaseViewModel(dispatcher) {
     private val _directions = MutableSharedFlow<Resource<DirectionsResponse>?>()
     val directions get() = _directions.asSharedFlow()
@@ -64,4 +67,10 @@ class TripViewModel @Inject constructor(
    suspend fun driverReachedPickUpSpot():Flow<DriverReachedPickUpSpot>{
        return driverReachedPickUpSpotUseCase()
    }
+
+    suspend fun driverReachedDropOffSpot():Flow<DriverReachedDropOffSpot>{
+        return driverReachedDropOffSpotUseCase()
+    }
+
+
 }
