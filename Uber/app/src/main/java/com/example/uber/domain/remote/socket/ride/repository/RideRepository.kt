@@ -1,5 +1,6 @@
 package com.example.uber.domain.remote.socket.ride.repository
 
+import android.util.Log
 import com.example.uber.core.utils.SocketMethods
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideAccepted
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideRequest
@@ -28,7 +29,7 @@ class RideRepository @Inject constructor(private val socketManager: SocketBroker
                 it.on(
                     SocketMethods.RIDE_ACCEPTED,
                     { riderId: String, driverId: String, rideId: String, latitude: Double, longitude: Double ->
-                        socketScope.launch {
+                        CoroutineScope(Dispatchers.IO).launch {
                             rideAccepted.emit(
                                 RideAccepted(
                                     UUID.fromString(riderId),

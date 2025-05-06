@@ -28,7 +28,7 @@ class TripRepositoryImpl @Inject constructor(private val socketManager: SocketBr
                 it.on(
                     SocketMethods.TRIP_UPDATES,
                     { rideId: String, driverId: String, latitude: Double, longitude: Double, time: Int, distance: Int ->
-                        socketScope.launch {
+                        CoroutineScope(Dispatchers.IO).launch {
                             tripLocations.emit(
                                 TripLocation(
                                     UUID.fromString(rideId),

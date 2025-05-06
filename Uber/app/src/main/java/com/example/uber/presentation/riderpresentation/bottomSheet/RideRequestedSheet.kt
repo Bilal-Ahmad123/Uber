@@ -1,6 +1,7 @@
 package com.example.uber.presentation.riderpresentation.bottomSheet
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ import com.example.uber.core.enums.SheetState
 import com.example.uber.core.utils.Helper
 import com.example.uber.databinding.FragmentRideRequestedSheetBinding
 import com.example.uber.presentation.riderpresentation.map.Routes.RouteCreationHelper
+import com.example.uber.presentation.riderpresentation.map.viewmodels.RideViewModel
 import com.example.uber.presentation.riderpresentation.viewModels.MapAndSheetsSharedViewModel
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -22,6 +24,7 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
     private val sharedViewModel: MapAndSheetsSharedViewModel by activityViewModels<MapAndSheetsSharedViewModel>()
     private var bottomSheet: LinearLayout? = null
     private var bottomSheetBehavior: BottomSheetBehavior<View>? = null
+    private val rideViewModel: RideViewModel by activityViewModels<RideViewModel>()
     private var binding:FragmentRideRequestedSheetBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +44,7 @@ class RideRequestedSheet : Fragment(R.layout.fragment_ride_requested_sheet) {
         super.onViewCreated(view, savedInstanceState)
         setBottomSheetStyle()
         handleBackPressed()
-
+        rideViewModel.startObservingRideRequestAccepted()
     }
 
     private fun handleBackPressed() {

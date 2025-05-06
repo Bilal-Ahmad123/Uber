@@ -43,8 +43,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -566,13 +569,14 @@ class PickUpMapFragment : Fragment(), IActions, OnMapReadyCallback,
     private fun observeRideAccepted() {
 
         viewLifecycleOwner.lifecycleScope.launch {
-            rideViewModel.rideAccept.observe(viewLifecycleOwner) {
-                val navHostFragment =
-                    childFragmentManager.findFragmentById(R.id.nav_host_bottom_sheet) as? NavHostFragment
-                val navController = navHostFragment?.navController
-                navController?.navigate(R.id.rideAcceptedSheet)
-                routeHelper?.deleteEveryThingOnMap()
-                startTrip(it)
+            rideViewModel.rideAccept.collectLatest {
+                it?.let {a->
+                    sharedViewModel.setCurrentOpenedSheet(SheetState.RIDE_ACCEPTED)
+                    routeHelper?.deleteEveryThingOnMap()
+                    startTrip(a)
+
+                }
+
             }
         }
     }

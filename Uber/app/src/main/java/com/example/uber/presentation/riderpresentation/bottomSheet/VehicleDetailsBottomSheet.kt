@@ -117,7 +117,6 @@ class VehicleDetailsBottomSheet() : Fragment(R.layout.vehicle_details_bottom_she
                     googleViewModel.dropOffLongitude
                 )
             )
-            rideViewModel.startObservingRideRequestAccepted()
             sharedViewModel.setCurrentOpenedSheet(SheetState.RIDE_REQUESTED)
         }
     }
