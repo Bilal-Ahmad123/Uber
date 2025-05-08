@@ -9,7 +9,6 @@ import com.example.uber.data.remote.api.backend.rider.socket.trip.model.DriverRe
 import com.example.uber.data.remote.api.backend.rider.socket.trip.model.DriverReachedPickUpSpot
 import com.example.uber.data.remote.api.googleMaps.models.directionsResponse.DirectionsResponse
 import com.example.uber.domain.remote.google.usecase.GoogleUseCase
-import com.example.uber.domain.remote.socket.ride.usecase.ObserveRideAcceptedUseCase
 import com.example.uber.domain.remote.socket.trip.usecase.DriverReachedDropOffSpotUseCase
 import com.example.uber.domain.remote.socket.trip.usecase.DriverReachedPickUpSpotUseCase
 import com.example.uber.domain.remote.socket.trip.usecase.ObserveTripLocationsUseCase

@@ -52,6 +52,4 @@ class RideRepository @Inject constructor(private val socketManager: SocketBroker
         return rideAccepted
     }
 
-    override fun observeRideAccepted() = rideAccepted
-
 }

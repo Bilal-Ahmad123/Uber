@@ -7,7 +7,6 @@ import com.example.uber.core.base.BaseViewModel
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideAccepted
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.RideRequest
 import com.example.uber.data.remote.api.backend.rider.socket.ride.model.TripLocation
-import com.example.uber.domain.remote.socket.ride.usecase.ObserveRideAcceptedUseCase
 import com.example.uber.domain.remote.socket.trip.usecase.ObserveTripLocationsUseCase
 import com.example.uber.domain.remote.socket.ride.usecase.RequestRideUseCase
 import com.example.uber.domain.remote.socket.ride.usecase.StartObservingRideAcceptedUseCase
@@ -23,12 +22,9 @@ import javax.inject.Inject
 class RideViewModel @Inject constructor(
     private val rideRequestUseCase: RequestRideUseCase,
     private val startObservingRideAcceptedUseCase: StartObservingRideAcceptedUseCase,
-    private val observeRideAcceptedUseCase: ObserveRideAcceptedUseCase,
     dispatcher: IDispatchers
 ) : BaseViewModel(dispatcher) {
     private val rideAccepted = MutableStateFlow<RideAccepted?>(null)
-
-    //There was a good reason for doing this
     val rideAccept get() = rideAccepted.asStateFlow()
 
     fun requestRide(requestRide: RideRequest) {
@@ -42,14 +38,6 @@ class RideViewModel @Inject constructor(
            startObservingRideAcceptedUseCase().collectLatest {
                rideAccepted.emit(it)
            }
-        }
-    }
-
-    fun observeRideAccepted() {
-        launchOnBack {
-            observeRideAcceptedUseCase().collectLatest {
-                rideAccepted.emit(it)
-            }
         }
     }
 

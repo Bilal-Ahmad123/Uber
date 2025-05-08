@@ -8,5 +8,4 @@ import kotlinx.coroutines.flow.Flow
 interface RideRepository {
     fun sendRideRequest(rideRequest : RideRequest):Unit
     fun startObservingRideAcceptedEvent():Flow<RideAccepted>
-    fun observeRideAccepted():Flow<RideAccepted>
 }
