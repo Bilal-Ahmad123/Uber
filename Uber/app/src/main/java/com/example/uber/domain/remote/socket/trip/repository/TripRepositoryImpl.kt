@@ -25,6 +25,7 @@ class TripRepositoryImpl @Inject constructor(private val socketManager: SocketBr
     override fun observeTrip(): Flow<TripLocation> {
         socketManager.apply {
             getHubConnection()?.let {
+
                 it.on(
                     SocketMethods.TRIP_UPDATES,
                     { rideId: String, driverId: String, latitude: Double, longitude: Double, time: Int, distance: Int ->
